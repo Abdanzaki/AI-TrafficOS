@@ -214,6 +214,165 @@ async def test_roads_full_lifecycle(async_client: AsyncClient, test_users: dict)
 
 
 @pytest.mark.anyio
+async def test_roads_phase3_topology_fields_and_validation(async_client: AsyncClient, test_users: dict):
+    """Test Road Phase 3 topology fields: persistence, endpoints validation, and batched FK checks."""
+    officer_auth = {"Authorization": f"Bearer {test_users['officer']['token']}"}
+    analyst_auth = {"Authorization": f"Bearer {test_users['analyst']['token']}"}
+
+    uid = uuid.uuid4().hex[:6]
+
+    # Create two junctions
+    resp_a = await async_client.post(
+        "/api/v1/junctions",
+        headers=officer_auth,
+        json={"name": f"Junction A {uid}", "code": f"JA_{uid}"},
+    )
+    assert resp_a.status_code == 201
+    junc_a_id = resp_a.json()["id"]
+
+    resp_b = await async_client.post(
+        "/api/v1/junctions",
+        headers=officer_auth,
+        json={"name": f"Junction B {uid}", "code": f"JB_{uid}"},
+    )
+    assert resp_b.status_code == 201
+    junc_b_id = resp_b.json()["id"]
+
+    # 1. Successful creation with full Phase 3 fields
+    create_resp = await async_client.post(
+        "/api/v1/roads",
+        headers=officer_auth,
+        json={
+            "name": f"Connector Road {uid}",
+            "road_type": "arterial",
+            "speed_limit_kmh": 60,
+            "from_intersection_id": junc_a_id,
+            "to_intersection_id": junc_b_id,
+            "length_km": 3.75,
+            "capacity_veh_per_hr": 2400,
+            "is_bidirectional": True,
+        },
+    )
+    assert create_resp.status_code == 201
+    road_data = create_resp.json()
+    road_id = road_data["id"]
+    assert road_data["from_intersection_id"] == junc_a_id
+    assert road_data["to_intersection_id"] == junc_b_id
+    assert road_data["length_km"] == 3.75
+    assert road_data["capacity_veh_per_hr"] == 2400
+    assert road_data["is_bidirectional"] is True
+
+    # 2. GET detail returns Phase 3 fields
+    get_resp = await async_client.get(f"/api/v1/roads/{road_id}", headers=analyst_auth)
+    assert get_resp.status_code == 200
+    detail = get_resp.json()
+    assert detail["from_intersection_id"] == junc_a_id
+    assert detail["to_intersection_id"] == junc_b_id
+    assert detail["length_km"] == 3.75
+    assert detail["capacity_veh_per_hr"] == 2400
+    assert detail["is_bidirectional"] is True
+
+    # 3. Validation: from == to on create returns 422
+    dup_resp = await async_client.post(
+        "/api/v1/roads",
+        headers=officer_auth,
+        json={
+            "name": f"Loop Road {uid}",
+            "road_type": "local",
+            "from_intersection_id": junc_a_id,
+            "to_intersection_id": junc_a_id,
+        },
+    )
+    assert dup_resp.status_code == 422
+
+    # 4. Validation: unknown intersection IDs on create returns 422 with unknown IDs
+    unknown_resp = await async_client.post(
+        "/api/v1/roads",
+        headers=officer_auth,
+        json={
+            "name": f"Unknown Road {uid}",
+            "road_type": "arterial",
+            "from_intersection_id": 999981,
+            "to_intersection_id": 999982,
+        },
+    )
+    assert unknown_resp.status_code == 422
+    assert "999981" in str(unknown_resp.json())
+    assert "999982" in str(unknown_resp.json())
+
+    # 5. Validation: negative length_km or capacity returns 422
+    neg_len_resp = await async_client.post(
+        "/api/v1/roads",
+        headers=officer_auth,
+        json={
+            "name": f"Neg Road {uid}",
+            "road_type": "arterial",
+            "length_km": -1.0,
+        },
+    )
+    assert neg_len_resp.status_code == 422
+
+    neg_cap_resp = await async_client.post(
+        "/api/v1/roads",
+        headers=officer_auth,
+        json={
+            "name": f"Neg Cap Road {uid}",
+            "road_type": "arterial",
+            "capacity_veh_per_hr": -10,
+        },
+    )
+    assert neg_cap_resp.status_code == 422
+
+    # 6. Update Phase 3 fields successfully
+    patch_resp = await async_client.patch(
+        f"/api/v1/roads/{road_id}",
+        headers=officer_auth,
+        json={
+            "length_km": 4.5,
+            "capacity_veh_per_hr": 2800,
+            "is_bidirectional": False,
+        },
+    )
+    assert patch_resp.status_code == 200
+    patched_data = patch_resp.json()
+    assert patched_data["length_km"] == 4.5
+    assert patched_data["capacity_veh_per_hr"] == 2800
+    assert patched_data["is_bidirectional"] is False
+
+    # 7. Validation: from == to on patch returns 422
+    patch_dup_resp = await async_client.patch(
+        f"/api/v1/roads/{road_id}",
+        headers=officer_auth,
+        json={
+            "from_intersection_id": junc_b_id,
+            "to_intersection_id": junc_b_id,
+        },
+    )
+    assert patch_dup_resp.status_code == 422
+
+    # 8. Validation: single endpoint updated to match existing other endpoint returns 422
+    patch_single_dup_resp = await async_client.patch(
+        f"/api/v1/roads/{road_id}",
+        headers=officer_auth,
+        json={
+            "to_intersection_id": junc_a_id,
+        },
+    )
+    assert patch_single_dup_resp.status_code == 422
+
+    # 9. Validation: unknown intersection ID on patch returns 422
+    patch_unknown_resp = await async_client.patch(
+        f"/api/v1/roads/{road_id}",
+        headers=officer_auth,
+        json={
+            "to_intersection_id": 999983,
+        },
+    )
+    assert patch_unknown_resp.status_code == 422
+    assert "999983" in str(patch_unknown_resp.json())
+
+
+@pytest.mark.anyio
 async def test_junctions_full_lifecycle(async_client: AsyncClient, test_users: dict):
     """Test junction creation, code uniqueness, listing, filtering, eager loading, RBAC, and audit log."""
     admin_auth = {"Authorization": f"Bearer {test_users['admin']['token']}"}

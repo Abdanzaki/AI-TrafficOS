@@ -18,6 +18,7 @@ from app.api.v1.intersections import router as intersections_router
 from app.api.v1.lanes import router as lanes_router
 from app.api.v1.notifications import router as notifications_router
 from app.api.v1.roads import router as roads_router
+from app.api.v1.routing import router as routing_router
 from app.api.v1.signals import phases_router, router as signals_router
 from app.api.v1.traffic_records import router as traffic_records_router
 from app.api.v1.users import router as users_router
@@ -54,6 +55,9 @@ router.include_router(ai_predictions_router)
 router.include_router(ai_decisions_router)
 router.include_router(analytics_router)
 router.include_router(audit_router)
+
+# Mount routing services router under v1 prefix
+router.include_router(routing_router)
 
 
 @router.get("/health")

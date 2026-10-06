@@ -6,7 +6,8 @@ Defines Road segments and individual Lane configurations.
 from datetime import datetime
 from typing import TYPE_CHECKING, Optional
 
-from sqlalchemy import DateTime, ForeignKey, Integer, String, Text, func
+import sqlalchemy as sa
+from sqlalchemy import Boolean, DateTime, Float, ForeignKey, Integer, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
@@ -27,6 +28,26 @@ class Road(Base):
     road_type: Mapped[str] = mapped_column(String(50), nullable=False)  # arterial, collector, local
     speed_limit_kmh: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     geometry: Mapped[Optional[str]] = mapped_column(Text, nullable=True)  # GeoJSON / WKT representation
+    from_intersection_id: Mapped[Optional[int]] = mapped_column(
+        Integer,
+        ForeignKey("intersections.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
+    to_intersection_id: Mapped[Optional[int]] = mapped_column(
+        Integer,
+        ForeignKey("intersections.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
+    length_km: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    capacity_veh_per_hr: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    is_bidirectional: Mapped[bool] = mapped_column(
+        Boolean,
+        default=True,
+        server_default=sa.true(),
+        nullable=False,
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         server_default=func.now(),
@@ -45,6 +66,16 @@ class Road(Base):
         "Lane",
         back_populates="road",
         cascade="all, delete-orphan",
+    )
+    from_junction: Mapped[Optional["Intersection"]] = relationship(
+        "Intersection",
+        foreign_keys=[from_intersection_id],
+        back_populates="outgoing_roads",
+    )
+    to_junction: Mapped[Optional["Intersection"]] = relationship(
+        "Intersection",
+        foreign_keys=[to_intersection_id],
+        back_populates="incoming_roads",
     )
 
 

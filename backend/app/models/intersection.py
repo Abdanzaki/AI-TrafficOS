@@ -15,7 +15,7 @@ from app.core.database import Base
 if TYPE_CHECKING:
     from app.models.ai import AIDecision, AIPrediction
     from app.models.event import Incident, VehicleEvent
-    from app.models.road import Lane
+    from app.models.road import Lane, Road
     from app.models.signal import Signal, SignalPhase
     from app.models.traffic import TrafficRecord
 
@@ -85,4 +85,14 @@ class Intersection(Base):
     ai_decisions: Mapped[list["AIDecision"]] = relationship(
         "AIDecision",
         back_populates="intersection",
+    )
+    outgoing_roads: Mapped[list["Road"]] = relationship(
+        "Road",
+        foreign_keys="Road.from_intersection_id",
+        back_populates="from_junction",
+    )
+    incoming_roads: Mapped[list["Road"]] = relationship(
+        "Road",
+        foreign_keys="Road.to_intersection_id",
+        back_populates="to_junction",
     )

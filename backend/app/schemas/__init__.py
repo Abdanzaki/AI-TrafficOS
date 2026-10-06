@@ -61,6 +61,20 @@ from app.schemas.road import (
     RoadResponse,
     RoadUpdate,
 )
+from app.schemas.routing import (
+    CongestionRankingItem,
+    DispatchNextResponse,
+    GraphStatsResponse,
+    GreenCorridorRequest,
+    GreenCorridorResponse,
+    RouteEdgeResponse,
+    RouteRequest,
+    RouteResponse,
+    SignalActionResponse,
+    TelemetryFlushResponse,
+    TelemetryIngestItem,
+    TelemetryIngestResponse,
+)
 from app.schemas.signal import (
     PaginatedSignals,
     SignalCreate,
@@ -156,5 +170,17 @@ __all__ = [
     "CongestionHotspotResponse",
     "AuditLogResponse",
     "PaginatedAuditLogs",
+    "RouteRequest",
+    "RouteEdgeResponse",
+    "RouteResponse",
+    "GreenCorridorRequest",
+    "SignalActionResponse",
+    "GreenCorridorResponse",
+    "CongestionRankingItem",
+    "DispatchNextResponse",
+    "TelemetryIngestItem",
+    "TelemetryIngestResponse",
+    "TelemetryFlushResponse",
+    "GraphStatsResponse",
 ]
 

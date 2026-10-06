@@ -14,6 +14,7 @@ from app.api.v1.auth import get_client_ip
 from app.core.audit import log_audit
 from app.core.database import get_db
 from app.models.auth import User
+from app.models.intersection import Intersection
 from app.models.road import Road
 from app.schemas.road import (
     PaginatedRoads,
@@ -90,11 +91,37 @@ async def create_road(
     current_user: User = Depends(require_roles("admin", "traffic_officer")),
 ) -> Road:
     """Create a new roadway segment."""
+    # Validate from/to intersection IDs exist if provided
+    intersection_ids = {
+        iid
+        for iid in (payload.from_intersection_id, payload.to_intersection_id)
+        if iid is not None
+    }
+    if intersection_ids:
+        stmt = select(Intersection.id).where(Intersection.id.in_(intersection_ids))
+        res = await db.execute(stmt)
+        found_ids = set(res.scalars().all())
+        missing_ids = intersection_ids - found_ids
+        if missing_ids:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=f"Intersections not found: {sorted(list(missing_ids))}",
+            )
+
     road = Road(
         name=payload.name,
         road_type=payload.road_type,
         speed_limit_kmh=payload.speed_limit_kmh,
         geometry=payload.geometry,
+        from_intersection_id=payload.from_intersection_id,
+        to_intersection_id=payload.to_intersection_id,
+        length_km=payload.length_km,
+        capacity_veh_per_hr=payload.capacity_veh_per_hr,
+        is_bidirectional=(
+            payload.is_bidirectional
+            if payload.is_bidirectional is not None
+            else True
+        ),
     )
     db.add(road)
     await db.flush()
@@ -169,6 +196,36 @@ async def update_road(
         )
 
     update_data = payload.model_dump(exclude_unset=True)
+
+    # Validate updated from/to intersection IDs exist if provided
+    intersection_ids = {
+        update_data[k]
+        for k in ("from_intersection_id", "to_intersection_id")
+        if k in update_data and update_data[k] is not None
+    }
+    if intersection_ids:
+        stmt = select(Intersection.id).where(Intersection.id.in_(intersection_ids))
+        res = await db.execute(stmt)
+        found_ids = set(res.scalars().all())
+        missing_ids = intersection_ids - found_ids
+        if missing_ids:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=f"Intersections not found: {sorted(list(missing_ids))}",
+            )
+
+    # Validate resulting endpoints are not identical
+    new_from = update_data.get("from_intersection_id", road.from_intersection_id)
+    new_to = update_data.get("to_intersection_id", road.to_intersection_id)
+    if new_from is not None and new_to is not None and new_from == new_to:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="from_intersection_id and to_intersection_id cannot be the same",
+        )
+
+    if "is_bidirectional" in update_data and update_data["is_bidirectional"] is None:
+        del update_data["is_bidirectional"]
+
     for field, value in update_data.items():
         setattr(road, field, value)
 
