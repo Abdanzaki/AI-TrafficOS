@@ -23,6 +23,9 @@ class Settings(BaseSettings):
     REDIS_URL: str = "redis://localhost:6379/0"
     ENV: str = "development"
     CORS_ORIGINS: list[str] = ["http://localhost:3000"]
+    SECRET_KEY: str = "dev-secret-key-change-in-production-trafficos-2026"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    REFRESH_TOKEN_EXPIRE_DAYS: int = 7
 
     @field_validator("CORS_ORIGINS", mode="before")
     @classmethod
