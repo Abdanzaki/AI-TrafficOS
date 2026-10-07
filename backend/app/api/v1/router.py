@@ -12,6 +12,7 @@ from app.api.v1.ai_predictions import router as ai_predictions_router
 from app.api.v1.analytics import router as analytics_router
 from app.api.v1.audit import router as audit_router
 from app.api.v1.auth import router as auth_router
+from app.api.v1.control import router as control_router
 from app.api.v1.emergency_events import router as emergency_events_router
 from app.api.v1.forecasting import router as forecasting_router
 from app.api.v1.incidents import router as incidents_router
@@ -59,8 +60,9 @@ router.include_router(analytics_router)
 router.include_router(audit_router)
 router.include_router(forecasting_router)
 
-# Mount routing services router under v1 prefix
+# Mount routing and control services routers under v1 prefix
 router.include_router(routing_router)
+router.include_router(control_router)
 
 # Mount vision router under v1 prefix
 router.include_router(vision_router)
