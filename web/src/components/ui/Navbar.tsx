@@ -4,14 +4,16 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button } from "./Button";
+import { useAuth } from "@/lib/auth";
 
 export const Navbar: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
+  const { user } = useAuth();
 
   const navLinks = [
     { label: "Home", href: "/" },
-    { label: "Platform", href: "/platform" },
+    { label: "Console", href: "/dashboard" },
   ];
 
   const docsUrl = "https://github.com/Abdanzaki/AI-TrafficOS";
@@ -38,7 +40,7 @@ export const Navbar: React.FC = () => {
               AI TrafficOS
             </span>
             <span className="hidden sm:inline-block text-[10px] font-semibold tracking-wider uppercase px-2 py-0.5 rounded-full bg-accent/10 text-accent border border-accent/20">
-              Phase 1
+              Phase 7
             </span>
           </Link>
 
@@ -86,13 +88,15 @@ export const Navbar: React.FC = () => {
 
           {/* Desktop Action */}
           <div className="hidden md:flex items-center gap-3">
-            <Button
-              href="/platform"
-              variant="secondary"
-              size="sm"
-            >
-              Launch Platform
-            </Button>
+            {user ? (
+              <Button href="/dashboard" variant="primary" size="sm">
+                Open Console
+              </Button>
+            ) : (
+              <Button href="/login" variant="secondary" size="sm">
+                Sign In
+              </Button>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -181,15 +185,27 @@ export const Navbar: React.FC = () => {
             </svg>
           </a>
           <div className="pt-2">
-            <Button
-              href="/platform"
-              variant="primary"
-              size="md"
-              className="w-full text-center"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Launch Platform
-            </Button>
+            {user ? (
+              <Button
+                href="/dashboard"
+                variant="primary"
+                size="md"
+                className="w-full text-center"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Open Console
+              </Button>
+            ) : (
+              <Button
+                href="/login"
+                variant="primary"
+                size="md"
+                className="w-full text-center"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Sign In
+              </Button>
+            )}
           </div>
         </div>
       )}

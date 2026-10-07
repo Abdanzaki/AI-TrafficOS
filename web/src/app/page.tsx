@@ -1,6 +1,7 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Navbar } from "@/components/ui/Navbar";
 import { Footer } from "@/components/ui/Footer";
@@ -10,6 +11,7 @@ import { Badge } from "@/components/ui/Badge";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { Stat } from "@/components/ui/Stat";
 import { SystemStatus } from "@/components/SystemStatus";
+import { useAuth } from "@/lib/auth";
 
 const ROADMAP_FEATURES = [
   {
@@ -117,6 +119,14 @@ const ARCHITECTURE_STACK = [
 
 export default function HomePage() {
   const docsUrl = "https://github.com/Abdanzaki/AI-TrafficOS";
+  const { user, isLoading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isLoading && user) {
+      router.replace("/dashboard");
+    }
+  }, [isLoading, user, router]);
 
   return (
     <div className="flex flex-col min-h-screen bg-ink text-text">
@@ -138,9 +148,9 @@ export default function HomePage() {
             >
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-surface/90 border border-white/10 text-xs text-muted mb-6">
                 <span className="w-2 h-2 rounded-full bg-accent" />
-                <span className="text-text font-medium">Phase 1 Foundation</span>
+                <span className="text-text font-medium">Phase 7 Command</span>
                 <span className="text-white/20">•</span>
-                <span>Architecture Specification</span>
+                <span>Active Management</span>
               </div>
 
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-display font-extrabold text-text tracking-tight leading-[1.15]">
@@ -155,8 +165,8 @@ export default function HomePage() {
               </p>
 
               <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
-                <Button href="/platform" variant="primary" size="lg">
-                  Explore the Platform
+                <Button href="/dashboard" variant="primary" size="lg">
+                  Launch Console
                 </Button>
                 <Button
                   href={docsUrl}
@@ -310,7 +320,7 @@ export default function HomePage() {
               </p>
 
               <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
-                <Button href="/platform" variant="primary" size="md">
+                <Button href="/dashboard" variant="primary" size="md">
                   Open Operations Shell
                 </Button>
                 <Button
