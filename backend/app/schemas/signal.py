@@ -59,6 +59,17 @@ class SignalUpdate(BaseModel):
     intersection_id: Optional[int] = None
     code: Optional[str] = Field(None, min_length=1, max_length=50)
     status: Optional[str] = Field(None, min_length=1, max_length=30)
+    observed_state: Optional[str] = Field(None, min_length=1, max_length=20)
+    observed_confidence: Optional[float] = Field(None, ge=0.0, le=1.0)
+    observed_at: Optional[datetime] = None
+
+
+class SignalObservationUpdate(BaseModel):
+    """Schema for ingesting a computer vision signal state observation."""
+
+    observed_state: str = Field(..., min_length=1, max_length=20, description="Observed state (red, yellow, green, unknown)")
+    observed_confidence: float = Field(..., ge=0.0, le=1.0, description="Heuristic / model confidence score")
+    observed_at: Optional[datetime] = Field(None, description="Timestamp of CV frame capture")
 
 
 class SignalResponse(BaseModel):
@@ -70,9 +81,13 @@ class SignalResponse(BaseModel):
     intersection_id: int
     code: str
     status: str
+    observed_state: Optional[str] = None
+    observed_confidence: Optional[float] = None
+    observed_at: Optional[datetime] = None
     created_at: datetime
     updated_at: datetime
     phases: Optional[list[SignalPhaseResponse]] = None
+
 
     @model_validator(mode="before")
     @classmethod

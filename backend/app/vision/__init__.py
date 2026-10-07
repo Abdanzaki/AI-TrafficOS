@@ -1,41 +1,45 @@
-"""Computer Vision module for AI TrafficOS.
+"""Vision module for AI TrafficOS FastAPI backend.
 
-Provides detector base abstractions, concrete YOLOv8 vehicle detectors,
-emergency vehicle heuristic visual cue layers, traffic metrics calculators,
-multi-object tracking with speed estimation, congestion detection,
-incident foundations heuristics, and end-to-end video processing pipelines.
+Provides computer vision detectors, heuristic layers, traffic metrics,
+multi-object tracking, congestion scoring, incident anomaly heuristics,
+and database persistence pipelines.
 """
 
-from ai.cv.congestion import (
+from .congestion import (
     CongestionResult,
     CongestionWeights,
     TrafficAheadResult,
     compute_congestion_score,
     detect_traffic_ahead,
+    get_congestion_calculator,
 )
-from ai.cv.detectors import BaseDetector
-from ai.cv.emergency_heuristic import EmergencyVehicleHeuristic
-from ai.cv.exceptions import (
+from .detectors import (
     CorruptFrameError,
-    CorruptVideoError,
-    EmptyVideoError,
+    DEFAULT_COCO_TRAFFIC_LIGHT_ID,
+    EmergencyVehicleHeuristic,
     InvalidInputFrameError,
     ModelLoadError,
-    SingleFrameSpeedError,
+    SignalDetection,
+    SignalStateHeuristic,
+    SignalStateResult,
+    TrafficSignalDetector,
     UnsupportedInputFormatError,
-    UnsupportedVideoFormatError,
-    VideoOpenError,
-    VideoProcessingError,
     VisionDetectorError,
+    YoloVehicleDetector,
+    detection_to_vehicle_event_create,
+    get_signal_detector,
+    get_vehicle_detector,
+    record_signal_observation,
 )
-from ai.cv.incidents import (
+from .incidents import (
     IncidentCandidate,
     IncidentDetector,
     LaneDirectionConfig,
     StoppedVehicleHeuristic,
     WrongWayHeuristic,
+    get_incident_detector,
 )
-from ai.cv.metrics import (
+from .metrics import (
     FrameMetrics,
     PolygonROI,
     calculate_lane_occupancy,
@@ -43,42 +47,43 @@ from ai.cv.metrics import (
     calculate_traffic_density,
     compute_frame_metrics,
     compute_vehicle_counts,
+    get_metrics_calculator,
 )
-from ai.common.schemas import SignalDetection
-from ai.cv.signal_detector import DEFAULT_COCO_TRAFFIC_LIGHT_ID, TrafficSignalDetector
-from ai.cv.signal_state_heuristic import SignalStateHeuristic, SignalStateResult
-from ai.cv.streaming import (
-    AbstractFrameSource,
-    AbstractStreamConsumer,
-    FrameDropPolicy,
-    FramePacket,
-    StreamConfig,
-    StreamPerceptionResult,
-    StreamStatus,
+from .processor import (
+    CorruptVideoError,
+    EmptyVideoError,
+    UnsupportedVideoFormatError,
+    VideoFrameResult,
+    VideoOpenError,
+    VideoProcessingError,
+    VideoProcessor,
+    get_video_processor,
 )
-from ai.cv.tracking import (
+from .storage import (
+    map_confidence_to_severity,
+    record_congestion_observation,
+    record_incident_candidate,
+    record_incident_candidates,
+)
+from .tracking import (
     MultiObjectTracker,
+    SingleFrameSpeedError,
     TrackedVehicle,
+    compute_bbox_iou,
+    compute_centroid,
     estimate_speed_from_history,
+    get_vehicle_tracker,
 )
-from ai.cv.video_processor import VideoFrameResult, VideoProcessor
-from ai.cv.yolo_detector import DEFAULT_COCO_VEHICLE_MAP, YoloVehicleDetector
 
 __all__ = [
-    "AbstractFrameSource",
-    "AbstractStreamConsumer",
-    "BaseDetector",
     "CongestionResult",
     "CongestionWeights",
     "CorruptFrameError",
     "CorruptVideoError",
     "DEFAULT_COCO_TRAFFIC_LIGHT_ID",
-    "DEFAULT_COCO_VEHICLE_MAP",
     "EmergencyVehicleHeuristic",
     "EmptyVideoError",
-    "FrameDropPolicy",
     "FrameMetrics",
-    "FramePacket",
     "IncidentCandidate",
     "IncidentDetector",
     "InvalidInputFrameError",
@@ -91,9 +96,6 @@ __all__ = [
     "SignalStateResult",
     "SingleFrameSpeedError",
     "StoppedVehicleHeuristic",
-    "StreamConfig",
-    "StreamPerceptionResult",
-    "StreamStatus",
     "TrackedVehicle",
     "TrafficAheadResult",
     "TrafficSignalDetector",
@@ -109,9 +111,24 @@ __all__ = [
     "calculate_lane_occupancy",
     "calculate_queue_length",
     "calculate_traffic_density",
+    "compute_bbox_iou",
+    "compute_centroid",
     "compute_congestion_score",
     "compute_frame_metrics",
     "compute_vehicle_counts",
     "detect_traffic_ahead",
+    "detection_to_vehicle_event_create",
     "estimate_speed_from_history",
+    "get_congestion_calculator",
+    "get_incident_detector",
+    "get_metrics_calculator",
+    "get_signal_detector",
+    "get_vehicle_detector",
+    "get_vehicle_tracker",
+    "get_video_processor",
+    "map_confidence_to_severity",
+    "record_congestion_observation",
+    "record_incident_candidate",
+    "record_incident_candidates",
+    "record_signal_observation",
 ]

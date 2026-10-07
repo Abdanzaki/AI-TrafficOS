@@ -12,3 +12,20 @@ bcrypt>=4.0
 pyjwt>=2.8
 email-validator>=2.0
 python-multipart>=0.0.9
+
+# Phase 4 Computer Vision & Deep Learning
+# NOTE ON PYTORCH INSTALLATION:
+# Default PyPI torch wheels bundle heavy CUDA runtime libraries (~550MB+) which can fail or
+# hang in bandwidth-constrained or CPU-only container environments.
+# To install CPU-only wheels on this machine or similar CPU-only environments:
+#   pip install torch==2.14.1+cpu torchvision==0.29.1+cpu --index-url https://download.pytorch.org/whl/cpu
+# If a GPU is available with CUDA:
+#   pip install torch torchvision
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.14.1+cpu
+torchvision==0.29.1+cpu
+ultralytics==8.4.174
+opencv-python==5.0.0.93
+numpy>=1.26.0,<3.0.0
+pillow>=10.0.0
+

@@ -23,6 +23,7 @@ from app.api.v1.signals import phases_router, router as signals_router
 from app.api.v1.traffic_records import router as traffic_records_router
 from app.api.v1.users import router as users_router
 from app.api.v1.vehicle_events import router as vehicle_events_router
+from app.api.v1.vision import router as vision_router
 from app.api.v1.websocket import router as websocket_router
 
 APP_VERSION: str = "0.1.0"
@@ -58,6 +59,9 @@ router.include_router(audit_router)
 
 # Mount routing services router under v1 prefix
 router.include_router(routing_router)
+
+# Mount vision router under v1 prefix
+router.include_router(vision_router)
 
 
 @router.get("/health")

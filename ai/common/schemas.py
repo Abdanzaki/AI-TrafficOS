@@ -18,6 +18,17 @@ class Detection:
     confidence: float
     bbox: tuple[float, float, float, float] | None = None
     timestamp: datetime | None = None
+    state: str | None = None
+
+
+@dataclass(frozen=True)
+class SignalDetection(Detection):
+    """Traffic signal detection with state classification payload."""
+
+    state: str = "unknown"
+    state_confidence: float = 0.0
+    color_metrics: dict | None = None
+
 
 
 @dataclass(frozen=True)

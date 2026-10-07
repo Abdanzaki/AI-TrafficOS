@@ -22,6 +22,13 @@ share/python-wheels/
 *.egg
 MANIFEST
 
+# Machine Learning Models & Weights
+*.pt
+*.pth
+*.onnx
+*.engine
+ml/models/
+
 # Virtual Environments
 .venv/
 venv/

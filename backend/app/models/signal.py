@@ -7,8 +7,10 @@ from datetime import datetime
 from typing import TYPE_CHECKING, Optional
 
 import sqlalchemy as sa
-from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, func
+from sqlalchemy import Boolean, DateTime, Float, ForeignKey, Integer, String, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+
 
 from app.core.database import Base
 
@@ -36,7 +38,22 @@ class Signal(Base):
         nullable=False,
         index=True,
     )  # active, inactive, maintenance, fault
+    # CV Optical Observation fields (camera ground truth vs commanded SignalPhase plan)
+    observed_state: Mapped[Optional[str]] = mapped_column(
+        String(20),
+        nullable=True,
+        index=True,
+    )  # red, yellow, green, unknown
+    observed_confidence: Mapped[Optional[float]] = mapped_column(
+        Float,
+        nullable=True,
+    )  # 0.0 to 1.0 confidence score
+    observed_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+    )  # observation capture timestamp
     created_at: Mapped[datetime] = mapped_column(
+
         DateTime(timezone=True),
         server_default=func.now(),
         nullable=False,

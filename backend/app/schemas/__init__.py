@@ -78,6 +78,7 @@ from app.schemas.routing import (
 from app.schemas.signal import (
     PaginatedSignals,
     SignalCreate,
+    SignalObservationUpdate,
     SignalOverrideRequest,
     SignalPhaseCreate,
     SignalPhaseResponse,
@@ -105,8 +106,22 @@ from app.schemas.vehicle_event import (
     VehicleEventCreate,
     VehicleEventResponse,
 )
+from app.schemas.vision import (
+    DetectionSummaryItem,
+    ImageAnalysisResponse,
+    PaginatedSignalObservations,
+    SignalObservationItem,
+    SignalObservationResult,
+    VideoAnalysisResponse,
+)
 
 __all__ = [
+    "DetectionSummaryItem",
+    "ImageAnalysisResponse",
+    "PaginatedSignalObservations",
+    "SignalObservationItem",
+    "SignalObservationResult",
+    "VideoAnalysisResponse",
     "RegisterRequest",
     "LoginRequest",
     "TokenResponse",
@@ -129,7 +144,9 @@ __all__ = [
     "PaginatedIntersections",
     "SignalCreate",
     "SignalUpdate",
+    "SignalObservationUpdate",
     "SignalResponse",
+
     "PaginatedSignals",
     "SignalPhaseCreate",
     "SignalPhaseUpdate",

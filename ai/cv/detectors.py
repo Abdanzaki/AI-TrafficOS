@@ -1,15 +1,17 @@
 """Computer Vision detector interfaces and abstractions.
 
-Future detector implementations (Phase 4):
-- Vehicle detector (cars, buses, trucks, motorcycles, bicycles)
-- Signal-state classifier (red, amber, green, arrows)
-- Emergency-vehicle detector (ambulances, fire engines, law enforcement)
+Phase 4 concrete implementations:
+- YoloVehicleDetector: Real YOLOv8 vehicle detection (cars, buses, trucks, motorcycles)
+- EmergencyVehicleHeuristic: Honest rule-based visual heuristic layer for emergency vehicles
 """
 
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from ai.common.schemas import Detection
+
+if TYPE_CHECKING:
+    from ai.cv.yolo_detector import YoloVehicleDetector
 
 
 class BaseDetector(ABC):
@@ -24,8 +26,22 @@ class BaseDetector(ABC):
 
         Returns:
             list[Detection]: List of bounding-box detections with confidence scores.
-
-        Raises:
-            NotImplementedError: Raised in Phase 1 stubs.
         """
         raise NotImplementedError("Not implemented: Phase 4 will provide concrete detectors")
+
+
+def __getattr__(name: str) -> Any:
+    """Lazy-load concrete detectors to prevent circular imports."""
+    if name == "YoloVehicleDetector":
+        from ai.cv.yolo_detector import YoloVehicleDetector
+
+        return YoloVehicleDetector
+    if name == "TrafficSignalDetector":
+        from ai.cv.signal_detector import TrafficSignalDetector
+
+        return TrafficSignalDetector
+    raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
+
+
+__all__ = ["BaseDetector", "YoloVehicleDetector", "TrafficSignalDetector"]
+

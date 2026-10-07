@@ -150,3 +150,14 @@ This catalog details all active `/api/v1` endpoints across the AI-TrafficOS plat
 | Method | Path | Auth / Roles | Description |
 |---|---|---|---|
 | `GET` | `/api/v1/audit-logs` | `admin` Only | Paginated query of immutable audit log trail filtered by action, entity type, actor ID, and timestamps. |
+
+---
+
+## 11. Computer Vision & Optical Perception (`/vision`)
+
+| Method | Path | Auth / Roles | Description |
+|---|---|---|---|
+| `POST` | `/api/v1/vision/analyze-image` | `admin`, `traffic_officer` | Multipart image upload; runs YOLO vehicle detection, frame metrics, congestion scoring, and optical signal detection. Persists aggregate `TrafficRecord` (source=`camera`) and optional `VehicleEvent` records. Guaranteed temp file cleanup. |
+| `POST` | `/api/v1/vision/analyze-video` | `admin`, `traffic_officer` | Multipart video upload; performs strided frame sampling, multi-object tracking, and incident heuristics. Persists windowed `TrafficRecord` rows and candidate `Incident` records (status=`reported`). Enforces max duration (60s) and timeout limits. |
+| `GET` | `/api/v1/vision/signal-observations` | Authenticated (Any) | Paginated list of physical traffic signals possessing camera-observed optical states (`observed_state`), joining intersection records. Supports filtering by observed lamp state. |
+
