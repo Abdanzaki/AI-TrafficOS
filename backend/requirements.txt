@@ -29,3 +29,7 @@ opencv-python==5.0.0.93
 numpy>=1.26.0,<3.0.0
 pillow>=10.0.0
 
+# Phase 5 Predictive Analytics & Forecasting
+pandas==3.0.6
+scikit-learn==1.9.1
+

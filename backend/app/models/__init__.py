@@ -10,6 +10,7 @@ from app.models.auth import Role, User
 from app.models.emergency import EmergencyEvent
 from app.models.event import Incident, VehicleEvent
 from app.models.intersection import Intersection
+from app.models.ml import MLModel
 from app.models.notification import Notification
 from app.models.road import Lane, Road
 from app.models.signal import Signal, SignalPhase
@@ -32,4 +33,5 @@ __all__ = [
     "AIPrediction",
     "AIDecision",
     "AuditLog",
+    "MLModel",
 ]

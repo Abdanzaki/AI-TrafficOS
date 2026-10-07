@@ -19,6 +19,10 @@ from app.services.routing.dispatch import (
     build_dispatch_queue,
     dispatch_next,
 )
+from app.services.routing.forecast_adapter import (
+    apply_predictions_to_costs,
+    blend_predicted_congestion,
+)
 from app.services.routing.graph import Edge, RoadGraph
 from app.services.routing.green_corridor import (
     CorridorSignalAction,
@@ -71,4 +75,7 @@ __all__ = [
     "get_ingest_buffer",
     # Network Registry
     "NetworkRegistry",
+    # Forecast Routing Adapter
+    "blend_predicted_congestion",
+    "apply_predictions_to_costs",
 ]

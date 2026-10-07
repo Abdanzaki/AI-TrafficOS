@@ -13,6 +13,7 @@ from app.api.v1.analytics import router as analytics_router
 from app.api.v1.audit import router as audit_router
 from app.api.v1.auth import router as auth_router
 from app.api.v1.emergency_events import router as emergency_events_router
+from app.api.v1.forecasting import router as forecasting_router
 from app.api.v1.incidents import router as incidents_router
 from app.api.v1.intersections import router as intersections_router
 from app.api.v1.lanes import router as lanes_router
@@ -51,11 +52,12 @@ router.include_router(emergency_events_router)
 router.include_router(traffic_records_router)
 router.include_router(notifications_router)
 
-# Mount AI records, analytics, and audit routers under v1 prefix
+# Mount AI records, analytics, audit, and forecasting routers under v1 prefix
 router.include_router(ai_predictions_router)
 router.include_router(ai_decisions_router)
 router.include_router(analytics_router)
 router.include_router(audit_router)
+router.include_router(forecasting_router)
 
 # Mount routing services router under v1 prefix
 router.include_router(routing_router)

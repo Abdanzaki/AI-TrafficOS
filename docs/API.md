@@ -161,3 +161,14 @@ This catalog details all active `/api/v1` endpoints across the AI-TrafficOS plat
 | `POST` | `/api/v1/vision/analyze-video` | `admin`, `traffic_officer` | Multipart video upload; performs strided frame sampling, multi-object tracking, and incident heuristics. Persists windowed `TrafficRecord` rows and candidate `Incident` records (status=`reported`). Enforces max duration (60s) and timeout limits. |
 | `GET` | `/api/v1/vision/signal-observations` | Authenticated (Any) | Paginated list of physical traffic signals possessing camera-observed optical states (`observed_state`), joining intersection records. Supports filtering by observed lamp state. |
 
+---
+
+## 12. Predictive AI & Forecasting (`/forecasting`)
+
+| Method | Path | Auth / Roles | Description |
+|---|---|---|---|
+| `POST` | `/api/v1/forecasting/train` | `admin` | Trains multi-target gradient boosted regression models on historical telemetry (`traffic_records`, 7–90 days). Evaluates chronological out-of-sample splits (70/15/15 train/val/test) and registers versioned model artifacts in `ml_models` and filesystem. Returns evaluation metrics and training provenance. |
+| `POST` | `/api/v1/forecasting/predict` | `admin`, `traffic_officer` | Generates 30-minute forward predictions for volume, congestion, and queue risk with dispersion-based confidence intervals. Persists `flow` and `congestion` records to `ai_predictions`. Intersections with < 20 recent records are returned under `insufficient` without fabricating estimates. |
+| `GET` | `/api/v1/forecasting/models` | Authenticated (Any) | Lists all registered model versions cross-referencing filesystem artifacts with `ml_models` database records. |
+| `GET` | `/api/v1/forecasting/models/latest` | Authenticated (Any) | Retrieves latest active forecasting model metadata, feature schema, horizon specifications, and out-of-sample evaluation metrics (MAE, RMSE, R2). |
+

@@ -28,6 +28,7 @@ MANIFEST
 *.onnx
 *.engine
 ml/models/
+ai/forecasting/artifacts/
 
 # Virtual Environments
 .venv/

@@ -24,6 +24,13 @@ from app.schemas.auth import (
     RegisterRequest,
     TokenResponse,
 )
+from app.schemas.forecasting import (
+    ModelVersionInfo,
+    PredictBatchResponse,
+    PredictionResult,
+    PredictRequest,
+    TrainRequest,
+)
 from app.schemas.emergency import (
     EmergencyEventCreate,
     EmergencyEventResponse,
@@ -199,5 +206,10 @@ __all__ = [
     "TelemetryIngestResponse",
     "TelemetryFlushResponse",
     "GraphStatsResponse",
+    "TrainRequest",
+    "PredictRequest",
+    "PredictionResult",
+    "PredictBatchResponse",
+    "ModelVersionInfo",
 ]
 
