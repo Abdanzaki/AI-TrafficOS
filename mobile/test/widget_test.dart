@@ -2,8 +2,11 @@ import 'package:ai_trafficos/main.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  testWidgets('AI TrafficOS app smoke test', (WidgetTester tester) async {
-    await tester.pumpWidget(const AiTrafficOsApp());
+  testWidgets('AI TrafficOS app smoke test - legacy shell preview',
+      (WidgetTester tester) async {
+    await tester.pumpWidget(const AiTrafficOsApp(
+      initialHome: MainNavigationShell(),
+    ));
 
     // Verify app title appears
     expect(find.text('AI TrafficOS'), findsOneWidget);
@@ -18,5 +21,13 @@ void main() {
       find.text('Phase 1 foundation — live data arrives in later phases.'),
       findsOneWidget,
     );
+  });
+
+  testWidgets('AI TrafficOS app boots to session restore splash or auth gate',
+      (WidgetTester tester) async {
+    await tester.pumpWidget(const AiTrafficOsApp());
+
+    // Verify root title
+    expect(find.text('AI TrafficOS'), findsWidgets);
   });
 }

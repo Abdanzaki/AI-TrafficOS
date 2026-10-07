@@ -37,6 +37,12 @@ dependencies:
   google_fonts: ^6.2.1
   http: ^1.6.0
   web_socket_channel: ^3.0.3
+  # Secure on-device key-value storage for JWT access and refresh tokens.
+  flutter_secure_storage: ^9.2.4
+  # State management: flutter_riverpod was selected for compile-safe dependency
+  # injection, testable reactive state management without BuildContext, and clear separation
+  # of business logic from the UI presentation layer.
+  flutter_riverpod: ^2.6.1
 
 dev_dependencies:
   flutter_test:
