@@ -3,10 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/incident.dart';
 import '../models/junction.dart';
+import '../providers/realtime_providers.dart';
 import '../services/api_client.dart';
 import '../services/auth_service.dart';
 import '../services/incident_service.dart';
 import '../services/junction_service.dart';
+import '../services/realtime_protocol.dart';
 import '../theme/app_tokens.dart';
 import '../widgets/app_badge.dart';
 import '../widgets/app_card.dart';
@@ -58,12 +60,14 @@ class _IncidentsScreenState extends ConsumerState<IncidentsScreen> {
     }
   }
 
-  Future<void> _loadInitialIncidents() async {
-    setState(() {
-      _page = 1;
-      _isLoading = true;
-      _errorMessage = null;
-    });
+  Future<void> _loadInitialIncidents({bool isBackgroundRefresh = false}) async {
+    if (!isBackgroundRefresh) {
+      setState(() {
+        _page = 1;
+        _isLoading = true;
+        _errorMessage = null;
+      });
+    }
 
     try {
       final service = ref.read(incidentServiceProvider);
@@ -75,6 +79,7 @@ class _IncidentsScreenState extends ConsumerState<IncidentsScreen> {
       );
       if (mounted) {
         setState(() {
+          _page = 1;
           _incidents.clear();
           _incidents.addAll(paged.items);
           _totalPages = paged.pages;
@@ -158,6 +163,19 @@ class _IncidentsScreenState extends ConsumerState<IncidentsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Real-time WebSocket invalidation: on incident.created and incident.updated,
+    // refresh incident queue
+    for (final topic in const [
+      RealtimeTopics.incidentCreated,
+      RealtimeTopics.incidentUpdated,
+    ]) {
+      ref.listen(realtimeTopicEventProvider(topic), (_, next) {
+        if (next.hasValue) {
+          _loadInitialIncidents(isBackgroundRefresh: true);
+        }
+      });
+    }
+
     final user = ref.watch(currentUserProvider);
     final canWrite = (user?.canWrite ?? false) && !(user?.isAnalyst ?? false);
 

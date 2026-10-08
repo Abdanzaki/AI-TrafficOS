@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/notification.dart';
+import '../providers/realtime_providers.dart';
 import '../services/api_client.dart';
 import '../services/notification_service.dart';
+import '../services/realtime_protocol.dart';
 import '../theme/app_tokens.dart';
 import '../widgets/app_badge.dart';
 import '../widgets/app_card.dart';
@@ -53,12 +55,14 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
     }
   }
 
-  Future<void> _loadInitialNotifications() async {
-    setState(() {
-      _page = 1;
-      _isLoading = true;
-      _errorMessage = null;
-    });
+  Future<void> _loadInitialNotifications({bool isBackgroundRefresh = false}) async {
+    if (!isBackgroundRefresh) {
+      setState(() {
+        _page = 1;
+        _isLoading = true;
+        _errorMessage = null;
+      });
+    }
 
     try {
       final service = ref.read(notificationServiceProvider);
@@ -70,6 +74,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
 
       if (mounted) {
         setState(() {
+          _page = 1;
           _notifications.clear();
           _notifications.addAll(paged.items);
           _totalPages = paged.pages;
@@ -269,6 +274,16 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Real-time WebSocket invalidation: on notification.created, refresh alerts list
+    ref.listen(
+      realtimeTopicEventProvider(RealtimeTopics.notificationCreated),
+      (_, next) {
+        if (next.hasValue) {
+          _loadInitialNotifications(isBackgroundRefresh: true);
+        }
+      },
+    );
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Notifications'),

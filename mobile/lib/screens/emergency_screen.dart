@@ -3,10 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/emergency_event.dart';
 import '../models/junction.dart';
+import '../providers/realtime_providers.dart';
 import '../services/api_client.dart';
 import '../services/auth_service.dart';
 import '../services/emergency_service.dart';
 import '../services/junction_service.dart';
+import '../services/realtime_protocol.dart';
 import '../theme/app_tokens.dart';
 import '../widgets/app_badge.dart';
 import '../widgets/app_card.dart';
@@ -55,12 +57,14 @@ class _EmergencyScreenState extends ConsumerState<EmergencyScreen> {
     }
   }
 
-  Future<void> _loadInitialEvents() async {
-    setState(() {
-      _page = 1;
-      _isLoading = true;
-      _errorMessage = null;
-    });
+  Future<void> _loadInitialEvents({bool isBackgroundRefresh = false}) async {
+    if (!isBackgroundRefresh) {
+      setState(() {
+        _page = 1;
+        _isLoading = true;
+        _errorMessage = null;
+      });
+    }
 
     try {
       final service = ref.read(emergencyServiceProvider);
@@ -71,6 +75,7 @@ class _EmergencyScreenState extends ConsumerState<EmergencyScreen> {
       );
       if (mounted) {
         setState(() {
+          _page = 1;
           _events.clear();
           _events.addAll(paged.items);
           _totalPages = paged.pages;
@@ -503,6 +508,19 @@ class _EmergencyScreenState extends ConsumerState<EmergencyScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Real-time WebSocket invalidation: on emergency.created and emergency.updated,
+    // refresh emergency preemption events
+    for (final topic in const [
+      RealtimeTopics.emergencyCreated,
+      RealtimeTopics.emergencyUpdated,
+    ]) {
+      ref.listen(realtimeTopicEventProvider(topic), (_, next) {
+        if (next.hasValue) {
+          _loadInitialEvents(isBackgroundRefresh: true);
+        }
+      });
+    }
+
     final user = ref.watch(currentUserProvider);
     final isAnalyst = user?.isAnalyst ?? false;
     final canWrite = (user?.canWrite ?? false) && !isAnalyst;

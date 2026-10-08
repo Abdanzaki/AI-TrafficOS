@@ -7,7 +7,7 @@ from datetime import datetime
 from typing import TYPE_CHECKING, Optional
 
 import sqlalchemy as sa
-from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text, func
+from sqlalchemy import Boolean, DateTime, ForeignKey, Index, Integer, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
@@ -20,6 +20,9 @@ class Notification(Base):
     """System alert or notification sent to an operator or broadcast globally."""
 
     __tablename__ = "notifications"
+    __table_args__ = (
+        Index("ix_notifications_entity_dedupe", "entity_type", "entity_id", "is_read", "created_at"),
+    )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     user_id: Mapped[Optional[int]] = mapped_column(

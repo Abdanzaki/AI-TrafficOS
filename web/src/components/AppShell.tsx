@@ -26,10 +26,12 @@ import {
   X,
   Bell,
   Cpu,
+  Sparkles,
 } from "lucide-react";
 import { useAuth, type UserRole } from "@/lib/auth";
 import { Badge, type BadgeVariant } from "./ui/Badge";
 import { Button } from "./ui/Button";
+import { ConnectionStatus } from "./ConnectionStatus";
 
 interface NavItem {
   name: string;
@@ -69,6 +71,8 @@ const NAV_SECTIONS: NavSection[] = [
       { name: "Predictions", href: "/predictions", icon: TrendingUp },
       { name: "Decisions", href: "/decisions", icon: BrainCircuit },
       { name: "Analytics", href: "/analytics", icon: BarChart3 },
+      // Server is the authority for permissions; do not preemptively role-gate client navigation
+      { name: "AI Assistant", href: "/assistant", icon: Sparkles },
     ],
   },
   {
@@ -267,8 +271,10 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
             </div>
           </div>
 
-          {/* Right items: Environment Badge, User Details, Logout */}
+          {/* Right items: Connection Status, Environment Badge, User Details, Logout */}
           <div className="flex items-center gap-3 sm:gap-4">
+            <ConnectionStatus />
+
             <Badge variant="teal" dot className="hidden md:inline-flex">
               FastAPI v1
             </Badge>

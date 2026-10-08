@@ -17,8 +17,10 @@ import {
   Clock,
   Sparkles,
 } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/lib/auth";
 import { useApiQuery } from "@/lib/use-api";
+import { useTopic } from "@/lib/realtime";
 import { Card } from "@/components/ui/Card";
 import { Badge, type BadgeVariant } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -33,7 +35,13 @@ interface HealthData {
 }
 
 export default function DashboardPage() {
+  const queryClient = useQueryClient();
   const { user, isAdmin, isOfficer } = useAuth();
+
+  // Invalidate health query whenever system.status real-time event arrives (replaces 15s polling)
+  useTopic("system.status", () => {
+    queryClient.invalidateQueries({ queryKey: ["backend-health"] });
+  });
 
   const {
     data: health,
@@ -43,9 +51,6 @@ export default function DashboardPage() {
   } = useApiQuery<HealthData>({
     queryKey: ["backend-health"],
     endpoint: "/health",
-    queryOptions: {
-      refetchInterval: 15000,
-    },
   });
 
   const quickNav = [

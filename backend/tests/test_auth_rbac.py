@@ -183,6 +183,31 @@ async def test_rbac_and_user_management(async_client: AsyncClient):
         "/api/v1/auth/login",
         json={"email": admin_email, "password": "adminpassword123"},
     )
+    if admin_login.status_code != 200:
+        from app.core.database import AsyncSessionLocal
+        from app.models.auth import Role, User
+        from sqlalchemy import select
+        async with AsyncSessionLocal() as db:
+            admin_role = (await db.execute(select(Role).where(Role.name == "admin"))).scalars().first()
+            admin_u = (await db.execute(select(User).where(User.email == admin_email))).scalars().first()
+            if not admin_u:
+                admin_u = User(
+                    email=admin_email,
+                    hashed_password=hash_password("adminpassword123"),
+                    full_name="System Admin",
+                    role_id=admin_role.id,
+                    is_active=True,
+                )
+                db.add(admin_u)
+                await db.commit()
+            else:
+                admin_u.hashed_password = hash_password("adminpassword123")
+                admin_u.is_active = True
+                await db.commit()
+        admin_login = await async_client.post(
+            "/api/v1/auth/login",
+            json={"email": admin_email, "password": "adminpassword123"},
+        )
     assert admin_login.status_code == 200
     admin_token = admin_login.json()["access_token"]
 

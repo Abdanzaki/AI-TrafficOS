@@ -25,6 +25,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { useApiQuery, useApiMutation } from "@/lib/use-api";
+import { useTopic } from "@/lib/realtime";
 import { api } from "@/lib/api-client";
 import { Card } from "@/components/ui/Card";
 import { Badge, type BadgeVariant } from "@/components/ui/Badge";
@@ -155,6 +156,11 @@ export default function NotificationsPage() {
     return params;
   }, [page, perPage, readFilter, severityFilter]);
 
+  // Real-time invalidations: notification.created updates user's notifications feed (replaces 15s poll)
+  useTopic("notification.created", () => {
+    queryClient.invalidateQueries({ queryKey: ["notifications-me"] });
+  });
+
   // Query /notifications/me
   const {
     data: notifData,
@@ -167,9 +173,6 @@ export default function NotificationsPage() {
     queryKey: ["notifications-me", page, perPage, readFilter, severityFilter],
     endpoint: "/notifications/me",
     params: queryParams,
-    queryOptions: {
-      refetchInterval: 15000,
-    },
   });
 
   // Mark single notification read mutation

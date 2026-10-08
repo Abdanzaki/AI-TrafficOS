@@ -17,7 +17,9 @@ import {
   Cpu,
   Layers,
 } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useApiQuery } from "@/lib/use-api";
+import { useTopic } from "@/lib/realtime";
 import { Card } from "@/components/ui/Card";
 import { Badge, type BadgeVariant } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -71,6 +73,22 @@ interface PaginatedGeneric {
 }
 
 export default function HealthPage() {
+  const queryClient = useQueryClient();
+
+  // Real-time invalidations for health page
+  useTopic("system.status", () => {
+    queryClient.invalidateQueries({ queryKey: ["health-gateway"] });
+  });
+
+  useTopic("signal.change", () => {
+    queryClient.invalidateQueries({ queryKey: ["health-db-signals"] });
+  });
+
+  useTopic("traffic.update", () => {
+    queryClient.invalidateQueries({ queryKey: ["health-telemetry-records"] });
+    queryClient.invalidateQueries({ queryKey: ["health-vehicle-events"] });
+  });
+
   // 1. Gateway Health
   const {
     data: gatewayData,
@@ -81,12 +99,10 @@ export default function HealthPage() {
   } = useApiQuery<GatewayHealth>({
     queryKey: ["health-gateway"],
     endpoint: "/health",
-    queryOptions: {
-      refetchInterval: 15000,
-    },
   });
 
   // 2. Gateway Version
+  // No WS topic for health-version; polling retained intentionally
   const {
     data: versionData,
     refetch: refetchVersion,
@@ -99,6 +115,7 @@ export default function HealthPage() {
   });
 
   // 3. AI Forecasting Latest Model
+  // No WS topic for health-model-latest; polling retained intentionally
   const {
     data: latestModel,
     isLoading: modelLoading,
@@ -114,6 +131,7 @@ export default function HealthPage() {
   });
 
   // 3b. AI Forecasting Models Count
+  // No WS topic for health-models-list; polling retained intentionally
   const {
     data: modelsList,
     refetch: refetchModelsList,
@@ -127,6 +145,7 @@ export default function HealthPage() {
   });
 
   // 4. DB Services Check: Intersections table query
+  // No WS topic for health-db-junctions; polling retained intentionally
   const {
     data: dbJunctions,
     isLoading: dbLoading,
@@ -149,9 +168,6 @@ export default function HealthPage() {
     queryKey: ["health-db-signals"],
     endpoint: "/signals",
     params: { per_page: 1 },
-    queryOptions: {
-      refetchInterval: 15000,
-    },
   });
 
   // 6. Telemetry Records DB Check
@@ -162,9 +178,6 @@ export default function HealthPage() {
     queryKey: ["health-telemetry-records"],
     endpoint: "/traffic-records",
     params: { per_page: 1 },
-    queryOptions: {
-      refetchInterval: 15000,
-    },
   });
 
   // 7. Vehicle Events Stream Check
@@ -175,9 +188,6 @@ export default function HealthPage() {
     queryKey: ["health-vehicle-events"],
     endpoint: "/vehicle-events",
     params: { per_page: 1 },
-    queryOptions: {
-      refetchInterval: 15000,
-    },
   });
 
   const handleRefreshAll = () => {

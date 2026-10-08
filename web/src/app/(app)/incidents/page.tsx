@@ -23,6 +23,7 @@ import {
   Radio,
 } from "lucide-react";
 import { useApiQuery, useApiMutation } from "@/lib/use-api";
+import { useTopic } from "@/lib/realtime";
 import { Card } from "@/components/ui/Card";
 import { Badge, type BadgeVariant } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -168,6 +169,15 @@ export default function IncidentsPage() {
     return params;
   }, [page, perPage, statusFilter, severityFilter, junctionFilter]);
 
+  // Real-time invalidations: incident.created and incident.updated update incidents list (replaces 15s poll)
+  useTopic("incident.created", () => {
+    queryClient.invalidateQueries({ queryKey: ["incidents-list"] });
+  });
+
+  useTopic("incident.updated", () => {
+    queryClient.invalidateQueries({ queryKey: ["incidents-list"] });
+  });
+
   const {
     data: incidentsData,
     isLoading,
@@ -186,9 +196,6 @@ export default function IncidentsPage() {
     ],
     endpoint: "/incidents",
     params: queryParams,
-    queryOptions: {
-      refetchInterval: 15000,
-    },
   });
 
   // Mutations

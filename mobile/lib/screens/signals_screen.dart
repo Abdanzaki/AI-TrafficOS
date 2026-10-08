@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/junction.dart';
 import '../models/signal.dart';
+import '../providers/realtime_providers.dart';
 import '../services/junction_service.dart';
+import '../services/realtime_protocol.dart';
 import '../services/signal_service.dart';
 import '../theme/app_tokens.dart';
 import '../widgets/app_badge.dart';
@@ -54,11 +56,13 @@ class _SignalsScreenState extends ConsumerState<SignalsScreen> {
     } catch (_) {}
   }
 
-  Future<void> _loadSignals() async {
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
+  Future<void> _loadSignals({bool isBackgroundRefresh = false}) async {
+    if (!isBackgroundRefresh) {
+      setState(() {
+        _isLoading = true;
+        _errorMessage = null;
+      });
+    }
 
     try {
       final signalService = ref.read(signalServiceProvider);
@@ -85,6 +89,16 @@ class _SignalsScreenState extends ConsumerState<SignalsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Real-time WebSocket invalidation: refresh signals list on signal phase/state change
+    ref.listen(
+      realtimeTopicEventProvider(RealtimeTopics.signalChange),
+      (_, next) {
+        if (next.hasValue) {
+          _loadSignals(isBackgroundRefresh: true);
+        }
+      },
+    );
+
     final theme = Theme.of(context);
 
     return Scaffold(

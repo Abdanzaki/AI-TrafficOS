@@ -18,6 +18,7 @@ from app.models.auth import User
 from app.models.emergency import EmergencyEvent
 from app.models.event import Incident
 from app.models.intersection import Intersection
+from app.realtime import emit_emergency_created, emit_emergency_updated
 from app.schemas.emergency import (
     VALID_EMERGENCY_STATUSES,
     EmergencyEventCreate,
@@ -188,6 +189,16 @@ async def create_emergency_event(
     await db.refresh(event)
 
     setattr(event, "intersection_id", suggested_intersection_id)
+
+    await emit_emergency_created(
+        event_id=event.id,
+        status=event.status,
+        priority=event.priority,
+        vehicle_type=event.vehicle_type,
+        intersection_id=suggested_intersection_id,
+        incident_id=event.incident_id,
+    )
+
     return event
 
 
@@ -256,19 +267,21 @@ async def update_emergency_event(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Invalid status '{payload.status}'. Valid statuses: {sorted(list(VALID_EMERGENCY_STATUSES))}",
             )
-        changes["old_status"] = event.status
-        changes["new_status"] = payload.status
-        event.status = payload.status
+        if payload.status != event.status:
+            changes["old_status"] = event.status
+            changes["new_status"] = payload.status
+            event.status = payload.status
 
-        if payload.status == "resolved" and event.cleared_at is None:
-            event.cleared_at = payload.cleared_at or datetime.now(timezone.utc)
-        elif payload.status != "resolved" and payload.cleared_at is None:
-            event.cleared_at = None
+            if payload.status == "resolved" and event.cleared_at is None:
+                event.cleared_at = payload.cleared_at or datetime.now(timezone.utc)
+            elif payload.status != "resolved" and payload.cleared_at is None:
+                event.cleared_at = None
 
     if payload.priority is not None:
-        changes["old_priority"] = event.priority
-        changes["new_priority"] = payload.priority
-        event.priority = payload.priority
+        if payload.priority != event.priority:
+            changes["old_priority"] = event.priority
+            changes["new_priority"] = payload.priority
+            event.priority = payload.priority
 
     if payload.cleared_at is not None:
         event.cleared_at = payload.cleared_at
@@ -288,5 +301,12 @@ async def update_emergency_event(
 
     if event.incident and hasattr(event.incident, "intersection_id"):
         setattr(event, "intersection_id", event.incident.intersection_id)
+
+    if "old_status" in changes and changes["old_status"] != event.status:
+        await emit_emergency_updated(
+            event_id=event.id,
+            old_status=str(changes["old_status"]),
+            new_status=event.status,
+        )
 
     return event

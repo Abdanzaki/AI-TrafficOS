@@ -10,6 +10,7 @@ from fastapi import APIRouter
 from app.api.v1.ai_decisions import router as ai_decisions_router
 from app.api.v1.ai_predictions import router as ai_predictions_router
 from app.api.v1.analytics import router as analytics_router
+from app.api.v1.assistant import router as assistant_router
 from app.api.v1.audit import router as audit_router
 from app.api.v1.auth import router as auth_router
 from app.api.v1.control import router as control_router
@@ -66,6 +67,9 @@ router.include_router(control_router)
 
 # Mount vision router under v1 prefix
 router.include_router(vision_router)
+
+# Mount assistant router under v1 prefix
+router.include_router(assistant_router)
 
 
 @router.get("/health")

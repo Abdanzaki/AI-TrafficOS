@@ -25,6 +25,7 @@ from app.api.v1.auth import get_client_ip
 from app.core.audit import log_audit
 from app.core.database import get_db
 from app.models.ai import AIDecision, AIPrediction
+from app.realtime import emit_control_decision
 from app.models.auth import User
 from app.models.emergency import EmergencyEvent
 from app.models.event import Incident
@@ -225,6 +226,13 @@ async def create_recommendation(
     )
     await db.commit()
 
+    await emit_control_decision(
+        decision_id=decision.id,
+        decision_type=decision.action.value,
+        junction_id=decision.intersection_id,
+        summary=decision.reason,
+    )
+
     return DecisionResponse(
         id=decision.id,
         intersection_id=decision.intersection_id,
@@ -373,6 +381,13 @@ async def optimize_signals(
     )
     await db.commit()
 
+    await emit_control_decision(
+        decision_id=None,
+        decision_type="signal_optimization",
+        junction_id=payload.intersection_id,
+        summary=f"Optimized signal timings for junction {payload.intersection_id} via {opt_result.method}",
+    )
+
     return OptimizeSignalsResponse(
         intersection_id=payload.intersection_id,
         recommended_green_s=opt_result.recommended_green_s,
@@ -517,6 +532,13 @@ async def emergency_prioritize(
     )
     await db.commit()
 
+    await emit_control_decision(
+        decision_id=emergency_dec.decision.id,
+        decision_type=emergency_dec.decision.action.value,
+        junction_id=payload.destination_intersection_id,
+        summary=f"Emergency green wave preemption corridor {emergency_dec.corridor_plan.corridor_id}",
+    )
+
     cp = emergency_dec.corridor_plan
     return EmergencyPrioritizeResponse(
         decision_id=emergency_dec.decision.id,
@@ -588,6 +610,13 @@ async def emergency_restore(
         ip_address=client_ip,
     )
     await db.commit()
+
+    await emit_control_decision(
+        decision_id=restore_dec.id,
+        decision_type=restore_dec.action.value,
+        junction_id=None,
+        summary=restore_dec.reason,
+    )
 
     return EmergencyRestoreResponse(
         decision_id=restore_dec.id,
@@ -879,6 +908,13 @@ async def apply_decision(
     await db.commit()
     await db.refresh(updated)
 
+    await emit_control_decision(
+        decision_id=updated.id,
+        decision_type=updated.decision_type,
+        junction_id=updated.intersection_id,
+        summary=f"Decision {updated.id} applied: {updated.rationale or updated.decision_type}",
+    )
+
     return DecisionItemResponse(
         id=updated.id,
         intersection_id=updated.intersection_id,
@@ -935,6 +971,13 @@ async def revert_decision(
     )
     await db.commit()
     await db.refresh(updated)
+
+    await emit_control_decision(
+        decision_id=updated.id,
+        decision_type=updated.decision_type,
+        junction_id=updated.intersection_id,
+        summary=f"Decision {updated.id} reverted",
+    )
 
     return DecisionItemResponse(
         id=updated.id,

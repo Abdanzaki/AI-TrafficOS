@@ -16,6 +16,7 @@ from app.core.database import get_db
 from app.models.auth import User
 from app.models.intersection import Intersection
 from app.models.signal import Signal, SignalPhase
+from app.realtime import emit_signal_change
 from app.schemas.signal import (
     PaginatedSignals,
     SignalCreate,
@@ -140,6 +141,14 @@ async def create_signal(
     await db.commit()
     await db.refresh(signal)
 
+    await emit_signal_change(
+        signal_id=signal.id,
+        intersection_id=signal.intersection_id,
+        previous_state=None,
+        new_state=signal.status,
+        change_kind="create",
+    )
+
     return signal
 
 
@@ -198,6 +207,8 @@ async def update_signal(
         )
 
     update_data = payload.model_dump(exclude_unset=True)
+    old_status = signal.status
+    old_observed_state = signal.observed_state
 
     # Validate updated intersection if present
     if "intersection_id" in update_data and update_data["intersection_id"] != signal.intersection_id:
@@ -241,6 +252,24 @@ async def update_signal(
     await db.refresh(signal)
     signal.phases.sort(key=lambda p: (p.phase_order, p.id))
 
+    # Real-time event publishing hook: emit only if state actually changed
+    if signal.status != old_status:
+        await emit_signal_change(
+            signal_id=signal.id,
+            intersection_id=signal.intersection_id,
+            previous_state=old_status,
+            new_state=signal.status,
+            change_kind="update",
+        )
+    elif signal.observed_state != old_observed_state:
+        await emit_signal_change(
+            signal_id=signal.id,
+            intersection_id=signal.intersection_id,
+            previous_state=old_observed_state,
+            new_state=signal.observed_state,
+            change_kind="update",
+        )
+
     return signal
 
 
@@ -265,6 +294,10 @@ async def delete_signal(
             detail="Signal not found",
         )
 
+    deleted_signal_id = signal.id
+    deleted_intersection_id = signal.intersection_id
+    old_status = signal.status
+
     client_ip = get_client_ip(request)
     await log_audit(
         db=db,
@@ -277,6 +310,14 @@ async def delete_signal(
     )
     await db.delete(signal)
     await db.commit()
+
+    await emit_signal_change(
+        signal_id=deleted_signal_id,
+        intersection_id=deleted_intersection_id,
+        previous_state=old_status,
+        new_state="deleted",
+        change_kind="delete",
+    )
 
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
@@ -307,6 +348,10 @@ async def override_signal(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Signal not found",
         )
+
+    active_before = next((p for p in signal.phases if p.is_active), None)
+    active_state_before = active_before.state if active_before else None
+    active_id_before = active_before.id if active_before else None
 
     if payload.phase_id is not None:
         target_phase = next((p for p in signal.phases if p.id == payload.phase_id), None)
@@ -355,6 +400,19 @@ async def override_signal(
     await db.commit()
     await db.refresh(signal)
     signal.phases.sort(key=lambda p: (p.phase_order, p.id))
+
+    active_after = next((p for p in signal.phases if p.is_active), None)
+    active_state_after = active_after.state if active_after else None
+    active_id_after = active_after.id if active_after else None
+
+    if active_id_before != active_id_after or active_state_before != active_state_after:
+        await emit_signal_change(
+            signal_id=signal.id,
+            intersection_id=signal.intersection_id,
+            previous_state=active_state_before,
+            new_state=active_state_after,
+            change_kind="override",
+        )
 
     return signal
 
@@ -419,6 +477,14 @@ async def create_signal_phase(
     await db.commit()
     await db.refresh(phase)
 
+    await emit_signal_change(
+        signal_id=phase.signal_id,
+        intersection_id=phase.intersection_id or intersection_id,
+        previous_state=None,
+        new_state=phase.state,
+        change_kind="phase_create",
+    )
+
     return phase
 
 
@@ -469,6 +535,9 @@ async def update_phase(
         )
 
     update_data = payload.model_dump(exclude_unset=True)
+    old_state = phase.state
+    old_active = phase.is_active
+
     if "intersection_id" in update_data and update_data["intersection_id"] is not None:
         if update_data["intersection_id"] != phase.intersection_id:
             inter_stmt = select(Intersection).where(Intersection.id == update_data["intersection_id"])
@@ -496,6 +565,15 @@ async def update_phase(
     await db.commit()
     await db.refresh(phase)
 
+    if phase.state != old_state or phase.is_active != old_active:
+        await emit_signal_change(
+            signal_id=phase.signal_id,
+            intersection_id=phase.intersection_id or 0,
+            previous_state=old_state,
+            new_state=phase.state,
+            change_kind="phase_update",
+        )
+
     return phase
 
 
@@ -519,6 +597,10 @@ async def delete_phase(
             detail="Signal phase not found",
         )
 
+    phase_signal_id = phase.signal_id
+    phase_intersection_id = phase.intersection_id or 0
+    phase_old_state = phase.state
+
     client_ip = get_client_ip(request)
     await log_audit(
         db=db,
@@ -531,6 +613,14 @@ async def delete_phase(
     )
     await db.delete(phase)
     await db.commit()
+
+    await emit_signal_change(
+        signal_id=phase_signal_id,
+        intersection_id=phase_intersection_id,
+        previous_state=phase_old_state,
+        new_state="deleted",
+        change_kind="phase_delete",
+    )
 
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 

@@ -2,7 +2,7 @@
 
 import logging
 import math
-from typing import Optional
+from typing import Any, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from sqlalchemy import func, or_, select
@@ -14,6 +14,7 @@ from app.core.audit import log_audit
 from app.core.database import get_db
 from app.models.auth import User
 from app.models.notification import Notification
+from app.realtime import emit_notification_created
 from app.schemas.notification import (
     NotificationBroadcastCreate,
     NotificationCreate,
@@ -128,6 +129,64 @@ async def mark_notification_read(
     return notification
 
 
+async def create_notification(
+    db: AsyncSession,
+    *,
+    user_id: Optional[int],
+    title: str,
+    message: str,
+    severity: str,
+    entity_type: Optional[str] = None,
+    entity_id: Optional[int] = None,
+    actor_user_id: Optional[int] = None,
+    client_ip: Optional[str] = None,
+    audit_action: str = "notification.created",
+    audit_details: Optional[dict[str, Any]] = None,
+) -> Notification:
+    """Shared notification creation helper.
+
+    Guarantees:
+    - Persists Notification record to database.
+    - Emits audit log entry.
+    - Commits transaction and refreshes model.
+    - Emits real-time notification.created event exactly once across all creation paths.
+    """
+    notification = Notification(
+        user_id=user_id,
+        title=title,
+        message=message,
+        severity=severity,
+        entity_type=entity_type,
+        entity_id=entity_id,
+        is_read=False,
+    )
+    db.add(notification)
+    await db.flush()
+
+    if actor_user_id is not None:
+        await log_audit(
+            db=db,
+            action=audit_action,
+            actor_user_id=actor_user_id,
+            entity_type="notification",
+            entity_id=notification.id,
+            details=audit_details or {"title": notification.title, "severity": notification.severity},
+            ip_address=client_ip,
+        )
+
+    await db.commit()
+    await db.refresh(notification)
+
+    # Real-time event publishing hook: emit notification.created delta
+    await emit_notification_created(
+        notification_id=notification.id,
+        severity=notification.severity,
+        title=notification.title,
+    )
+
+    return notification
+
+
 @router.post(
     "/broadcast",
     response_model=NotificationResponse,
@@ -141,32 +200,19 @@ async def create_broadcast_notification(
     current_user: User = Depends(require_roles("admin")),
 ) -> Notification:
     """Broadcast an alert system-wide across all platform operators (user_id is NULL)."""
-    notification = Notification(
+    return await create_notification(
+        db=db,
         user_id=None,
         title=payload.title,
         message=payload.message,
         severity=payload.severity,
         entity_type=payload.entity_type,
         entity_id=payload.entity_id,
-        is_read=False,
-    )
-    db.add(notification)
-    await db.flush()
-
-    client_ip = get_client_ip(request)
-    await log_audit(
-        db=db,
-        action="notification.broadcast",
         actor_user_id=current_user.id,
-        entity_type="notification",
-        entity_id=notification.id,
-        details={"title": notification.title, "severity": notification.severity},
-        ip_address=client_ip,
+        client_ip=get_client_ip(request),
+        audit_action="notification.broadcast",
+        audit_details={"title": payload.title, "severity": payload.severity},
     )
-    await db.commit()
-    await db.refresh(notification)
-
-    return notification
 
 
 @router.post(
@@ -189,32 +235,19 @@ async def create_targeted_notification(
             detail=f"Target user with id {payload.user_id} not found",
         )
 
-    notification = Notification(
+    return await create_notification(
+        db=db,
         user_id=payload.user_id,
         title=payload.title,
         message=payload.message,
         severity=payload.severity,
         entity_type=payload.entity_type,
         entity_id=payload.entity_id,
-        is_read=False,
-    )
-    db.add(notification)
-    await db.flush()
-
-    client_ip = get_client_ip(request)
-    await log_audit(
-        db=db,
-        action="notification.created",
         actor_user_id=current_user.id,
-        entity_type="notification",
-        entity_id=notification.id,
-        details={"title": notification.title, "target_user_id": notification.user_id},
-        ip_address=client_ip,
+        client_ip=get_client_ip(request),
+        audit_action="notification.created",
+        audit_details={"title": payload.title, "target_user_id": payload.user_id},
     )
-    await db.commit()
-    await db.refresh(notification)
-
-    return notification
 
 
 @router.get(

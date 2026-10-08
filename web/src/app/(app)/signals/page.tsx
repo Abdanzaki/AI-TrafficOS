@@ -24,6 +24,7 @@ import {
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/lib/auth";
 import { useApiQuery, useApiMutation } from "@/lib/use-api";
+import { useTopic } from "@/lib/realtime";
 import { Card } from "@/components/ui/Card";
 import { Badge, type BadgeVariant } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -187,7 +188,15 @@ export default function SignalsPage() {
   const [actionSuccess, setActionSuccess] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
 
+  // Real-time invalidations: signal.change updates signal states, phases, and vision observations
+  useTopic("signal.change", () => {
+    queryClient.invalidateQueries({ queryKey: ["signals-for-junction"] });
+    queryClient.invalidateQueries({ queryKey: ["signal-detail"] });
+    queryClient.invalidateQueries({ queryKey: ["vision-observations"] });
+  });
+
   // --- 1. Fetch Junctions List ---
+  // No WS topic for junctions-list; polling retained intentionally
   const {
     data: junctionsData,
     isLoading: junctionsLoading,
@@ -227,7 +236,6 @@ export default function SignalsPage() {
     params: selectedJunctionId ? { intersection_id: selectedJunctionId, per_page: 50 } : undefined,
     queryOptions: {
       enabled: selectedJunctionId !== null,
-      refetchInterval: 10000,
     },
   });
 
@@ -255,7 +263,6 @@ export default function SignalsPage() {
     endpoint: selectedSignalId ? `/signals/${selectedSignalId}` : "/signals/0",
     queryOptions: {
       enabled: selectedSignalId !== null,
-      refetchInterval: 5000,
     },
   });
 
@@ -295,7 +302,6 @@ export default function SignalsPage() {
     params: selectedJunctionId ? { intersection_id: selectedJunctionId, per_page: 20 } : undefined,
     queryOptions: {
       enabled: selectedJunctionId !== null,
-      refetchInterval: 10000,
     },
   });
 

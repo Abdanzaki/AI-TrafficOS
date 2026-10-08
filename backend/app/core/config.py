@@ -6,7 +6,7 @@ Provides production defaults for Phase 1 architecture foundation.
 
 import json
 from pathlib import Path
-from typing import Any, Union
+from typing import Any, Optional, Union
 
 from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -26,6 +26,10 @@ class Settings(BaseSettings):
     SECRET_KEY: str = "dev-secret-key-change-in-production-trafficos-2026"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
+
+    # AI Assistant Configuration (Phase 9 Stage 4)
+    ASSISTANT_LLM_PROVIDER: str = "deterministic"
+    ASSISTANT_LLM_API_KEY: Optional[str] = None
 
     @field_validator("CORS_ORIGINS", mode="before")
     @classmethod

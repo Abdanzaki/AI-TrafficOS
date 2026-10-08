@@ -17,6 +17,7 @@ from app.core.database import get_db
 from app.models.auth import User
 from app.models.event import Incident
 from app.models.intersection import Intersection
+from app.realtime import emit_incident_created, emit_incident_updated
 from app.schemas.incident import (
     VALID_INCIDENT_STATUSES,
     IncidentCreate,
@@ -172,6 +173,13 @@ async def create_incident(
     await db.commit()
     await db.refresh(incident)
 
+    await emit_incident_created(
+        incident_id=incident.id,
+        severity=incident.severity,
+        intersection_id=incident.intersection_id,
+        status=incident.status,
+    )
+
     return incident
 
 
@@ -298,6 +306,13 @@ async def update_incident(
     )
     await db.commit()
     await db.refresh(incident)
+
+    if "old_status" in changes and changes["old_status"] != incident.status:
+        await emit_incident_updated(
+            incident_id=incident.id,
+            old_status=str(changes["old_status"]),
+            new_status=incident.status,
+        )
 
     return incident
 

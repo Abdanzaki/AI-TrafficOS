@@ -20,6 +20,7 @@ from app.core.audit import log_audit
 from app.core.database import get_db
 from app.models.auth import User
 from app.models.ml import MLModel
+from app.realtime import emit_prediction_published
 from app.schemas.forecasting import (
     ModelVersionInfo,
     PredictBatchResponse,
@@ -148,6 +149,16 @@ async def generate_predictions(
         },
         ip_address=client_ip,
     )
+
+    if predictions:
+        model_ver = predictions[0].get("model_version", "unknown")
+        pred_junction_ids = [r["intersection_id"] for r in predictions]
+        await emit_prediction_published(
+            model_version=model_ver,
+            horizon_minutes=30,
+            junction_ids=pred_junction_ids,
+            generated_at=datetime.now(timezone.utc).isoformat(),
+        )
 
     return {
         "predictions": predictions,

@@ -4,6 +4,7 @@ Provides the application factory create_app(), lifespan context manager,
 CORS middleware, and mounts API v1 routing including WebSocket endpoints.
 """
 
+import asyncio
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 
@@ -17,6 +18,12 @@ from app.api.v1.router import router as v1_router
 from app.core.config import settings
 from app.core.database import engine
 from app.core.logging import get_logger, setup_logging
+from app.realtime import (
+    emit_system_status,
+    get_bus,
+    handle_websocket_stream,
+    stream_manager,
+)
 
 setup_logging()
 logger = get_logger(__name__)
@@ -25,10 +32,25 @@ logger = get_logger(__name__)
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Asynchronous lifespan context manager for startup and shutdown events."""
-    # Startup: Database engines and connection pools initialized lazily
-    yield
-    # Shutdown: Cleanly dispose of the async database engine pool
-    await engine.dispose()
+    # Startup: Initialize EventBus (degraded-mode tolerant); DB engine connects lazily
+    bus = get_bus()
+    await bus.connect()
+    # Shared Redis pub/sub subscriber task running for the lifetime of the process
+    fanout_task = asyncio.create_task(stream_manager.run_fanout(bus))
+    # Real-time event publishing hook: broadcast online system status on startup
+    await emit_system_status(status="online", service="ai-trafficos")
+    try:
+        yield
+    finally:
+        # Shutdown: Cancel fanout task, close active streams, close bus, dispose db engine
+        fanout_task.cancel()
+        try:
+            await fanout_task
+        except asyncio.CancelledError:
+            pass
+        await stream_manager.close_all()
+        await bus.close()
+        await engine.dispose()
 
 
 def create_app() -> FastAPI:
@@ -112,17 +134,15 @@ def create_app() -> FastAPI:
             "version": "0.1.0",
         }
 
+    @app.websocket("/ws/v1/stream")
+    async def root_ws_v1_stream(websocket: WebSocket) -> None:
+        """Primary Phase 9 real-time WebSocket streaming endpoint."""
+        await handle_websocket_stream(websocket, is_deprecated=False)
+
     @app.websocket("/ws")
-    async def root_ws(websocket: WebSocket):
-        await websocket.accept()
-        await websocket.send_json(
-            {
-                "type": "handshake",
-                "status": "connected",
-                "note": "Phase 1: no live traffic streams yet",
-            }
-        )
-        await websocket.close(code=1000)
+    async def root_ws(websocket: WebSocket) -> None:
+        """Deprecated root WebSocket alias for /ws/v1/stream."""
+        await handle_websocket_stream(websocket, is_deprecated=True)
 
     @app.get("/docs", include_in_schema=False)
     async def redirect_docs():

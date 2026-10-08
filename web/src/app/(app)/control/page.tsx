@@ -33,6 +33,7 @@ import {
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/lib/auth";
 import { useApiQuery, useApiMutation } from "@/lib/use-api";
+import { useTopic } from "@/lib/realtime";
 import { Card } from "@/components/ui/Card";
 import { Badge, type BadgeVariant } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -343,7 +344,29 @@ export default function ControlPage() {
   const [feedbackSuccess, setFeedbackSuccess] = useState<string | null>(null);
   const [feedbackError, setFeedbackError] = useState<string | null>(null);
 
+  // Real-time invalidations: control.decision, signal.change, emergency.* update control queries
+  useTopic("control.decision", () => {
+    queryClient.invalidateQueries({ queryKey: ["junction-control-status"] });
+    queryClient.invalidateQueries({ queryKey: ["control-decisions"] });
+  });
+
+  useTopic("signal.change", () => {
+    queryClient.invalidateQueries({ queryKey: ["junction-control-status"] });
+    queryClient.invalidateQueries({ queryKey: ["control-decisions"] });
+  });
+
+  useTopic("emergency.created", () => {
+    queryClient.invalidateQueries({ queryKey: ["emergency-events-active"] });
+    queryClient.invalidateQueries({ queryKey: ["junction-control-status"] });
+  });
+
+  useTopic("emergency.updated", () => {
+    queryClient.invalidateQueries({ queryKey: ["emergency-events-active"] });
+    queryClient.invalidateQueries({ queryKey: ["junction-control-status"] });
+  });
+
   // --- 1. Fetch Junctions List ---
+  // No WS topic for junctions-list; polling retained intentionally
   const {
     data: junctionsData,
     isLoading: junctionsLoading,
@@ -385,7 +408,6 @@ export default function ControlPage() {
       : "/control/junctions/0/control-status",
     queryOptions: {
       enabled: selectedJunctionId !== null,
-      refetchInterval: 10000,
     },
   });
 
@@ -408,9 +430,6 @@ export default function ControlPage() {
     queryKey: ["control-decisions", junctionFilter, selectedJunctionId],
     endpoint: "/control/decisions",
     params: decisionsParams,
-    queryOptions: {
-      refetchInterval: 10000,
-    },
   });
 
   // Filter decisions by status on client
@@ -445,9 +464,6 @@ export default function ControlPage() {
     queryKey: ["emergency-events-active"],
     endpoint: "/emergency-events",
     params: { status: "active", per_page: 50 },
-    queryOptions: {
-      refetchInterval: 15000,
-    },
   });
 
   useEffect(() => {

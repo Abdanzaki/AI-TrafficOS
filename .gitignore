@@ -56,6 +56,9 @@ out/
 .dart_tool/
 !mobile/lib/
 
+# Web (root lib/ rule would otherwise ignore web/src/lib/)
+!web/src/lib/
+
 # IDE & OS
 .DS_Store
 .idea/

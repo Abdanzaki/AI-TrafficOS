@@ -18,6 +18,7 @@ from app.models.auth import User
 from app.models.event import VehicleEvent
 from app.models.intersection import Intersection
 from app.models.road import Lane
+from app.realtime import emit_traffic_update
 from app.schemas.vehicle_event import (
     PaginatedVehicleEvents,
     VehicleEventBatchCreate,
@@ -257,6 +258,18 @@ async def batch_ingest_vehicle_events(
         ip_address=client_ip,
     )
     await db.commit()
+
+    junction_ids = sorted(list({r["intersection_id"] for r in records if r["intersection_id"] is not None}))
+    dates = [r["detected_at"] for r in records if r["detected_at"] is not None]
+    window_start = min(dates).isoformat() if dates else None
+    window_end = max(dates).isoformat() if dates else None
+
+    await emit_traffic_update(
+        batch_size=len(records),
+        junction_ids=junction_ids,
+        window_start=window_start,
+        window_end=window_end,
+    )
 
     return VehicleEventBatchResponse(
         inserted=len(records),

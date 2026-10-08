@@ -43,6 +43,7 @@ from app.models.event import Incident, VehicleEvent
 from app.models.intersection import Intersection
 from app.models.road import Lane
 from app.models.signal import Signal
+from app.realtime import emit_congestion_change
 from app.models.traffic import TrafficRecord
 from app.schemas.vision import (
     DetectionSummaryItem,
@@ -296,6 +297,11 @@ async def analyze_image(
 
         if intersection_id is not None or signal_id is not None:
             await db.commit()
+            if intersection_id is not None:
+                await emit_congestion_change(
+                    junction_id=intersection_id,
+                    congestion_level=congestion.congestion_level,
+                )
 
         # 11. Format response summary
         detection_summaries = [
@@ -551,6 +557,12 @@ async def analyze_video(
 
         if intersection_id is not None or created_incidents:
             await db.commit()
+            if intersection_id is not None and sampled_results:
+                mean_cong_val = int(round(float(np.mean([compute_congestion_score(r.metrics).congestion_level for r in sampled_results]))))
+                await emit_congestion_change(
+                    junction_id=intersection_id,
+                    congestion_level=mean_cong_val,
+                )
 
         # 9. Compute global summary values
         mean_veh = float(np.mean([r.metrics.total_vehicles for r in sampled_results])) if sampled_results else 0.0

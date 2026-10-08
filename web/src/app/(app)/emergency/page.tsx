@@ -30,6 +30,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { useApiQuery, useApiMutation } from "@/lib/use-api";
+import { useTopic } from "@/lib/realtime";
 import { Card } from "@/components/ui/Card";
 import { Badge, type BadgeVariant } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -254,6 +255,15 @@ export default function EmergencyPage() {
     return params;
   }, [page, perPage, statusFilter, priorityFilter]);
 
+  // Real-time invalidations: emergency.created and emergency.updated update emergency events list (replaces 15s poll)
+  useTopic("emergency.created", () => {
+    queryClient.invalidateQueries({ queryKey: ["emergency-events-list"] });
+  });
+
+  useTopic("emergency.updated", () => {
+    queryClient.invalidateQueries({ queryKey: ["emergency-events-list"] });
+  });
+
   const {
     data: eventsData,
     isLoading,
@@ -265,9 +275,6 @@ export default function EmergencyPage() {
     queryKey: ["emergency-events-list", page, perPage, statusFilter, priorityFilter],
     endpoint: "/emergency-events",
     params: queryParams,
-    queryOptions: {
-      refetchInterval: 15000,
-    },
   });
 
   // Mutations

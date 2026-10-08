@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/signal.dart';
+import '../providers/realtime_providers.dart';
 import '../services/auth_service.dart';
+import '../services/realtime_protocol.dart';
 import '../services/signal_service.dart';
 import '../theme/app_tokens.dart';
 import '../widgets/app_badge.dart';
@@ -35,11 +37,13 @@ class _SignalDetailScreenState extends ConsumerState<SignalDetailScreen> {
     _loadSignal();
   }
 
-  Future<void> _loadSignal() async {
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
+  Future<void> _loadSignal({bool isBackgroundRefresh = false}) async {
+    if (!isBackgroundRefresh) {
+      setState(() {
+        _isLoading = true;
+        _errorMessage = null;
+      });
+    }
 
     try {
       final signalService = ref.read(signalServiceProvider);
@@ -62,6 +66,16 @@ class _SignalDetailScreenState extends ConsumerState<SignalDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Real-time WebSocket invalidation: refresh signal detail on signal.change
+    ref.listen(
+      realtimeTopicEventProvider(RealtimeTopics.signalChange),
+      (_, next) {
+        if (next.hasValue) {
+          _loadSignal(isBackgroundRefresh: true);
+        }
+      },
+    );
+
     final theme = Theme.of(context);
     final user = ref.watch(currentUserProvider);
     final isAnalyst = user?.isAnalyst ?? false;

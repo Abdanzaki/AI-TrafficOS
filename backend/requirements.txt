@@ -33,3 +33,6 @@ pillow>=10.0.0
 pandas==3.0.6
 scikit-learn==1.9.1
 
+# Phase 9 Real-time
+redis>=5.0
+

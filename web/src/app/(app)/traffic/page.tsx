@@ -22,8 +22,10 @@ import {
   X,
   Filter,
 } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useApiQuery, useApiMutation } from "@/lib/use-api";
 import { useAuth } from "@/lib/auth";
+import { useTopic } from "@/lib/realtime";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -143,6 +145,7 @@ interface CreateRecordPayload {
 }
 
 export default function TrafficPage() {
+  const queryClient = useQueryClient();
   const { user, canWrite } = useAuth();
   const [activeTab, setActiveTab] = useState<ActiveTab>("overview");
   const [timeRange, setTimeRange] = useState<TimeRange>("24h");
@@ -194,7 +197,21 @@ export default function TrafficPage() {
     };
   }, [timeRange]);
 
+  // Real-time invalidations: traffic.update and congestion.change update traffic telemetry
+  useTopic("traffic.update", () => {
+    queryClient.invalidateQueries({ queryKey: ["traffic-summary"] });
+    queryClient.invalidateQueries({ queryKey: ["vehicle-events-traffic"] });
+    queryClient.invalidateQueries({ queryKey: ["traffic-records-list"] });
+  });
+
+  useTopic("congestion.change", () => {
+    queryClient.invalidateQueries({ queryKey: ["traffic-summary"] });
+    queryClient.invalidateQueries({ queryKey: ["congestion-hotspots-summary"] });
+    queryClient.invalidateQueries({ queryKey: ["traffic-records-list"] });
+  });
+
   // Fetch junctions list for filtering
+  // No WS topic for junctions-filter-list; polling retained intentionally
   const {
     data: junctionsData,
   } = useApiQuery<PaginatedJunctions>({
@@ -228,9 +245,6 @@ export default function TrafficPage() {
     queryKey: ["traffic-summary", summaryParams],
     endpoint: "/analytics/traffic-summary",
     params: summaryParams,
-    queryOptions: {
-      refetchInterval: 30000,
-    },
   });
 
   // Fetch vehicle detection events for classification & live feed
@@ -255,9 +269,6 @@ export default function TrafficPage() {
     queryKey: ["vehicle-events-traffic", eventParams],
     endpoint: "/vehicle-events",
     params: eventParams,
-    queryOptions: {
-      refetchInterval: 30000,
-    },
   });
 
   // Fetch top congestion hotspots
@@ -268,9 +279,6 @@ export default function TrafficPage() {
     queryKey: ["congestion-hotspots-summary", fromIso, toIso],
     endpoint: "/analytics/congestion-hotspots",
     params: { from: fromIso, to: toIso, limit: 5 },
-    queryOptions: {
-      refetchInterval: 30000,
-    },
   });
 
   // Fetch paginated raw telemetry records from /traffic-records
@@ -297,9 +305,6 @@ export default function TrafficPage() {
     queryKey: ["traffic-records-list", recordsQueryParams],
     endpoint: "/traffic-records",
     params: recordsQueryParams,
-    queryOptions: {
-      refetchInterval: 30000,
-    },
   });
 
   // Mutation for creating a traffic record (Officer/Admin only)

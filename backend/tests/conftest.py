@@ -63,21 +63,29 @@ async def test_users(async_client: AsyncClient) -> dict[str, dict[str, str | int
     else:
         async with AsyncSessionLocal() as db:
             admin_role = (await db.execute(select(Role).where(Role.name == "admin"))).scalars().first()
-            admin_u = User(
-                email=f"admin_{uid}@trafficos.io",
-                hashed_password=hash_password(password),
-                full_name="Test Admin",
-                role_id=admin_role.id,
-                is_active=True,
-            )
-            db.add(admin_u)
-            await db.commit()
-            await db.refresh(admin_u)
-            admin_id = admin_u.id
+            existing_admin = (await db.execute(select(User).where(User.email == admin_email))).scalars().first()
+            if not existing_admin:
+                admin_u = User(
+                    email=admin_email,
+                    hashed_password=hash_password("adminpassword123"),
+                    full_name="Test Admin",
+                    role_id=admin_role.id,
+                    is_active=True,
+                )
+                db.add(admin_u)
+                await db.commit()
+                await db.refresh(admin_u)
+                admin_id = admin_u.id
+            else:
+                existing_admin.hashed_password = hash_password("adminpassword123")
+                existing_admin.is_active = True
+                await db.commit()
+                await db.refresh(existing_admin)
+                admin_id = existing_admin.id
 
         admin_login = await async_client.post(
             "/api/v1/auth/login",
-            json={"email": f"admin_{uid}@trafficos.io", "password": password},
+            json={"email": admin_email, "password": "adminpassword123"},
         )
         admin_token = admin_login.json()["access_token"]
 

@@ -10,7 +10,11 @@ import '../widgets/empty_state.dart';
 import '../widgets/offline_banner.dart';
 import '../widgets/require_role.dart';
 import '../services/notification_service.dart';
+import '../providers/realtime_providers.dart';
+import '../services/realtime_protocol.dart';
+import '../widgets/connection_status_chip.dart';
 import 'analytics_screen.dart';
+import 'assistant_screen.dart';
 import 'audit_screen.dart';
 import 'control_screen.dart';
 import 'dashboard_screen.dart';
@@ -137,6 +141,19 @@ class _ShellScreenState extends ConsumerState<ShellScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Activate real-time lifecycle: connects on auth, disconnects on sign-out, halts on 4401
+    ref.watch(realtimeLifecycleProvider);
+
+    // Invalidate unread notification count on real-time notification events
+    ref.listen(
+      realtimeTopicEventProvider(RealtimeTopics.notificationCreated),
+      (_, next) {
+        if (next.hasValue) {
+          ref.invalidate(unreadNotificationCountProvider);
+        }
+      },
+    );
+
     final user = ref.watch(currentUserProvider);
     final theme = Theme.of(context);
 
@@ -162,6 +179,7 @@ class _ShellScreenState extends ConsumerState<ShellScreen> {
                 _buildTrafficTab(context),
                 _buildMapTab(context),
                 _buildIncidentsTab(context),
+                _buildAssistantTab(context),
                 _buildMoreTab(context, user),
               ],
             ),
@@ -195,6 +213,11 @@ class _ShellScreenState extends ConsumerState<ShellScreen> {
             icon: Icon(Icons.warning_amber_outlined),
             selectedIcon: Icon(Icons.warning_amber_rounded),
             label: 'Incidents',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.smart_toy_outlined),
+            selectedIcon: Icon(Icons.smart_toy_rounded),
+            label: 'Assistant',
           ),
           NavigationDestination(
             icon: Icon(Icons.more_horiz_outlined),
@@ -255,6 +278,8 @@ class _ShellScreenState extends ConsumerState<ShellScreen> {
       ),
       actions: [
         if (user != null) ...[
+          const ConnectionStatusChip(),
+          const SizedBox(width: AppTokens.spaceXs),
           Consumer(
             builder: (context, ref, _) {
               final unreadAsync = ref.watch(unreadNotificationCountProvider);
@@ -424,6 +449,8 @@ class _ShellScreenState extends ConsumerState<ShellScreen> {
       case 3:
         return 'Incidents & Alerts';
       case 4:
+        return 'AI Assistant';
+      case 5:
         return 'System Modules';
       default:
         return '';
@@ -434,10 +461,18 @@ class _ShellScreenState extends ConsumerState<ShellScreen> {
     return DashboardScreen(
       onNavigateTab: (tabIndex) {
         setState(() {
-          _currentIndex = tabIndex.clamp(0, 4);
+          _currentIndex = tabIndex.clamp(0, 5);
         });
       },
     );
+  }
+
+  /// The Assistant destination is available to all authenticated roles in navigation.
+  /// The server enforces role authorization (returning 403 Forbidden for
+  /// restricted roles, e.g. read-only analyst), which AssistantScreen handles
+  /// via its in-screen restriction panel.
+  Widget _buildAssistantTab(BuildContext context) {
+    return const AssistantScreen();
   }
 
   Widget _buildTrafficTab(BuildContext context) {

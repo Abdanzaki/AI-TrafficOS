@@ -5,10 +5,12 @@ import '../models/hotspot.dart';
 import '../models/incident.dart';
 import '../models/traffic_summary.dart';
 import '../models/user.dart';
+import '../providers/realtime_providers.dart';
 import '../services/api_client.dart';
 import '../services/auth_service.dart';
 import '../services/incident_service.dart';
 import '../services/junction_service.dart';
+import '../services/realtime_protocol.dart';
 import '../services/traffic_service.dart';
 import '../theme/app_tokens.dart';
 import '../widgets/app_badge.dart';
@@ -49,11 +51,13 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     _loadAllDashboardData();
   }
 
-  Future<void> _loadAllDashboardData() async {
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
+  Future<void> _loadAllDashboardData({bool isBackgroundRefresh = false}) async {
+    if (!isBackgroundRefresh) {
+      setState(() {
+        _isLoading = true;
+        _errorMessage = null;
+      });
+    }
 
     try {
       final trafficService = ref.read(trafficServiceProvider);
@@ -118,6 +122,22 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Real-time WebSocket invalidation: on traffic, congestion, signal, or incident events,
+    // seamlessly refresh telemetry and operational metrics
+    for (final topic in const [
+      RealtimeTopics.trafficUpdate,
+      RealtimeTopics.congestionChange,
+      RealtimeTopics.signalChange,
+      RealtimeTopics.incidentCreated,
+      RealtimeTopics.incidentUpdated,
+    ]) {
+      ref.listen(realtimeTopicEventProvider(topic), (_, next) {
+        if (next.hasValue) {
+          _loadAllDashboardData(isBackgroundRefresh: true);
+        }
+      });
+    }
+
     final user = ref.watch(currentUserProvider);
     final theme = Theme.of(context);
 

@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/traffic_summary.dart';
 import '../models/vehicle_event.dart';
+import '../providers/realtime_providers.dart';
 import '../services/api_client.dart';
+import '../services/realtime_protocol.dart';
 import '../services/traffic_service.dart';
 import '../theme/app_tokens.dart';
 import '../widgets/app_badge.dart';
@@ -60,11 +62,13 @@ class _TrafficScreenState extends ConsumerState<TrafficScreen> {
     }
   }
 
-  Future<void> _loadSummary() async {
-    setState(() {
-      _isLoadingSummary = true;
-      _summaryError = null;
-    });
+  Future<void> _loadSummary({bool isBackgroundRefresh = false}) async {
+    if (!isBackgroundRefresh) {
+      setState(() {
+        _isLoadingSummary = true;
+        _summaryError = null;
+      });
+    }
 
     try {
       final service = ref.read(trafficServiceProvider);
@@ -85,18 +89,21 @@ class _TrafficScreenState extends ConsumerState<TrafficScreen> {
     }
   }
 
-  Future<void> _loadInitialEvents() async {
-    setState(() {
-      _eventPage = 1;
-      _isLoadingEvents = true;
-      _eventsError = null;
-    });
+  Future<void> _loadInitialEvents({bool isBackgroundRefresh = false}) async {
+    if (!isBackgroundRefresh) {
+      setState(() {
+        _eventPage = 1;
+        _isLoadingEvents = true;
+        _eventsError = null;
+      });
+    }
 
     try {
       final service = ref.read(trafficServiceProvider);
       final paged = await service.getVehicleEvents(page: 1, perPage: 20);
       if (mounted) {
         setState(() {
+          _eventPage = 1;
           _vehicleEvents.clear();
           _vehicleEvents.addAll(paged.items);
           _eventTotalPages = paged.pages;
@@ -149,6 +156,20 @@ class _TrafficScreenState extends ConsumerState<TrafficScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Real-time WebSocket invalidation: on traffic.update and congestion.change,
+    // refresh volume aggregation trends and vehicle detection feed
+    for (final topic in const [
+      RealtimeTopics.trafficUpdate,
+      RealtimeTopics.congestionChange,
+    ]) {
+      ref.listen(realtimeTopicEventProvider(topic), (_, next) {
+        if (next.hasValue) {
+          _loadSummary(isBackgroundRefresh: true);
+          _loadInitialEvents(isBackgroundRefresh: true);
+        }
+      });
+    }
+
     final theme = Theme.of(context);
 
     return RefreshIndicator(
