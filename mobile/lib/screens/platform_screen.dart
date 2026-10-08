@@ -22,7 +22,7 @@ class PlatformScreen extends StatelessWidget {
           'Operations Platform',
           style: theme.textTheme.titleLarge?.copyWith(
             fontWeight: FontWeight.w700,
-            color: AppTokens.textPrimary,
+            color: theme.colorScheme.onSurface,
           ),
         ),
       ),
@@ -30,7 +30,7 @@ class PlatformScreen extends StatelessWidget {
         child: ListView(
           padding: const EdgeInsets.all(AppTokens.spaceMd),
           children: [
-            _buildNoticeBanner(theme),
+            _buildNoticeBanner(theme, context),
             const SizedBox(height: AppTokens.spaceLg),
             const SectionHeader(
               title: 'Live Telemetry Metrics',
@@ -42,13 +42,13 @@ class PlatformScreen extends StatelessWidget {
               title: 'Corridor GIS & Camera Feed',
               subtitle: 'Synchronized intersection video stream and signal phases',
             ),
-            _buildSkeletonStreamViewport(theme),
+            _buildSkeletonStreamViewport(theme, context),
             const SizedBox(height: AppTokens.spaceLg),
             const SectionHeader(
               title: 'Active Incident Feed',
               subtitle: 'Real-time anomalies detected by Computer Vision engine',
             ),
-            _buildSkeletonIncidentList(),
+            _buildSkeletonIncidentList(context),
             const SizedBox(height: AppTokens.spaceXl),
           ],
         ),
@@ -56,30 +56,30 @@ class PlatformScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildNoticeBanner(ThemeData theme) {
+  Widget _buildNoticeBanner(ThemeData theme, BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(AppTokens.spaceMd),
       decoration: BoxDecoration(
-        color: AppTokens.surface,
+        color: theme.colorScheme.surface,
         borderRadius: AppTokens.cardBorderRadius,
         border: Border.all(
-          color: AppTokens.borderDark,
+          color: AppTokens.borderOf(context),
           width: 1,
         ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             children: [
-              AppBadge(
+              const AppBadge(
                 label: 'Phase 1 foundation',
                 color: AppTokens.teal,
               ),
-              SizedBox(width: AppTokens.spaceSm),
+              const SizedBox(width: AppTokens.spaceSm),
               AppBadge(
                 label: 'Placeholder',
-                color: AppTokens.muted,
+                color: AppTokens.mutedOf(context),
               ),
             ],
           ),
@@ -87,7 +87,7 @@ class PlatformScreen extends StatelessWidget {
           Text(
             'Operations dashboard arrives in later phases',
             style: theme.textTheme.titleSmall?.copyWith(
-              color: AppTokens.textPrimary,
+              color: theme.colorScheme.onSurface,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -95,7 +95,7 @@ class PlatformScreen extends StatelessWidget {
           Text(
             'This layout illustrates planned operational telemetry slots. In adherence to Phase 1 guidelines, no simulated numbers, fake charts, or mock streams are rendered.',
             style: theme.textTheme.bodySmall?.copyWith(
-              color: AppTokens.muted,
+              color: AppTokens.mutedOf(context),
               height: 1.4,
             ),
           ),
@@ -128,7 +128,7 @@ class PlatformScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSkeletonStreamViewport(ThemeData theme) {
+  Widget _buildSkeletonStreamViewport(ThemeData theme, BuildContext context) {
     return AppCard(
       padding: const EdgeInsets.all(AppTokens.spaceLg),
       child: Column(
@@ -137,9 +137,9 @@ class PlatformScreen extends StatelessWidget {
             height: 180,
             width: double.infinity,
             decoration: BoxDecoration(
-              color: const Color(0xFF0F1526),
+              color: theme.colorScheme.surface,
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: AppTokens.borderDark),
+              border: Border.all(color: AppTokens.borderOf(context)),
             ),
             child: Center(
               child: Column(
@@ -148,20 +148,20 @@ class PlatformScreen extends StatelessWidget {
                   Icon(
                     Icons.videocam_outlined,
                     size: 36,
-                    color: AppTokens.muted.withAlpha(120),
+                    color: AppTokens.mutedOf(context).withAlpha(120),
                   ),
                   const SizedBox(height: AppTokens.spaceSm),
                   Text(
                     'Camera Feed Viewport Slot',
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color: AppTokens.muted,
+                      color: AppTokens.mutedOf(context),
                       fontWeight: FontWeight.w500,
                     ),
                   ),
                   Text(
                     'Awaits Phase 3 CV Pipeline',
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color: AppTokens.muted.withAlpha(150),
+                      color: AppTokens.mutedOf(context).withAlpha(150),
                       fontSize: 10,
                     ),
                   ),
@@ -182,7 +182,8 @@ class PlatformScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSkeletonIncidentList() {
+  Widget _buildSkeletonIncidentList(BuildContext context) {
+    final theme = Theme.of(context);
     return Column(
       children: List.generate(3, (index) {
         return Padding(
@@ -195,9 +196,9 @@ class PlatformScreen extends StatelessWidget {
                   width: 32,
                   height: 32,
                   decoration: BoxDecoration(
-                    color: AppTokens.surface,
+                    color: theme.colorScheme.surface,
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: AppTokens.borderDark),
+                    border: Border.all(color: AppTokens.borderOf(context)),
                   ),
                   child: const Center(
                     child: _SkeletonBox(width: 14, height: 14, radius: 4),
@@ -243,7 +244,9 @@ class _SkeletonBox extends StatelessWidget {
       width: width,
       height: height,
       decoration: BoxDecoration(
-        color: const Color(0xFF202A47),
+        color: Theme.of(context).brightness == Brightness.dark
+            ? const Color(0xFF202A47)
+            : const Color(0xFFE2E8F0),
         borderRadius: BorderRadius.circular(radius),
       ),
     );

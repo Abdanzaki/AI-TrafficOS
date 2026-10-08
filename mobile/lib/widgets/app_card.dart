@@ -27,7 +27,7 @@ class AppCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final effectiveRadius = borderRadius ?? AppTokens.cardBorderRadius;
-    final effectiveColor = color ?? theme.cardTheme.color ?? AppTokens.card;
+    final effectiveColor = color ?? theme.cardTheme.color ?? AppTokens.cardOf(context);
     final effectiveBorder = borderColor ??
         (theme.brightness == Brightness.dark
             ? AppTokens.borderDark

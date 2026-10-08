@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   Radio,
   Sliders,
@@ -32,6 +33,7 @@ import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { RequireRole } from "@/components/RequireRole";
+import { Pagination } from "@/components/ui/Pagination";
 import { formatDateTime, formatSeconds, formatPercent } from "@/lib/format";
 
 // --- Domain Interfaces Matching Backend Schemas ---
@@ -161,8 +163,9 @@ function getPhaseColorStyles(state: string) {
   }
 }
 
-export default function SignalsPage() {
+function SignalsPageContent() {
   const queryClient = useQueryClient();
+  const searchParams = useSearchParams();
   const { user, isAdmin, isOfficer } = useAuth();
 
   // Selected Junction ID
@@ -173,6 +176,9 @@ export default function SignalsPage() {
 
   // Selected Phase for manual update modal/panel
   const [selectedPhaseId, setSelectedPhaseId] = useState<number | null>(null);
+
+  // Optical observations pagination
+  const [visionPage, setVisionPage] = useState<number>(1);
 
   // Form State for Manual Phase Update (PATCH)
   const [editDuration, setEditDuration] = useState<number>(30);
@@ -212,12 +218,20 @@ export default function SignalsPage() {
     },
   });
 
-  // Automatically select the first junction on initial load
+  // Automatically select the junction from searchParams or default to first
   useEffect(() => {
+    const junctionParam = searchParams.get("junction");
+    if (junctionParam) {
+      const parsed = parseInt(junctionParam, 10);
+      if (!isNaN(parsed)) {
+        setSelectedJunctionId(parsed);
+        return;
+      }
+    }
     if (!selectedJunctionId && junctionsData?.items && junctionsData.items.length > 0) {
       setSelectedJunctionId(junctionsData.items[0].id);
     }
-  }, [junctionsData, selectedJunctionId]);
+  }, [junctionsData, selectedJunctionId, searchParams]);
 
   const selectedJunction = useMemo(() => {
     return junctionsData?.items.find((j) => j.id === selectedJunctionId);
@@ -297,9 +311,9 @@ export default function SignalsPage() {
     error: visionError,
     refetch: refetchVision,
   } = useApiQuery<PaginatedSignalObservations>({
-    queryKey: ["vision-observations", selectedJunctionId],
+    queryKey: ["vision-observations", selectedJunctionId, visionPage],
     endpoint: "/vision/signal-observations",
-    params: selectedJunctionId ? { intersection_id: selectedJunctionId, per_page: 20 } : undefined,
+    params: selectedJunctionId ? { intersection_id: selectedJunctionId, page: visionPage, per_page: 20 } : undefined,
     queryOptions: {
       enabled: selectedJunctionId !== null,
     },
@@ -869,7 +883,7 @@ export default function SignalsPage() {
                               max={300}
                               value={editDuration}
                               onChange={(e) => setEditDuration(Math.max(1, Number(e.target.value)))}
-                              className="w-24 h-9 px-2.5 rounded-lg bg-surface border border-white/15 text-text font-mono text-xs focus:ring-1 focus:ring-accent focus:border-accent"
+                              className="w-24 h-9 px-2.5 rounded-lg bg-surface border border-white/15 text-text font-mono text-xs focus:ring-2 focus:ring-accent focus:border-accent"
                             />
                             <div className="flex items-center gap-1">
                               <button
@@ -953,7 +967,7 @@ export default function SignalsPage() {
                         <select
                           value={overrideState}
                           onChange={(e) => setOverrideState(e.target.value)}
-                          className="w-full h-9 px-2.5 rounded-lg bg-surface border border-white/15 text-text font-mono text-xs focus:ring-1 focus:ring-amber focus:border-amber cursor-pointer"
+                          className="w-full h-9 px-2.5 rounded-lg bg-surface border border-white/15 text-text font-mono text-xs focus:ring-2 focus:ring-amber focus:border-amber cursor-pointer"
                         >
                           <option value="green">GREEN (Force Green Light)</option>
                           <option value="yellow">YELLOW (Force Caution Clearance)</option>
@@ -970,7 +984,7 @@ export default function SignalsPage() {
                           value={overrideReason}
                           onChange={(e) => setOverrideReason(e.target.value)}
                           placeholder="e.g. Incident clearance, arterial hold, or emergency escort..."
-                          className="w-full p-2.5 rounded-lg bg-surface border border-white/15 text-text text-xs focus:ring-1 focus:ring-amber focus:border-amber resize-none"
+                          className="w-full p-2.5 rounded-lg bg-surface border border-white/15 text-text text-xs focus:ring-2 focus:ring-amber focus:border-amber resize-none"
                         />
                       </div>
 
@@ -1098,6 +1112,17 @@ export default function SignalsPage() {
                     </div>
                   );
                 })}
+
+                {visionObservations.pages > 1 && (
+                  <Pagination
+                    page={visionPage}
+                    totalPages={visionObservations.pages}
+                    totalRecords={visionObservations.total}
+                    perPage={20}
+                    onPageChange={setVisionPage}
+                    recordLabel="observations"
+                  />
+                )}
               </div>
             )}
           </Card>
@@ -1121,5 +1146,13 @@ export default function SignalsPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function SignalsPage() {
+  return (
+    <Suspense fallback={<LoadingSpinner size="lg" fullPage label="Loading signals console..." />}>
+      <SignalsPageContent />
+    </Suspense>
   );
 }

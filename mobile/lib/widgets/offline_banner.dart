@@ -68,20 +68,28 @@ class OfflineBanner extends StatelessWidget {
                   ),
                 )
               else
-                InkWell(
-                  onTap: onRetry,
-                  borderRadius: BorderRadius.circular(4),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    child: Text(
-                      'Retry',
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        color: AppTokens.amber,
-                        fontWeight: FontWeight.w700,
-                        decoration: TextDecoration.underline,
+                ConstrainedBox(
+                  constraints: const BoxConstraints(
+                    minWidth: 48,
+                    minHeight: 44,
+                  ),
+                  child: InkWell(
+                    onTap: onRetry,
+                    borderRadius: BorderRadius.circular(6),
+                    child: Center(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 8,
+                        ),
+                        child: Text(
+                          'Retry',
+                          style: theme.textTheme.labelMedium?.copyWith(
+                            color: AppTokens.amber,
+                            fontWeight: FontWeight.w700,
+                            decoration: TextDecoration.underline,
+                          ),
+                        ),
                       ),
                     ),
                   ),

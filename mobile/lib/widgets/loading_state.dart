@@ -38,7 +38,7 @@ class LoadingState extends StatelessWidget {
               Text(
                 message,
                 style: theme.textTheme.bodySmall?.copyWith(
-                  color: AppTokens.muted,
+                  color: AppTokens.mutedOf(context),
                 ),
               ),
             ],
@@ -59,7 +59,7 @@ class LoadingState extends StatelessWidget {
               width: 56,
               height: 56,
               decoration: BoxDecoration(
-                color: AppTokens.surface,
+                color: theme.colorScheme.surface,
                 shape: BoxShape.circle,
                 border: Border.all(
                   color: AppTokens.teal.withAlpha(60),
@@ -89,7 +89,7 @@ class LoadingState extends StatelessWidget {
               message,
               textAlign: TextAlign.center,
               style: theme.textTheme.titleMedium?.copyWith(
-                color: AppTokens.textPrimary,
+                color: theme.colorScheme.onSurface,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -99,7 +99,7 @@ class LoadingState extends StatelessWidget {
                 subtitle!,
                 textAlign: TextAlign.center,
                 style: theme.textTheme.bodySmall?.copyWith(
-                  color: AppTokens.muted,
+                  color: AppTokens.mutedOf(context),
                 ),
               ),
             ],

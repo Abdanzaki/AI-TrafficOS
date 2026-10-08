@@ -70,6 +70,20 @@ class NotificationService {
     );
   }
 
+  /// Marks multiple notifications as read concurrently.
+  Future<int> markAllAsRead(List<int> ids) async {
+    int successCount = 0;
+    await Future.wait(
+      ids.map((id) async {
+        try {
+          await markAsRead(id);
+          successCount++;
+        } catch (_) {}
+      }),
+    );
+    return successCount;
+  }
+
   /// Calculates total unread notifications count via `/notifications/me?is_read=false`.
   Future<int> unreadCount() async {
     final paginated = await getMyNotifications(

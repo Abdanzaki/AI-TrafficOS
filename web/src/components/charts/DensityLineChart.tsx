@@ -9,6 +9,7 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
+  Legend,
 } from "recharts";
 
 export interface DensityPoint {
@@ -87,7 +88,7 @@ export const DensityLineChart: React.FC<DensityLineChartProps> = ({
       <ResponsiveContainer width="100%" height="100%">
         <LineChart
           data={data}
-          margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+          margin={{ top: 10, right: 20, left: 10, bottom: 0 }}
         >
           <CartesianGrid
             strokeDasharray="3 3"
@@ -110,6 +111,16 @@ export const DensityLineChart: React.FC<DensityLineChartProps> = ({
             tickFormatter={(v) => `${v}%`}
           />
           <Tooltip content={<CustomTooltip />} />
+          <Legend
+            verticalAlign="top"
+            height={32}
+            iconType="circle"
+            wrapperStyle={{
+              fontSize: 12,
+              paddingBottom: 4,
+              color: "#8B93B0",
+            }}
+          />
           <Line
             type="monotone"
             dataKey="density"

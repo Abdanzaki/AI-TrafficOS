@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/junction.dart';
 import '../models/route_result.dart';
+import '../providers/realtime_providers.dart';
 import '../services/api_client.dart';
 import '../services/junction_service.dart';
 import '../services/routing_service.dart';
@@ -13,6 +14,7 @@ import '../widgets/empty_state.dart';
 import '../widgets/error_state.dart';
 import '../widgets/junction_map.dart';
 import '../widgets/loading_state.dart';
+import '../widgets/offline_banner.dart';
 
 /// Dynamic municipal routing screen calculating least-cost paths across the junction network.
 class RoutingScreen extends ConsumerStatefulWidget {
@@ -151,12 +153,19 @@ class _RoutingScreenState extends ConsumerState<RoutingScreen> {
         ],
       ),
       body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.all(AppTokens.spaceMd),
+        child: Column(
           children: [
-            _buildSelectorCard(),
-            const SizedBox(height: AppTokens.spaceMd),
-            _buildResultContent(),
+            if (ref.watch(isOfflineProvider)) const OfflineBanner(),
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.all(AppTokens.spaceMd),
+                children: [
+                  _buildSelectorCard(),
+                  const SizedBox(height: AppTokens.spaceMd),
+                  _buildResultContent(),
+                ],
+              ),
+            ),
           ],
         ),
       ),
@@ -164,6 +173,7 @@ class _RoutingScreenState extends ConsumerState<RoutingScreen> {
   }
 
   Widget _buildSelectorCard() {
+    final theme = Theme.of(context);
     if (_isLoadingJunctions) {
       return const AppCard(
         padding: EdgeInsets.all(AppTokens.spaceLg),
@@ -196,13 +206,13 @@ class _RoutingScreenState extends ConsumerState<RoutingScreen> {
             children: [
               const Icon(Icons.navigation_rounded, color: AppTokens.teal, size: 20),
               const SizedBox(width: AppTokens.spaceSm),
-              const Expanded(
+              Expanded(
                 child: Text(
                   'Route Query Configuration',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
-                    color: AppTokens.textPrimary,
+                    color: theme.colorScheme.onSurface,
                   ),
                 ),
               ),
@@ -215,23 +225,28 @@ class _RoutingScreenState extends ConsumerState<RoutingScreen> {
           ),
           const SizedBox(height: AppTokens.spaceMd),
           // Origin
-          const Text(
+          Text(
             'Origin Intersection',
-            style: TextStyle(fontSize: 12, color: AppTokens.muted, fontWeight: FontWeight.w600),
+            style: TextStyle(fontSize: 12, color: AppTokens.mutedOf(context), fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 4),
           DropdownButtonFormField<int>(
+            isExpanded: true,
             initialValue: _fromId,
-            dropdownColor: AppTokens.card,
-            decoration: const InputDecoration(
+            dropdownColor: theme.colorScheme.surface,
+            decoration: InputDecoration(
               filled: true,
-              fillColor: AppTokens.surface,
-              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              fillColor: theme.colorScheme.surfaceContainerHighest,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             ),
             items: _junctions.map((j) {
               return DropdownMenuItem<int>(
                 value: j.id,
-                child: Text('${j.name} (${j.code})'),
+                child: Text(
+                  '${j.name} (${j.code})',
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                ),
               );
             }).toList(),
             onChanged: (val) {
@@ -240,23 +255,28 @@ class _RoutingScreenState extends ConsumerState<RoutingScreen> {
           ),
           const SizedBox(height: AppTokens.spaceSm),
           // Destination
-          const Text(
+          Text(
             'Destination Intersection',
-            style: TextStyle(fontSize: 12, color: AppTokens.muted, fontWeight: FontWeight.w600),
+            style: TextStyle(fontSize: 12, color: AppTokens.mutedOf(context), fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 4),
           DropdownButtonFormField<int>(
+            isExpanded: true,
             initialValue: _toId,
-            dropdownColor: AppTokens.card,
-            decoration: const InputDecoration(
+            dropdownColor: theme.colorScheme.surface,
+            decoration: InputDecoration(
               filled: true,
-              fillColor: AppTokens.surface,
-              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              fillColor: theme.colorScheme.surfaceContainerHighest,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             ),
             items: _junctions.map((j) {
               return DropdownMenuItem<int>(
                 value: j.id,
-                child: Text('${j.name} (${j.code})'),
+                child: Text(
+                  '${j.name} (${j.code})',
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                ),
               );
             }).toList(),
             onChanged: (val) {
@@ -266,9 +286,9 @@ class _RoutingScreenState extends ConsumerState<RoutingScreen> {
           const SizedBox(height: AppTokens.spaceMd),
           Row(
             children: [
-              const Text(
+              Text(
                 'Algorithm:',
-                style: TextStyle(fontSize: 12, color: AppTokens.muted, fontWeight: FontWeight.w600),
+                style: TextStyle(fontSize: 12, color: AppTokens.mutedOf(context), fontWeight: FontWeight.w600),
               ),
               const SizedBox(width: AppTokens.spaceSm),
               SegmentedButton<String>(
@@ -285,8 +305,9 @@ class _RoutingScreenState extends ConsumerState<RoutingScreen> {
                 style: SegmentedButton.styleFrom(
                   selectedBackgroundColor: AppTokens.teal.withAlpha(40),
                   selectedForegroundColor: AppTokens.teal,
-                  foregroundColor: AppTokens.muted,
-                  backgroundColor: AppTokens.surface,
+                  foregroundColor: AppTokens.mutedOf(context),
+                  backgroundColor: AppTokens.surfaceOf(context),
+                  minimumSize: const Size(0, 44),
                 ),
               ),
             ],
@@ -303,7 +324,7 @@ class _RoutingScreenState extends ConsumerState<RoutingScreen> {
               ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppTokens.teal,
-                foregroundColor: AppTokens.ink,
+                foregroundColor: theme.brightness == Brightness.dark ? AppTokens.ink : Colors.white,
               ),
               onPressed: _isCalculating ? null : _calculateRoute,
             ),
@@ -419,31 +440,36 @@ class _RoutingScreenState extends ConsumerState<RoutingScreen> {
     required IconData icon,
     required Color color,
   }) {
-    return AppCard(
-      padding: const EdgeInsets.all(AppTokens.spaceMd),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(icon, color: color, size: 16),
-              const SizedBox(width: 6),
-              Text(
-                title,
-                style: const TextStyle(color: AppTokens.muted, fontSize: 11),
-              ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w800,
-              color: AppTokens.textPrimary,
+    return Semantics(
+      label: '$title metric: $value',
+      button: false,
+      child: AppCard(
+        padding: const EdgeInsets.all(AppTokens.spaceMd),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(icon, color: color, size: 16),
+                const SizedBox(width: 6),
+                Text(
+                  title,
+                  style: TextStyle(
+                      color: AppTokens.mutedOf(context), fontSize: 11),
+                ),
+              ],
             ),
-          ),
-        ],
+            const SizedBox(height: 6),
+            Text(
+              value,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w800,
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -460,16 +486,16 @@ class _RoutingScreenState extends ConsumerState<RoutingScreen> {
             children: [
               const Icon(Icons.map_rounded, color: AppTokens.teal, size: 18),
               const SizedBox(width: AppTokens.spaceSm),
-              const Text(
+              Text(
                 'Corridor Path Visualization',
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
-                  color: AppTokens.textPrimary,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
               const Spacer(),
-              AppBadge(
+              const AppBadge(
                 label: 'AMBER PATH OVERLAY',
                 color: AppTokens.amber,
               ),
@@ -486,11 +512,12 @@ class _RoutingScreenState extends ConsumerState<RoutingScreen> {
               ),
             )
           else
-            const Padding(
-              padding: EdgeInsets.all(AppTokens.spaceMd),
+            Padding(
+              padding: const EdgeInsets.all(AppTokens.spaceMd),
               child: Text(
                 'Spatial map coordinates not registered for current network nodes.',
-                style: TextStyle(color: AppTokens.muted, fontSize: 12),
+                style: TextStyle(
+                    color: AppTokens.mutedOf(context), fontSize: 12),
               ),
             ),
         ],
@@ -506,12 +533,12 @@ class _RoutingScreenState extends ConsumerState<RoutingScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Traversed Waypoints & Network Edges',
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w700,
-              color: AppTokens.textPrimary,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
           const SizedBox(height: AppTokens.spaceMd),
@@ -528,8 +555,8 @@ class _RoutingScreenState extends ConsumerState<RoutingScreen> {
                     final isStart = i == 0;
                     final isEnd = i == route.path.length - 1;
 
-                    Color chipColor = AppTokens.surface;
-                    Color textColor = AppTokens.textPrimary;
+                    Color chipColor = AppTokens.surfaceOf(context);
+                    Color textColor = Theme.of(context).colorScheme.onSurface;
                     if (isStart) {
                       chipColor = AppTokens.teal.withAlpha(30);
                       textColor = AppTokens.teal;
@@ -548,7 +575,7 @@ class _RoutingScreenState extends ConsumerState<RoutingScreen> {
                               ? AppTokens.teal.withAlpha(90)
                               : isEnd
                                   ? AppTokens.amber.withAlpha(90)
-                                  : AppTokens.borderDark,
+                                  : AppTokens.borderOf(context),
                         ),
                       ),
                       child: Row(
@@ -581,14 +608,14 @@ class _RoutingScreenState extends ConsumerState<RoutingScreen> {
           ),
           if (route.edges.isNotEmpty) ...[
             const SizedBox(height: AppTokens.spaceMd),
-            const Divider(color: AppTokens.borderDark),
+            Divider(color: AppTokens.borderOf(context)),
             const SizedBox(height: AppTokens.spaceSm),
-            const Text(
+            Text(
               'Segment Impendence Details:',
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
-                color: AppTokens.muted,
+                color: AppTokens.mutedOf(context),
               ),
             ),
             const SizedBox(height: 6),
@@ -600,12 +627,15 @@ class _RoutingScreenState extends ConsumerState<RoutingScreen> {
                     const Icon(Icons.arrow_right_rounded, size: 16, color: AppTokens.teal),
                     Text(
                       'Road #${edge.roadId}: ${edge.fromIntersectionId} -> ${edge.toIntersectionId}',
-                      style: const TextStyle(fontSize: 12, color: AppTokens.textPrimary),
+                      style: TextStyle(
+                          fontSize: 12,
+                          color: Theme.of(context).colorScheme.onSurface),
                     ),
                     const Spacer(),
                     Text(
                       '${edge.lengthKm.toStringAsFixed(2)} km • ${edge.costMinutes.toStringAsFixed(1)} min',
-                      style: const TextStyle(fontSize: 11, color: AppTokens.muted),
+                      style: TextStyle(
+                          fontSize: 11, color: AppTokens.mutedOf(context)),
                     ),
                   ],
                 ),

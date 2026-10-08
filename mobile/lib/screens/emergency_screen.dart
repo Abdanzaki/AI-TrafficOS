@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -15,6 +17,7 @@ import '../widgets/app_card.dart';
 import '../widgets/empty_state.dart';
 import '../widgets/error_state.dart';
 import '../widgets/loading_state.dart';
+import '../widgets/offline_banner.dart';
 
 /// Emergency vehicle preemption management and green wave corridor orchestrator.
 class EmergencyScreen extends ConsumerStatefulWidget {
@@ -33,6 +36,8 @@ class _EmergencyScreenState extends ConsumerState<EmergencyScreen> {
   int _page = 1;
   int _totalPages = 1;
   String? _statusFilter;
+  Timer? _debounceTimer;
+  bool _isSyncing = false;
 
   @override
   void initState() {
@@ -43,9 +48,19 @@ class _EmergencyScreenState extends ConsumerState<EmergencyScreen> {
 
   @override
   void dispose() {
+    _debounceTimer?.cancel();
     _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
     super.dispose();
+  }
+
+  void _scheduleDebouncedRefresh() {
+    _debounceTimer?.cancel();
+    _debounceTimer = Timer(const Duration(milliseconds: 1500), () {
+      if (mounted && !_isSyncing) {
+        _loadInitialEvents(isBackgroundRefresh: true);
+      }
+    });
   }
 
   void _onScroll() {
@@ -58,6 +73,8 @@ class _EmergencyScreenState extends ConsumerState<EmergencyScreen> {
   }
 
   Future<void> _loadInitialEvents({bool isBackgroundRefresh = false}) async {
+    if (_isSyncing) return;
+    _isSyncing = true;
     if (!isBackgroundRefresh) {
       setState(() {
         _page = 1;
@@ -90,6 +107,8 @@ class _EmergencyScreenState extends ConsumerState<EmergencyScreen> {
               e is ApiException ? e.message : 'Failed to query emergency events: $e';
         });
       }
+    } finally {
+      _isSyncing = false;
     }
   }
 
@@ -128,10 +147,10 @@ class _EmergencyScreenState extends ConsumerState<EmergencyScreen> {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: AppTokens.card,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-        side: BorderSide(color: AppTokens.borderDark),
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        side: BorderSide(color: AppTokens.borderOf(context)),
       ),
       builder: (ctx) {
         return _CreateEmergencyFormSheet(
@@ -159,10 +178,10 @@ class _EmergencyScreenState extends ConsumerState<EmergencyScreen> {
         return StatefulBuilder(
           builder: (ctx, setDialogState) {
             return AlertDialog(
-              backgroundColor: AppTokens.card,
+              backgroundColor: Theme.of(context).colorScheme.surface,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
-                side: const BorderSide(color: AppTokens.borderDark),
+                side: BorderSide(color: AppTokens.borderOf(context)),
               ),
               title: Row(
                 children: [
@@ -175,17 +194,17 @@ class _EmergencyScreenState extends ConsumerState<EmergencyScreen> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'Select Destination Junction for Green Corridor:',
-                    style: TextStyle(color: AppTokens.muted, fontSize: 13),
+                    style: TextStyle(color: AppTokens.mutedOf(context), fontSize: 13),
                   ),
                   const SizedBox(height: AppTokens.spaceMd),
                   DropdownButtonFormField<int>(
                     initialValue: selectedId,
-                    dropdownColor: AppTokens.card,
-                    decoration: const InputDecoration(
+                    dropdownColor: Theme.of(context).colorScheme.surface,
+                    decoration: InputDecoration(
                       filled: true,
-                      fillColor: AppTokens.surface,
+                      fillColor: Theme.of(context).colorScheme.surface,
                     ),
                     items: junctions.map((j) {
                       return DropdownMenuItem<int>(
@@ -204,13 +223,15 @@ class _EmergencyScreenState extends ConsumerState<EmergencyScreen> {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.of(ctx).pop(null),
-                  child: const Text('Cancel',
-                      style: TextStyle(color: AppTokens.muted)),
+                  child: Text('Cancel',
+                      style: TextStyle(color: AppTokens.mutedOf(context))),
                 ),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTokens.teal,
-                    foregroundColor: AppTokens.ink,
+                    foregroundColor: Theme.of(context).brightness == Brightness.dark
+                        ? AppTokens.ink
+                        : Colors.white,
                   ),
                   onPressed: () => Navigator.of(ctx).pop(selectedId),
                   child: const Text('Calculate Corridor'),
@@ -266,10 +287,10 @@ class _EmergencyScreenState extends ConsumerState<EmergencyScreen> {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: AppTokens.card,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-        side: BorderSide(color: AppTokens.borderDark),
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        side: BorderSide(color: AppTokens.borderOf(context)),
       ),
       builder: (ctx) {
         return SafeArea(
@@ -284,7 +305,7 @@ class _EmergencyScreenState extends ConsumerState<EmergencyScreen> {
                     width: 36,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: AppTokens.muted.withAlpha(80),
+                      color: AppTokens.mutedOf(context).withAlpha(80),
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
@@ -299,18 +320,18 @@ class _EmergencyScreenState extends ConsumerState<EmergencyScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
+                          Text(
                             'Green Corridor Recommendation',
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w700,
-                              color: AppTokens.textPrimary,
+                              color: Theme.of(context).colorScheme.onSurface,
                             ),
                           ),
                           Text(
                             'Corridor ID: ${plan.corridorId}',
-                            style: const TextStyle(
-                                color: AppTokens.muted, fontSize: 11),
+                            style: TextStyle(
+                                color: AppTokens.mutedOf(context), fontSize: 11),
                           ),
                         ],
                       ),
@@ -337,19 +358,19 @@ class _EmergencyScreenState extends ConsumerState<EmergencyScreen> {
                 const SizedBox(height: AppTokens.spaceMd),
                 Text(
                   'Path: Junctions ${plan.path.join(" -> ")}',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.w600,
-                    color: AppTokens.textPrimary,
+                    color: Theme.of(context).colorScheme.onSurface,
                     fontSize: 13,
                   ),
                 ),
                 const SizedBox(height: AppTokens.spaceMd),
-                const Text(
+                Text(
                   'Planned Signal Preemption Directives:',
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
-                    color: AppTokens.textPrimary,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
                 const SizedBox(height: 6),
@@ -358,9 +379,9 @@ class _EmergencyScreenState extends ConsumerState<EmergencyScreen> {
                   child: ListView.separated(
                     shrinkWrap: true,
                     itemCount: plan.signalActions.length,
-                    separatorBuilder: (_, _) => const Divider(
+                    separatorBuilder: (_, _) => Divider(
                       height: 1,
-                      color: AppTokens.borderDark,
+                      color: AppTokens.borderOf(context),
                     ),
                     itemBuilder: (context, idx) {
                       final action = plan.signalActions[idx];
@@ -391,16 +412,16 @@ class _EmergencyScreenState extends ConsumerState<EmergencyScreen> {
                                 children: [
                                   Text(
                                     action.action.toUpperCase(),
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontWeight: FontWeight.w700,
-                                      color: AppTokens.textPrimary,
+                                      color: Theme.of(context).colorScheme.onSurface,
                                       fontSize: 12,
                                     ),
                                   ),
                                   Text(
                                     action.reason,
-                                    style: const TextStyle(
-                                      color: AppTokens.muted,
+                                    style: TextStyle(
+                                      color: AppTokens.mutedOf(context),
                                       fontSize: 11,
                                     ),
                                     maxLines: 1,
@@ -429,7 +450,9 @@ class _EmergencyScreenState extends ConsumerState<EmergencyScreen> {
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppTokens.teal,
-                      foregroundColor: AppTokens.ink,
+                      foregroundColor: Theme.of(context).brightness == Brightness.dark
+                          ? AppTokens.ink
+                          : Colors.white,
                     ),
                     onPressed: () => Navigator.of(ctx).pop(),
                     child: const Text('Acknowledge Plan'),
@@ -447,10 +470,10 @@ class _EmergencyScreenState extends ConsumerState<EmergencyScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppTokens.card,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: const BorderSide(color: AppTokens.borderDark),
+          side: BorderSide(color: AppTokens.borderOf(context)),
         ),
         title: const Text('Restore Signal Coordination?'),
         content: Text(
@@ -459,7 +482,7 @@ class _EmergencyScreenState extends ConsumerState<EmergencyScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Cancel', style: TextStyle(color: AppTokens.muted)),
+            child: Text('Cancel', style: TextStyle(color: AppTokens.mutedOf(context))),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
@@ -509,14 +532,14 @@ class _EmergencyScreenState extends ConsumerState<EmergencyScreen> {
   @override
   Widget build(BuildContext context) {
     // Real-time WebSocket invalidation: on emergency.created and emergency.updated,
-    // refresh emergency preemption events
+    // refresh emergency preemption events (debounced to avoid burst storms)
     for (final topic in const [
       RealtimeTopics.emergencyCreated,
       RealtimeTopics.emergencyUpdated,
     ]) {
       ref.listen(realtimeTopicEventProvider(topic), (_, next) {
         if (next.hasValue) {
-          _loadInitialEvents(isBackgroundRefresh: true);
+          _scheduleDebouncedRefresh();
         }
       });
     }
@@ -551,11 +574,13 @@ class _EmergencyScreenState extends ConsumerState<EmergencyScreen> {
       body: RefreshIndicator(
         onRefresh: _loadInitialEvents,
         color: AppTokens.teal,
-        backgroundColor: AppTokens.card,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         child: CustomScrollView(
           controller: _scrollController,
           physics: const AlwaysScrollableScrollPhysics(),
           slivers: [
+            if (ref.watch(isOfflineProvider))
+              const SliverToBoxAdapter(child: OfflineBanner()),
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.all(AppTokens.spaceMd),
@@ -588,15 +613,15 @@ class _EmergencyScreenState extends ConsumerState<EmergencyScreen> {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: AppTokens.amber.withAlpha(90)),
       ),
-      child: const Row(
+      child: Row(
         children: [
-          Icon(Icons.shield_outlined, color: AppTokens.amber, size: 24),
-          SizedBox(width: AppTokens.spaceMd),
+          const Icon(Icons.shield_outlined, color: AppTokens.amber, size: 24),
+          const SizedBox(width: AppTokens.spaceMd),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                const Text(
                   'AI recommendation — does not control physical hardware',
                   style: TextStyle(
                     fontWeight: FontWeight.w700,
@@ -604,11 +629,11 @@ class _EmergencyScreenState extends ConsumerState<EmergencyScreen> {
                     fontSize: 13,
                   ),
                 ),
-                SizedBox(height: 2),
+                const SizedBox(height: 2),
                 Text(
                   'Preemption outputs are supervisory proposals requiring authorized field translation.',
                   style: TextStyle(
-                    color: AppTokens.textPrimary,
+                    color: Theme.of(context).colorScheme.onSurface,
                     fontSize: 11,
                   ),
                 ),
@@ -624,18 +649,18 @@ class _EmergencyScreenState extends ConsumerState<EmergencyScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: AppTokens.surface,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppTokens.borderDark),
+        border: Border.all(color: AppTokens.borderOf(context)),
       ),
-      child: const Row(
+      child: Row(
         children: [
-          Icon(Icons.lock_outline_rounded, color: AppTokens.muted, size: 16),
-          SizedBox(width: 8),
+          Icon(Icons.lock_outline_rounded, color: AppTokens.mutedOf(context), size: 16),
+          const SizedBox(width: 8),
           Expanded(
             child: Text(
               'Analyst mode: Emergency corridors and signal preemption controls are read-only.',
-              style: TextStyle(color: AppTokens.muted, fontSize: 11),
+              style: TextStyle(color: AppTokens.mutedOf(context), fontSize: 11),
             ),
           ),
         ],
@@ -672,16 +697,16 @@ class _EmergencyScreenState extends ConsumerState<EmergencyScreen> {
         _loadInitialEvents();
       },
       selectedColor: AppTokens.teal.withAlpha(35),
-      backgroundColor: AppTokens.surface,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       labelStyle: TextStyle(
-        color: isSelected ? AppTokens.teal : AppTokens.muted,
+        color: isSelected ? AppTokens.teal : AppTokens.mutedOf(context),
         fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
         fontSize: 11,
       ),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(8),
         side: BorderSide(
-          color: isSelected ? AppTokens.teal.withAlpha(90) : AppTokens.borderDark,
+          color: isSelected ? AppTokens.teal.withAlpha(90) : AppTokens.borderOf(context),
         ),
       ),
     );
@@ -788,17 +813,17 @@ class _EmergencyScreenState extends ConsumerState<EmergencyScreen> {
                   children: [
                     Text(
                       event.vehicleTypeDisplay,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
-                        color: AppTokens.textPrimary,
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       'Event #${event.id} • ${event.detectedAt.toLocal().toString().split(".")[0]}',
                       style:
-                          const TextStyle(color: AppTokens.muted, fontSize: 11),
+                          TextStyle(color: AppTokens.mutedOf(context), fontSize: 11),
                     ),
                   ],
                 ),
@@ -847,7 +872,9 @@ class _EmergencyScreenState extends ConsumerState<EmergencyScreen> {
                       label: const Text('Prioritize Corridor'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppTokens.teal,
-                        foregroundColor: AppTokens.ink,
+                        foregroundColor: Theme.of(context).brightness == Brightness.dark
+                            ? AppTokens.ink
+                            : Colors.white,
                       ),
                       onPressed: () => _handlePrioritize(event),
                     ),
@@ -997,22 +1024,22 @@ class _CreateEmergencyFormSheetState
                     width: 36,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: AppTokens.muted.withAlpha(80),
+                      color: AppTokens.mutedOf(context).withAlpha(80),
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
                 ),
                 const SizedBox(height: AppTokens.spaceMd),
-                const Row(
+                Row(
                   children: [
-                    Icon(Icons.emergency_rounded, color: AppTokens.danger),
-                    SizedBox(width: AppTokens.spaceSm),
+                    const Icon(Icons.emergency_rounded, color: AppTokens.danger),
+                    const SizedBox(width: AppTokens.spaceSm),
                     Text(
                       'Dispatch Emergency Vehicle',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
-                        color: AppTokens.textPrimary,
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
                   ],
@@ -1034,12 +1061,12 @@ class _CreateEmergencyFormSheetState
                   ),
                   const SizedBox(height: AppTokens.spaceMd),
                 ],
-                const Text(
+                Text(
                   'Vehicle Type',
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
-                    color: AppTokens.textPrimary,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
                 const SizedBox(height: 6),
@@ -1053,16 +1080,16 @@ class _CreateEmergencyFormSheetState
                   ].map((v) {
                     final isSel = _vehicleType == v.$1;
                     return ChoiceChip(
-                      avatar: Icon(v.$3, size: 14, color: isSel ? AppTokens.teal : AppTokens.muted),
+                      avatar: Icon(v.$3, size: 14, color: isSel ? AppTokens.teal : AppTokens.mutedOf(context)),
                       label: Text(v.$2),
                       selected: isSel,
                       onSelected: (val) {
                         if (val) setState(() => _vehicleType = v.$1);
                       },
                       selectedColor: AppTokens.teal.withAlpha(35),
-                      backgroundColor: AppTokens.surface,
+                      backgroundColor: Theme.of(context).colorScheme.surface,
                       labelStyle: TextStyle(
-                        color: isSel ? AppTokens.teal : AppTokens.muted,
+                        color: isSel ? AppTokens.teal : AppTokens.mutedOf(context),
                         fontWeight: isSel ? FontWeight.w700 : FontWeight.w500,
                         fontSize: 11,
                       ),
@@ -1070,12 +1097,12 @@ class _CreateEmergencyFormSheetState
                   }).toList(),
                 ),
                 const SizedBox(height: AppTokens.spaceMd),
-                const Text(
+                Text(
                   'Priority Level',
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
-                    color: AppTokens.textPrimary,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
                 const SizedBox(height: 6),
@@ -1095,9 +1122,9 @@ class _CreateEmergencyFormSheetState
                         if (val) setState(() => _priority = p.$1);
                       },
                       selectedColor: AppTokens.danger.withAlpha(35),
-                      backgroundColor: AppTokens.surface,
+                      backgroundColor: Theme.of(context).colorScheme.surface,
                       labelStyle: TextStyle(
-                        color: isSel ? AppTokens.danger : AppTokens.muted,
+                        color: isSel ? AppTokens.danger : AppTokens.mutedOf(context),
                         fontWeight: isSel ? FontWeight.w700 : FontWeight.w500,
                         fontSize: 11,
                       ),
@@ -1105,12 +1132,12 @@ class _CreateEmergencyFormSheetState
                   }).toList(),
                 ),
                 const SizedBox(height: AppTokens.spaceMd),
-                const Text(
+                Text(
                   'Transit Origin Junction',
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
-                    color: AppTokens.textPrimary,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
                 const SizedBox(height: 6),
@@ -1118,10 +1145,10 @@ class _CreateEmergencyFormSheetState
                     ? const LinearProgressIndicator(color: AppTokens.teal)
                     : DropdownButtonFormField<int?>(
                         initialValue: _intersectionId,
-                        dropdownColor: AppTokens.card,
-                        decoration: const InputDecoration(
+                        dropdownColor: Theme.of(context).colorScheme.surface,
+                        decoration: InputDecoration(
                           filled: true,
-                          fillColor: AppTokens.surface,
+                          fillColor: Theme.of(context).colorScheme.surface,
                         ),
                         hint: const Text('Select origin junction'),
                         items: [

@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/audit_entry.dart';
 import '../models/user.dart';
+import '../providers/realtime_providers.dart';
 import '../services/api_client.dart';
 import '../services/audit_service.dart';
 import '../theme/app_tokens.dart';
@@ -13,6 +14,7 @@ import '../widgets/app_card.dart';
 import '../widgets/empty_state.dart';
 import '../widgets/error_state.dart';
 import '../widgets/loading_state.dart';
+import '../widgets/offline_banner.dart';
 import '../widgets/require_role.dart';
 
 /// Screen displaying immutable audit logs and operational events (Administrator restricted).
@@ -186,11 +188,14 @@ class _AuditScreenContentState extends ConsumerState<_AuditScreenContent> {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          _buildFilterBar(),
-          Expanded(child: _buildBody()),
-        ],
+      body: SafeArea(
+        child: Column(
+          children: [
+            if (ref.watch(isOfflineProvider)) const OfflineBanner(),
+            _buildFilterBar(),
+            Expanded(child: _buildBody()),
+          ],
+        ),
       ),
     );
   }
@@ -309,8 +314,8 @@ class _AuditScreenContentState extends ConsumerState<_AuditScreenContent> {
               const Spacer(),
               Text(
                 _formatDate(entry.createdAt),
-                style: const TextStyle(
-                  color: AppTokens.muted,
+                style: TextStyle(
+                  color: AppTokens.mutedOf(context),
                   fontSize: 11,
                 ),
               ),
@@ -319,17 +324,17 @@ class _AuditScreenContentState extends ConsumerState<_AuditScreenContent> {
           const SizedBox(height: AppTokens.spaceSm),
           Row(
             children: [
-              const Icon(
+              Icon(
                 Icons.person_outline_rounded,
                 size: 15,
-                color: AppTokens.muted,
+                color: AppTokens.mutedOf(context),
               ),
               const SizedBox(width: AppTokens.spaceXs),
               Expanded(
                 child: Text(
                   entry.actorEmail,
-                  style: const TextStyle(
-                    color: AppTokens.textPrimary,
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurface,
                     fontWeight: FontWeight.w600,
                     fontSize: 13,
                   ),
@@ -340,14 +345,14 @@ class _AuditScreenContentState extends ConsumerState<_AuditScreenContent> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
-                  color: AppTokens.surface,
+                  color: Theme.of(context).colorScheme.surface,
                   borderRadius: BorderRadius.circular(4),
-                  border: Border.all(color: AppTokens.borderDark),
+                  border: Border.all(color: AppTokens.borderOf(context)),
                 ),
                 child: Text(
                   'Entity: ${entry.entity}${entry.entityId != null ? ' #${entry.entityId}' : ''}',
-                  style: const TextStyle(
-                    color: AppTokens.muted,
+                  style: TextStyle(
+                    color: AppTokens.mutedOf(context),
                     fontSize: 11,
                   ),
                 ),
@@ -358,8 +363,8 @@ class _AuditScreenContentState extends ConsumerState<_AuditScreenContent> {
             const SizedBox(height: 4),
             Text(
               'IP: ${entry.ipAddress}',
-              style: const TextStyle(
-                color: AppTokens.muted,
+              style: TextStyle(
+                color: AppTokens.mutedOf(context),
                 fontSize: 11,
               ),
             ),
@@ -398,18 +403,18 @@ class _AuditScreenContentState extends ConsumerState<_AuditScreenContent> {
               width: double.infinity,
               padding: const EdgeInsets.all(AppTokens.spaceSm),
               decoration: BoxDecoration(
-                color: AppTokens.surface,
+                color: Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: AppTokens.borderDark),
+                border: Border.all(color: AppTokens.borderOf(context)),
               ),
               child: SelectableText(
                 entry.details.isNotEmpty
                     ? const JsonEncoder.withIndent('  ').convert(entry.details)
                     : '// No additional payload metadata',
-                style: const TextStyle(
+                style: TextStyle(
                   fontFamily: 'monospace',
                   fontSize: 11,
-                  color: AppTokens.muted,
+                  color: AppTokens.mutedOf(context),
                   height: 1.4,
                 ),
               ),

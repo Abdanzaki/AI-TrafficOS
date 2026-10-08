@@ -16,6 +16,11 @@ import {
   CheckCircle2,
   Clock,
   Sparkles,
+  Map as MapIcon,
+  TrendingUp,
+  BrainCircuit,
+  BarChart3,
+  Bell,
 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/lib/auth";
@@ -62,6 +67,13 @@ export default function DashboardPage() {
       color: "text-accent",
     },
     {
+      title: "Spatial Map",
+      desc: "Interactive GIS junction telemetry and congestion layer",
+      href: "/map",
+      icon: MapIcon,
+      color: "text-accent",
+    },
+    {
       title: "Signals & Telemetry",
       desc: "Optical state detection and phase monitors",
       href: "/signals",
@@ -101,6 +113,48 @@ export default function DashboardPage() {
       color: "text-accent",
     },
     {
+      title: "ML Predictions",
+      desc: "Forward volume, congestion, and queue horizon forecasts",
+      href: "/predictions",
+      icon: TrendingUp,
+      color: "text-accent",
+    },
+    {
+      title: "Supervisory Decisions",
+      desc: "Autonomous control actions and operational reasoning logs",
+      href: "/decisions",
+      icon: BrainCircuit,
+      color: "text-accent",
+    },
+    {
+      title: "Telemetry Analytics",
+      desc: "Network-wide time-series aggregation and volume trends",
+      href: "/analytics",
+      icon: BarChart3,
+      color: "text-accent",
+    },
+    {
+      title: "AI Assistant",
+      desc: "Natural language operational queries and diagnostics",
+      href: "/assistant",
+      icon: Sparkles,
+      color: "text-accent",
+    },
+    {
+      title: "Alert Center",
+      desc: "Broadcast announcements and priority system notifications",
+      href: "/notifications",
+      icon: Bell,
+      color: "text-amber",
+    },
+    {
+      title: "System Health",
+      desc: "Gateway status, database pools, and service metrics",
+      href: "/health",
+      icon: Activity,
+      color: "text-accent",
+    },
+    {
       title: "Audit & Governance",
       desc: "Cryptographic activity verification trail",
       href: "/audit-logs",
@@ -121,12 +175,10 @@ export default function DashboardPage() {
     <div className="max-w-7xl mx-auto space-y-8">
       {/* Welcome Banner */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 sm:p-8 rounded-2xl bg-surface/70 border border-white/10 relative overflow-hidden shadow-lg backdrop-blur-sm">
-        <div className="pointer-events-none absolute -right-20 -bottom-20 w-80 h-80 bg-accent/10 blur-[100px] rounded-full" />
-
         <div className="relative">
           <div className="flex items-center gap-2 mb-2">
             <Badge variant="teal" dot>
-              Phase 7 Operational
+              Operational
             </Badge>
             <span className="text-white/20">•</span>
             <span className="text-xs text-muted font-mono">
@@ -194,7 +246,7 @@ export default function DashboardPage() {
             )}
           </div>
 
-          <div className="mt-3 pt-3 border-t border-white/5 text-[11px] text-muted/70 font-mono flex items-center justify-between">
+          <div className="mt-3 pt-3 border-t border-white/5 text-[11px] text-muted font-mono flex items-center justify-between">
             <span>Target: /api/v1</span>
             <span>HTTP 200</span>
           </div>
@@ -215,7 +267,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="mt-3 pt-3 border-t border-white/5 text-[11px] text-muted/70 flex items-center justify-between">
+          <div className="mt-3 pt-3 border-t border-white/5 text-[11px] text-muted flex items-center justify-between">
             <span>Write Capability:</span>
             <span className={isAdmin() || isOfficer() ? "text-amber font-mono" : "text-muted font-mono"}>
               {isAdmin() || isOfficer() ? "Granted (Officer/Admin)" : "Read-Only (Analyst)"}
@@ -239,7 +291,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="mt-3 pt-3 border-t border-white/5 text-[11px] text-muted/70 font-mono flex items-center justify-between">
+          <div className="mt-3 pt-3 border-t border-white/5 text-[11px] text-muted font-mono flex items-center justify-between">
             <span>Token Storage:</span>
             <span>localStorage</span>
           </div>
@@ -264,7 +316,7 @@ export default function DashboardPage() {
               <Link
                 key={item.title}
                 href={item.href}
-                className="group block p-5 rounded-2xl bg-surface/60 border border-white/10 hover:border-accent/40 hover:bg-surface/90 transition-all shadow-sm"
+                className="group block p-5 rounded-2xl bg-surface/60 border border-white/10 hover:border-accent/40 hover:bg-surface/90 transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
               >
                 <div className="flex items-center justify-between mb-3">
                   <div className="w-10 h-10 rounded-xl bg-ink/70 border border-white/10 flex items-center justify-center text-text group-hover:scale-105 transition-transform">

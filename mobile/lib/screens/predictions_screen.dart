@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/junction.dart';
 import '../models/prediction.dart';
+import '../providers/realtime_providers.dart';
 import '../services/junction_service.dart';
 import '../services/prediction_service.dart';
 import '../theme/app_tokens.dart';
@@ -11,6 +12,7 @@ import '../widgets/app_card.dart';
 import '../widgets/empty_state.dart';
 import '../widgets/error_state.dart';
 import '../widgets/loading_state.dart';
+import '../widgets/offline_banner.dart';
 
 /// Screen providing 30-minute machine learning traffic predictions,
 /// confidence score visualization, and historical inference telemetry.
@@ -148,11 +150,12 @@ class _PredictionsScreenState extends ConsumerState<PredictionsScreen> {
       body: SafeArea(
         child: Column(
           children: [
+            if (ref.watch(isOfflineProvider)) const OfflineBanner(),
             _buildJunctionSelectorBar(),
             Expanded(
               child: RefreshIndicator(
                 color: AppTokens.teal,
-                backgroundColor: AppTokens.card,
+                backgroundColor: theme.colorScheme.surface,
                 onRefresh: () async {
                   if (_selectedIntersectionId != null) {
                     await _loadData(_selectedIntersectionId!);
@@ -173,10 +176,10 @@ class _PredictionsScreenState extends ConsumerState<PredictionsScreen> {
         horizontal: AppTokens.spaceMd,
         vertical: AppTokens.spaceSm,
       ),
-      decoration: const BoxDecoration(
-        color: AppTokens.surface,
+      decoration: BoxDecoration(
+        color: AppTokens.surfaceOf(context),
         border: Border(
-          bottom: BorderSide(color: AppTokens.borderDark),
+          bottom: BorderSide(color: AppTokens.borderOf(context)),
         ),
       ),
       child: Row(
@@ -192,26 +195,29 @@ class _PredictionsScreenState extends ConsumerState<PredictionsScreen> {
               child: DropdownButton<int>(
                 value: _selectedIntersectionId,
                 isExpanded: true,
-                dropdownColor: AppTokens.card,
-                hint: const Text(
+                dropdownColor: Theme.of(context).colorScheme.surface,
+                hint: Text(
                   'Select Junction...',
-                  style: TextStyle(color: AppTokens.textPrimary, fontSize: 13),
+                  style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurface,
+                      fontSize: 13),
                 ),
-                icon: const Icon(
+                icon: Icon(
                   Icons.arrow_drop_down_rounded,
-                  color: AppTokens.muted,
+                  color: AppTokens.mutedOf(context),
                 ),
                 items: _junctions.map((j) {
                   return DropdownMenuItem<int>(
                     value: j.id,
                     child: Text(
                       'Junction #${j.id} — ${j.name}',
-                      style: const TextStyle(
-                        color: AppTokens.textPrimary,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurface,
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
                       ),
                       overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
                     ),
                   );
                 }).toList(),
@@ -305,7 +311,7 @@ class _PredictionsScreenState extends ConsumerState<PredictionsScreen> {
                   Text(
                     '30-Min Forward Forecast',
                     style: theme.textTheme.titleSmall?.copyWith(
-                      color: AppTokens.textPrimary,
+                      color: theme.colorScheme.onSurface,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -321,7 +327,7 @@ class _PredictionsScreenState extends ConsumerState<PredictionsScreen> {
           if (pred.modelVersion != null)
             Text(
               'Model: ${pred.modelVersion}',
-              style: const TextStyle(color: AppTokens.muted, fontSize: 11),
+              style: TextStyle(color: AppTokens.mutedOf(context), fontSize: 11),
             ),
           const SizedBox(height: AppTokens.spaceMd),
           _buildPredictionMetricCard(
@@ -371,71 +377,77 @@ class _PredictionsScreenState extends ConsumerState<PredictionsScreen> {
   }) {
     final confPercent = confidence != null ? (confidence * 100).toInt() : null;
 
-    return Container(
-      padding: const EdgeInsets.all(AppTokens.spaceMd),
-      decoration: BoxDecoration(
-        color: AppTokens.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppTokens.borderDark),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(icon, color: accentColor, size: 18),
-              const SizedBox(width: AppTokens.spaceSm),
-              Expanded(
-                child: Text(
-                  label,
-                  style: const TextStyle(
-                    color: AppTokens.textPrimary,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
+    return Semantics(
+      label:
+          '$label: $value${confPercent != null ? ", $confPercent% confidence" : ""}',
+      button: false,
+      child: Container(
+        padding: const EdgeInsets.all(AppTokens.spaceMd),
+        decoration: BoxDecoration(
+          color: AppTokens.surfaceOf(context),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppTokens.borderOf(context)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(icon, color: accentColor, size: 18),
+                const SizedBox(width: AppTokens.spaceSm),
+                Expanded(
+                  child: Text(
+                    label,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurface,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
-              ),
-              Text(
-                value,
-                style: TextStyle(
-                  color: accentColor,
-                  fontWeight: FontWeight.w800,
-                  fontSize: 15,
-                ),
-              ),
-            ],
-          ),
-          if (confidence != null) ...[
-            const SizedBox(height: AppTokens.spaceSm),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  'Inference Confidence',
-                  style: TextStyle(color: AppTokens.muted, fontSize: 11),
-                ),
                 Text(
-                  '$confPercent%',
+                  value,
                   style: TextStyle(
                     color: accentColor,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 15,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 4),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(3),
-              child: LinearProgressIndicator(
-                value: confidence,
-                backgroundColor: AppTokens.card,
-                valueColor: AlwaysStoppedAnimation(accentColor),
-                minHeight: 5,
+            if (confidence != null) ...[
+              const SizedBox(height: AppTokens.spaceSm),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Inference Confidence',
+                    style: TextStyle(
+                        color: AppTokens.mutedOf(context), fontSize: 11),
+                  ),
+                  Text(
+                    '$confPercent%',
+                    style: TextStyle(
+                      color: accentColor,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 11,
+                    ),
+                  ),
+                ],
               ),
-            ),
+              const SizedBox(height: 4),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(3),
+                child: LinearProgressIndicator(
+                  value: confidence,
+                  backgroundColor: AppTokens.cardOf(context),
+                  valueColor: AlwaysStoppedAnimation(accentColor),
+                  minHeight: 5,
+                ),
+              ),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }
@@ -450,7 +462,7 @@ class _PredictionsScreenState extends ConsumerState<PredictionsScreen> {
             Text(
               'Historical AI Predictions',
               style: theme.textTheme.titleSmall?.copyWith(
-                color: AppTokens.textPrimary,
+                color: theme.colorScheme.onSurface,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -507,8 +519,8 @@ class _PredictionsScreenState extends ConsumerState<PredictionsScreen> {
                             children: [
                               Text(
                                 pred.predictionType.toUpperCase(),
-                                style: const TextStyle(
-                                  color: AppTokens.textPrimary,
+                                style: TextStyle(
+                                  color: theme.colorScheme.onSurface,
                                   fontWeight: FontWeight.w700,
                                   fontSize: 12,
                                 ),
@@ -525,8 +537,8 @@ class _PredictionsScreenState extends ConsumerState<PredictionsScreen> {
                           const SizedBox(height: 2),
                           Text(
                             'Target: ${pred.predictedFor.toLocal().toString().substring(0, 16)}',
-                            style: const TextStyle(
-                              color: AppTokens.muted,
+                            style: TextStyle(
+                              color: AppTokens.mutedOf(context),
                               fontSize: 11,
                             ),
                           ),
@@ -535,7 +547,8 @@ class _PredictionsScreenState extends ConsumerState<PredictionsScreen> {
                     ),
                     Text(
                       pred.modelVersion,
-                      style: const TextStyle(color: AppTokens.muted, fontSize: 11),
+                      style: TextStyle(
+                          color: AppTokens.mutedOf(context), fontSize: 11),
                     ),
                   ],
                 ),

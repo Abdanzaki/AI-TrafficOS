@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/hotspot.dart';
 import '../models/incident.dart';
 import '../models/traffic_summary.dart';
+import '../providers/realtime_providers.dart';
 import '../services/analytics_service.dart';
 import '../services/api_client.dart';
 import '../theme/app_tokens.dart';
@@ -12,6 +13,8 @@ import '../widgets/app_card.dart';
 import '../widgets/empty_state.dart';
 import '../widgets/error_state.dart';
 import '../widgets/loading_state.dart';
+import '../widgets/offline_banner.dart';
+import '../widgets/volume_trend_chart.dart';
 
 /// Citywide traffic telemetry aggregation, congestion hotspots ranking, and incident distributions.
 class AnalyticsScreen extends ConsumerStatefulWidget {
@@ -92,11 +95,22 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
           ),
         ],
       ),
-      body: RefreshIndicator(
-        onRefresh: _loadAllAnalytics,
-        color: AppTokens.teal,
-        backgroundColor: AppTokens.card,
-        child: _buildBody(),
+      body: Column(
+        children: [
+          if (ref.watch(isOfflineProvider))
+            OfflineBanner(
+              onRetry: () => ref.read(realtimeServiceProvider).reconnect(),
+            ),
+          Expanded(
+            child: RefreshIndicator(
+              onRefresh: _loadAllAnalytics,
+              color: AppTokens.teal,
+              backgroundColor:
+                  Theme.of(context).cardTheme.color ?? AppTokens.cardOf(context),
+              child: _buildBody(),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -156,7 +170,7 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
             child: const Icon(Icons.insights_rounded, color: AppTokens.teal, size: 20),
           ),
           const SizedBox(width: AppTokens.spaceSm),
-          const Expanded(
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -165,12 +179,13 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
-                    color: AppTokens.textPrimary,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
                 Text(
                   'Statistical summaries across network sensors',
-                  style: TextStyle(color: AppTokens.muted, fontSize: 11),
+                  style: TextStyle(
+                      color: AppTokens.mutedOf(context), fontSize: 11),
                 ),
               ],
             ),
@@ -196,8 +211,10 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
             style: SegmentedButton.styleFrom(
               selectedBackgroundColor: AppTokens.teal.withAlpha(40),
               selectedForegroundColor: AppTokens.teal,
-              foregroundColor: AppTokens.muted,
-              backgroundColor: AppTokens.surface,
+              foregroundColor: AppTokens.mutedOf(context),
+              backgroundColor: AppTokens.surfaceOf(context),
+              minimumSize: const Size(0, 44),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             ),
           ),
         ],
@@ -289,35 +306,40 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
     required IconData icon,
     required Color color,
   }) {
-    return AppCard(
-      padding: const EdgeInsets.all(AppTokens.spaceMd),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(icon, color: color, size: 16),
-              const SizedBox(width: 6),
-              Expanded(
-                child: Text(
-                  title,
-                  style: const TextStyle(color: AppTokens.muted, fontSize: 11),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+    return Semantics(
+      label: '$title metric: $value',
+      button: false,
+      child: AppCard(
+        padding: const EdgeInsets.all(AppTokens.spaceMd),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(icon, color: color, size: 16),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    title,
+                    style: TextStyle(
+                        color: AppTokens.mutedOf(context), fontSize: 11),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w800,
-              color: AppTokens.textPrimary,
+              ],
             ),
-          ),
-        ],
+            const SizedBox(height: 6),
+            Text(
+              value,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w800,
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -341,12 +363,12 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
         children: [
           Row(
             children: [
-              const Text(
+              Text(
                 'Volume Trend & Congestion Curve',
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
-                  color: AppTokens.textPrimary,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
               const Spacer(),
@@ -354,25 +376,24 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
                 children: [
                   Container(width: 8, height: 8, color: AppTokens.teal),
                   const SizedBox(width: 4),
-                  const Text('Volume', style: TextStyle(color: AppTokens.muted, fontSize: 10)),
+                  Text('Volume',
+                      style: TextStyle(
+                          color: AppTokens.mutedOf(context), fontSize: 10)),
                   const SizedBox(width: 10),
                   Container(width: 8, height: 8, color: AppTokens.amber),
                   const SizedBox(width: 4),
-                  const Text('Congestion %', style: TextStyle(color: AppTokens.muted, fontSize: 10)),
+                  Text('Congestion %',
+                      style: TextStyle(
+                          color: AppTokens.mutedOf(context), fontSize: 10)),
                 ],
               ),
             ],
           ),
           const SizedBox(height: AppTokens.spaceMd),
-          SizedBox(
+          VolumeTrendChart(
+            buckets: _buckets,
+            isHourly: _selectedBucket == 'hour',
             height: 180,
-            width: double.infinity,
-            child: CustomPaint(
-              painter: _AnalyticsVolumeChartPainter(
-                buckets: _buckets,
-                isHourly: _selectedBucket == 'hour',
-              ),
-            ),
           ),
         ],
       ),
@@ -389,12 +410,12 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
             children: [
               const Icon(Icons.local_fire_department_rounded, color: AppTokens.danger, size: 20),
               const SizedBox(width: AppTokens.spaceSm),
-              const Text(
+              Text(
                 'Top Congestion Hotspots',
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
-                  color: AppTokens.textPrimary,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
               const Spacer(),
@@ -406,11 +427,11 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
           ),
           const SizedBox(height: AppTokens.spaceMd),
           if (_hotspots.isEmpty)
-            const Padding(
-              padding: EdgeInsets.all(AppTokens.spaceMd),
+            Padding(
+              padding: const EdgeInsets.all(AppTokens.spaceMd),
               child: Text(
                 'No congestion hotspots detected.',
-                style: TextStyle(color: AppTokens.muted),
+                style: TextStyle(color: AppTokens.mutedOf(context)),
               ),
             )
           else
@@ -418,8 +439,8 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: _hotspots.length,
-              separatorBuilder: (_, _) => const Divider(
-                color: AppTokens.borderDark,
+              separatorBuilder: (_, _) => Divider(
+                color: Theme.of(context).colorScheme.outline,
                 height: 12,
               ),
               itemBuilder: (context, index) {
@@ -446,7 +467,7 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
                             decoration: BoxDecoration(
                               color: index < 3
                                   ? AppTokens.danger.withAlpha(30)
-                                  : AppTokens.surface,
+                                  : Theme.of(context).colorScheme.surface,
                               shape: BoxShape.circle,
                             ),
                             child: Text(
@@ -456,7 +477,7 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
                                 fontWeight: FontWeight.w800,
                                 color: index < 3
                                     ? AppTokens.danger
-                                    : AppTokens.muted,
+                                    : AppTokens.mutedOf(context),
                               ),
                             ),
                           ),
@@ -467,17 +488,17 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
                               children: [
                                 Text(
                                   h.name,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontWeight: FontWeight.w600,
                                     fontSize: 13,
-                                    color: AppTokens.textPrimary,
+                                    color: Theme.of(context).colorScheme.onSurface,
                                   ),
                                 ),
                                 Text(
                                   '${h.code} • ${h.recordCount} observations',
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 11,
-                                    color: AppTokens.muted,
+                                    color: AppTokens.mutedOf(context),
                                   ),
                                 ),
                               ],
@@ -498,7 +519,7 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
                         borderRadius: BorderRadius.circular(3),
                         child: LinearProgressIndicator(
                           value: congPct / 100.0,
-                          backgroundColor: AppTokens.surface,
+                          backgroundColor: AppTokens.surfaceOf(context),
                           valueColor: AlwaysStoppedAnimation(congColor),
                           minHeight: 5,
                         ),
@@ -519,6 +540,7 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
     }
 
     final summary = _incidentsSummary!;
+    final theme = Theme.of(context);
 
     return AppCard(
       padding: const EdgeInsets.all(AppTokens.spaceLg),
@@ -529,28 +551,28 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
             children: [
               const Icon(Icons.pie_chart_rounded, color: AppTokens.teal, size: 20),
               const SizedBox(width: AppTokens.spaceSm),
-              const Text(
+              Text(
                 'Incidents Distribution',
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
-                  color: AppTokens.textPrimary,
+                  color: theme.colorScheme.onSurface,
                 ),
               ),
               const Spacer(),
               Text(
                 '${summary.total} Total',
-                style: const TextStyle(color: AppTokens.muted, fontSize: 12),
+                style: TextStyle(color: AppTokens.mutedOf(context), fontSize: 12),
               ),
             ],
           ),
           const SizedBox(height: AppTokens.spaceMd),
-          const Text(
+          Text(
             'By Status Lifecycle:',
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w600,
-              color: AppTokens.muted,
+              color: AppTokens.mutedOf(context),
             ),
           ),
           const SizedBox(height: 6),
@@ -558,7 +580,7 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
             spacing: AppTokens.spaceSm,
             runSpacing: AppTokens.spaceSm,
             children: summary.byStatus.entries.map((entry) {
-              Color col = AppTokens.muted;
+              Color col = AppTokens.mutedOf(context);
               if (entry.key == 'reported') col = AppTokens.danger;
               if (entry.key == 'acknowledged') col = AppTokens.amber;
               if (entry.key == 'resolved') col = AppTokens.success;
@@ -584,8 +606,8 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
                     const SizedBox(width: 6),
                     Text(
                       '${entry.value}',
-                      style: const TextStyle(
-                        color: AppTokens.textPrimary,
+                      style: TextStyle(
+                        color: theme.colorScheme.onSurface,
                         fontWeight: FontWeight.w800,
                         fontSize: 12,
                       ),
@@ -596,12 +618,12 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
             }).toList(),
           ),
           const SizedBox(height: AppTokens.spaceMd),
-          const Text(
+          Text(
             'By Severity Breakdown:',
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w600,
-              color: AppTokens.muted,
+              color: AppTokens.mutedOf(context),
             ),
           ),
           const SizedBox(height: 6),
@@ -609,7 +631,7 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
             spacing: AppTokens.spaceSm,
             runSpacing: AppTokens.spaceSm,
             children: summary.bySeverity.entries.map((entry) {
-              Color col = AppTokens.muted;
+              Color col = AppTokens.mutedOf(context);
               if (entry.key == 'critical') col = AppTokens.danger;
               if (entry.key == 'high') col = const Color(0xFFFF7A00);
               if (entry.key == 'medium') col = AppTokens.amber;
@@ -618,9 +640,9 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
               return Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 decoration: BoxDecoration(
-                  color: AppTokens.surface,
+                  color: AppTokens.surfaceOf(context),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: AppTokens.borderDark),
+                  border: Border.all(color: AppTokens.borderOf(context)),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -629,13 +651,13 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
                     const SizedBox(width: 6),
                     Text(
                       entry.key.toUpperCase(),
-                      style: const TextStyle(color: AppTokens.muted, fontSize: 11),
+                      style: TextStyle(color: AppTokens.mutedOf(context), fontSize: 11),
                     ),
                     const SizedBox(width: 6),
                     Text(
                       '${entry.value}',
-                      style: const TextStyle(
-                        color: AppTokens.textPrimary,
+                      style: TextStyle(
+                        color: theme.colorScheme.onSurface,
                         fontWeight: FontWeight.w700,
                         fontSize: 12,
                       ),
@@ -651,89 +673,3 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
   }
 }
 
-/// Custom vector chart painter rendering volume bars and congestion curve.
-/// Reuses the custom chart painter design pattern from traffic_screen.
-class _AnalyticsVolumeChartPainter extends CustomPainter {
-  _AnalyticsVolumeChartPainter({
-    required this.buckets,
-    required this.isHourly,
-  });
-
-  final List<TrafficSummaryBucket> buckets;
-  final bool isHourly;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    if (buckets.isEmpty) return;
-
-    final n = buckets.length;
-    final maxVol = buckets
-        .map((b) => b.avgVehicleCount)
-        .fold<double>(1.0, (a, b) => a > b ? a : b);
-
-    // Gridlines
-    final gridPaint = Paint()
-      ..color = AppTokens.borderDark
-      ..strokeWidth = 1.0;
-
-    for (int i = 1; i <= 3; i++) {
-      final y = size.height * (i / 4);
-      canvas.drawLine(Offset(0, y), Offset(size.width, y), gridPaint);
-    }
-
-    final slotWidth = size.width / n;
-    final barWidth = slotWidth * 0.55;
-
-    final barPaint = Paint()
-      ..color = AppTokens.teal.withAlpha(160)
-      ..style = PaintingStyle.fill;
-
-    final linePaint = Paint()
-      ..color = AppTokens.amber
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.0;
-
-    final linePath = Path();
-
-    for (int i = 0; i < n; i++) {
-      final b = buckets[i];
-      final centerX = (i * slotWidth) + (slotWidth / 2);
-
-      // Volume bar
-      final normalizedVol = b.avgVehicleCount / maxVol;
-      final barHeight = normalizedVol * (size.height - 24);
-      final barRect = RRect.fromRectAndRadius(
-        Rect.fromLTWH(
-          centerX - (barWidth / 2),
-          size.height - barHeight - 16,
-          barWidth,
-          barHeight,
-        ),
-        const Radius.circular(3),
-      );
-      canvas.drawRRect(barRect, barPaint);
-
-      // Congestion curve point
-      final congY = (size.height - 24) -
-          ((b.avgCongestion / 100.0) * (size.height - 30));
-      if (i == 0) {
-        linePath.moveTo(centerX, congY);
-      } else {
-        linePath.lineTo(centerX, congY);
-      }
-
-      canvas.drawCircle(
-        Offset(centerX, congY),
-        2.5,
-        Paint()..color = AppTokens.amber,
-      );
-    }
-
-    canvas.drawPath(linePath, linePaint);
-  }
-
-  @override
-  bool shouldRepaint(covariant _AnalyticsVolumeChartPainter oldDelegate) {
-    return oldDelegate.buckets != buckets || oldDelegate.isHourly != isHourly;
-  }
-}

@@ -386,4 +386,68 @@ describe("AssistantChat Component (assistant.test.tsx)", () => {
     const evilScript = Array.from(scripts).find((s) => s.textContent?.includes("__PWNED__"));
     expect(evilScript).toBeUndefined();
   });
+
+  it("renders cancelled requests as a neutral dismissed state (not an alarming error card)", async () => {
+    let rejectFetch: (reason?: unknown) => void;
+    const fetchPromise = new Promise<Response>((_, reject) => {
+      rejectFetch = reject;
+    });
+
+    global.fetch = vi.fn().mockReturnValue(fetchPromise);
+
+    render(<AssistantChat />);
+
+    const textarea = screen.getByTestId("assistant-composer-textarea");
+    fireEvent.change(textarea, { target: { value: "Check telemetry" } });
+    fireEvent.click(screen.getByTestId("assistant-send-button"));
+
+    expect(screen.getByTestId("assistant-thinking-indicator")).toBeDefined();
+
+    // Click cancel button
+    fireEvent.click(screen.getByText("Cancel"));
+
+    await waitFor(() => {
+      // Thinking indicator should be gone
+      expect(screen.queryByTestId("assistant-thinking-indicator")).toBeNull();
+      // Neutral dismissed container is rendered
+      expect(screen.getByTestId("assistant-cancelled-container")).toBeDefined();
+      expect(screen.getByTestId("ai-cancelled-badge")).toBeDefined();
+      // NOT a red error container
+      expect(screen.queryByTestId("assistant-error-container")).toBeNull();
+      expect(screen.queryByText("Request Timed Out")).toBeNull();
+    });
+  });
+
+  it("displays elapsed generation time after the answer", async () => {
+    let fakeTime = 1000;
+    vi.spyOn(performance, "now").mockImplementation(() => fakeTime);
+
+    global.fetch = vi.fn().mockImplementation(async () => {
+      fakeTime += 1400;
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({
+          answer: "Traffic volume is nominal.",
+          conversation_id: "conv-elapsed",
+          tool_calls: [],
+          provenance: [],
+          insufficient_data: false,
+          suggested_followups: [],
+        }),
+      } as unknown as Response;
+    });
+
+    render(<AssistantChat />);
+
+    const textarea = screen.getByTestId("assistant-composer-textarea");
+    fireEvent.change(textarea, { target: { value: "Volume status" } });
+    fireEvent.click(screen.getByTestId("assistant-send-button"));
+
+    await waitFor(() => {
+      expect(screen.getByText("Traffic volume is nominal.")).toBeDefined();
+      expect(screen.getByTestId("assistant-elapsed-time")).toBeDefined();
+      expect(screen.getByText("Answered in 1.4s")).toBeDefined();
+    });
+  });
 });

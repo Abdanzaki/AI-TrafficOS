@@ -71,6 +71,15 @@ class _AssistantScreenState extends ConsumerState<AssistantScreen> {
     });
   }
 
+  bool _isRequestCancelled = false;
+
+  void _cancelRequest() {
+    setState(() {
+      _isRequestCancelled = true;
+    });
+    ref.read(assistantChatProvider.notifier).cancelRequest();
+  }
+
   void _sendMessage([String? overrideText]) {
     final text = overrideText ?? _textController.text;
     if (text.trim().isEmpty) return;
@@ -78,17 +87,25 @@ class _AssistantScreenState extends ConsumerState<AssistantScreen> {
     if (overrideText == null) {
       _textController.clear();
     }
+    _isRequestCancelled = false;
     ref.read(assistantChatProvider.notifier).sendMessage(text);
     _scrollToBottom();
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final chatState = ref.watch(assistantChatProvider);
     final currentUser = ref.watch(currentUserProvider);
 
     // Auto-scroll when new messages arrive or loading begins
     ref.listen<AssistantChatState>(assistantChatProvider, (prev, next) {
+      if (_isRequestCancelled) {
+        if (!next.isLoading) {
+          setState(() => _isRequestCancelled = false);
+        }
+        return;
+      }
       if ((prev?.messages.length ?? 0) != next.messages.length ||
           prev?.isLoading != next.isLoading) {
         _scrollToBottom();
@@ -96,7 +113,7 @@ class _AssistantScreenState extends ConsumerState<AssistantScreen> {
     });
 
     return Scaffold(
-      backgroundColor: AppTokens.ink,
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
         titleSpacing: AppTokens.spaceMd,
         title: Row(
@@ -115,7 +132,7 @@ class _AssistantScreenState extends ConsumerState<AssistantScreen> {
               ),
             ),
             const SizedBox(width: AppTokens.spaceSm),
-            const Column(
+            Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -124,14 +141,14 @@ class _AssistantScreenState extends ConsumerState<AssistantScreen> {
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
-                    color: AppTokens.textPrimary,
+                    color: theme.colorScheme.onSurface,
                   ),
                 ),
                 Text(
                   'TrafficOS Reasoning Engine',
                   style: TextStyle(
                     fontSize: 11,
-                    color: AppTokens.muted,
+                    color: AppTokens.mutedOf(context),
                   ),
                 ),
               ],
@@ -249,22 +266,22 @@ class _AssistantScreenState extends ConsumerState<AssistantScreen> {
             ),
           ),
           const SizedBox(height: AppTokens.spaceMd),
-          const Text(
+          Text(
             'TrafficOS AI Assistant',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w700,
-              color: AppTokens.textPrimary,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
           const SizedBox(height: AppTokens.spaceXs),
-          const Text(
+          Text(
             'Inquire on arterial throughput, signal timings, incident dispatch, or automated corridor controls.',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 13,
-              color: AppTokens.muted,
+              color: AppTokens.mutedOf(context),
               height: 1.4,
             ),
           ),
@@ -288,9 +305,9 @@ class _AssistantScreenState extends ConsumerState<AssistantScreen> {
                 child: Container(
                   padding: const EdgeInsets.all(AppTokens.spaceMd),
                   decoration: BoxDecoration(
-                    color: AppTokens.card,
+                    color: Theme.of(context).colorScheme.surface,
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: AppTokens.borderDark),
+                    border: Border.all(color: AppTokens.borderOf(context)),
                   ),
                   child: Row(
                     children: [
@@ -303,17 +320,17 @@ class _AssistantScreenState extends ConsumerState<AssistantScreen> {
                       Expanded(
                         child: Text(
                           prompt,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 13,
-                            color: AppTokens.textPrimary,
+                            color: Theme.of(context).colorScheme.onSurface,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
                       ),
-                      const Icon(
+                      Icon(
                         Icons.arrow_forward_ios_rounded,
                         size: 12,
-                        color: AppTokens.muted,
+                        color: AppTokens.mutedOf(context),
                       ),
                     ],
                   ),
@@ -380,7 +397,7 @@ class _AssistantScreenState extends ConsumerState<AssistantScreen> {
         children: [
           AppCard(
             padding: const EdgeInsets.all(AppTokens.spaceMd),
-            borderColor: AppTokens.borderDark,
+            borderColor: AppTokens.borderOf(context),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -391,9 +408,9 @@ class _AssistantScreenState extends ConsumerState<AssistantScreen> {
                     const Spacer(),
                     Text(
                       _formatTimestamp(message.timestamp),
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 11,
-                        color: AppTokens.muted,
+                        color: AppTokens.mutedOf(context),
                       ),
                     ),
                   ],
@@ -415,6 +432,27 @@ class _AssistantScreenState extends ConsumerState<AssistantScreen> {
                     provenance: message.provenance,
                   ),
                 ],
+
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.timer_outlined,
+                      size: 11,
+                      color: AppTokens.mutedOf(context),
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Answered in ${(message.elapsedSeconds ?? 1.2).toStringAsFixed(1)}s',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w500,
+                        color: AppTokens.mutedOf(context),
+                      ),
+                    ),
+                  ],
+                ),
               ],
             ),
           ),
@@ -496,14 +534,14 @@ class _AssistantScreenState extends ConsumerState<AssistantScreen> {
               vertical: AppTokens.spaceSm + 2,
             ),
             decoration: BoxDecoration(
-              color: AppTokens.card,
+              color: AppTokens.cardOf(context),
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: AppTokens.borderDark),
+              border: Border.all(color: AppTokens.borderOf(context)),
             ),
-            child: const Row(
+            child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                SizedBox(
+                const SizedBox(
                   width: 14,
                   height: 14,
                   child: CircularProgressIndicator(
@@ -511,13 +549,38 @@ class _AssistantScreenState extends ConsumerState<AssistantScreen> {
                     valueColor: AlwaysStoppedAnimation<Color>(AppTokens.teal),
                   ),
                 ),
-                SizedBox(width: AppTokens.spaceSm),
+                const SizedBox(width: AppTokens.spaceSm),
                 Text(
                   'Thinking…',
                   style: TextStyle(
                     fontSize: 13,
-                    color: AppTokens.muted,
+                    color: AppTokens.mutedOf(context),
                     fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(width: AppTokens.spaceMd),
+                InkWell(
+                  onTap: _cancelRequest,
+                  borderRadius: BorderRadius.circular(6),
+                  child: Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: const [
+                        Icon(Icons.stop_circle_outlined,
+                            size: 16, color: AppTokens.danger),
+                        SizedBox(width: 4),
+                        Text(
+                          'Stop',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: AppTokens.danger,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ],
@@ -541,8 +604,8 @@ class _AssistantScreenState extends ConsumerState<AssistantScreen> {
         itemBuilder: (context, index) {
           final followup = followups[index];
           return ActionChip(
-            backgroundColor: AppTokens.surface,
-            side: const BorderSide(color: AppTokens.borderDark),
+            backgroundColor: Theme.of(context).colorScheme.surface,
+            side: BorderSide(color: AppTokens.borderOf(context)),
             shape: const StadiumBorder(),
             avatar: const Icon(
               Icons.subdirectory_arrow_right_rounded,
@@ -551,9 +614,9 @@ class _AssistantScreenState extends ConsumerState<AssistantScreen> {
             ),
             label: Text(
               followup,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 12,
-                color: AppTokens.textPrimary,
+                color: Theme.of(context).colorScheme.onSurface,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -570,10 +633,10 @@ class _AssistantScreenState extends ConsumerState<AssistantScreen> {
         horizontal: AppTokens.spaceMd,
         vertical: AppTokens.spaceSm,
       ),
-      decoration: const BoxDecoration(
-        color: AppTokens.surface,
+      decoration: BoxDecoration(
+        color: AppTokens.surfaceOf(context),
         border: Border(
-          top: BorderSide(color: AppTokens.borderDark),
+          top: BorderSide(color: AppTokens.borderOf(context)),
         ),
       ),
       child: Row(
@@ -585,16 +648,16 @@ class _AssistantScreenState extends ConsumerState<AssistantScreen> {
               enabled: !isLoading,
               minLines: 1,
               maxLines: 4,
-              style: const TextStyle(
-                color: AppTokens.textPrimary,
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurface,
                 fontSize: 14,
               ),
               decoration: InputDecoration(
                 hintText: isLoading
                     ? 'AI is formulating answer...'
                     : 'Ask TrafficOS Assistant...',
-                hintStyle: const TextStyle(
-                  color: AppTokens.muted,
+                hintStyle: TextStyle(
+                  color: AppTokens.mutedOf(context),
                   fontSize: 13,
                 ),
                 isDense: true,
@@ -603,14 +666,14 @@ class _AssistantScreenState extends ConsumerState<AssistantScreen> {
                   vertical: 10,
                 ),
                 filled: true,
-                fillColor: AppTokens.card,
+                fillColor: AppTokens.cardOf(context),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(20),
-                  borderSide: const BorderSide(color: AppTokens.borderDark),
+                  borderSide: BorderSide(color: AppTokens.borderOf(context)),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(20),
-                  borderSide: const BorderSide(color: AppTokens.borderDark),
+                  borderSide: BorderSide(color: AppTokens.borderOf(context)),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(20),
@@ -622,16 +685,29 @@ class _AssistantScreenState extends ConsumerState<AssistantScreen> {
           ),
           const SizedBox(width: AppTokens.spaceSm),
           Container(
-            width: 40,
-            height: 40,
+            width: 44,
+            height: 44,
             decoration: BoxDecoration(
-              color: !isLoading ? AppTokens.teal : AppTokens.teal.withAlpha(50),
+              color: isLoading
+                  ? AppTokens.danger.withAlpha(25)
+                  : (_canSend ? AppTokens.teal : AppTokens.teal.withAlpha(50)),
               shape: BoxShape.circle,
+              border: isLoading
+                  ? Border.all(color: AppTokens.danger.withAlpha(90))
+                  : null,
             ),
             child: IconButton(
-              icon: const Icon(Icons.send_rounded, size: 18),
-              color: !isLoading ? AppTokens.ink : AppTokens.muted,
-              onPressed: !isLoading ? () => _sendMessage() : null,
+              tooltip: isLoading ? 'Stop generation' : 'Send message',
+              icon: Icon(
+                isLoading ? Icons.stop_rounded : Icons.send_rounded,
+                size: isLoading ? 20 : 18,
+              ),
+              color: isLoading
+                  ? AppTokens.danger
+                  : AppTokens.ink,
+              onPressed: isLoading
+                  ? _cancelRequest
+                  : () => _sendMessage(),
             ),
           ),
         ],
@@ -667,9 +743,9 @@ class _AssistantScreenState extends ConsumerState<AssistantScreen> {
               ],
             ),
             const SizedBox(height: 6),
-            const Text(
+            Text(
               'Your municipal authentication token has expired. Please sign in again to resume.',
-              style: TextStyle(fontSize: 12, color: AppTokens.muted),
+              style: TextStyle(fontSize: 12, color: AppTokens.mutedOf(context)),
             ),
             const SizedBox(height: AppTokens.spaceSm),
             ElevatedButton(
@@ -719,7 +795,7 @@ class _AssistantScreenState extends ConsumerState<AssistantScreen> {
             const SizedBox(height: 6),
             Text(
               'Your account role ($roleName) is not permitted to query the AI assistant reasoning engine.',
-              style: const TextStyle(fontSize: 12, color: AppTokens.muted),
+              style: TextStyle(fontSize: 12, color: AppTokens.mutedOf(context)),
             ),
           ],
         ),
@@ -730,7 +806,7 @@ class _AssistantScreenState extends ConsumerState<AssistantScreen> {
     return Container(
       padding: const EdgeInsets.all(AppTokens.spaceMd),
       decoration: BoxDecoration(
-        color: AppTokens.card,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: AppTokens.danger.withAlpha(70)),
       ),
@@ -745,7 +821,7 @@ class _AssistantScreenState extends ConsumerState<AssistantScreen> {
           Expanded(
             child: Text(
               error.message,
-              style: const TextStyle(fontSize: 12, color: AppTokens.textPrimary),
+              style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurface),
             ),
           ),
           const SizedBox(width: AppTokens.spaceSm),
@@ -786,10 +862,10 @@ class _AssistantScreenState extends ConsumerState<AssistantScreen> {
           padding: const EdgeInsets.only(top: 8, bottom: 4),
           child: Text(
             trimmed.substring(4),
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w700,
-              color: AppTokens.textPrimary,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
         ));
@@ -798,10 +874,10 @@ class _AssistantScreenState extends ConsumerState<AssistantScreen> {
           padding: const EdgeInsets.only(top: 10, bottom: 4),
           child: Text(
             trimmed.substring(3),
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w700,
-              color: AppTokens.textPrimary,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
         ));
@@ -810,10 +886,10 @@ class _AssistantScreenState extends ConsumerState<AssistantScreen> {
           padding: const EdgeInsets.only(top: 12, bottom: 6),
           child: Text(
             trimmed.substring(2),
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w800,
-              color: AppTokens.textPrimary,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
         ));
@@ -857,9 +933,9 @@ class _AssistantScreenState extends ConsumerState<AssistantScreen> {
   }
 
   List<InlineSpan> _parseInlineSpans(String text) {
-    const baseStyle = TextStyle(
+    final baseStyle = TextStyle(
       fontSize: 13,
-      color: AppTokens.textPrimary,
+      color: Theme.of(context).colorScheme.onSurface,
       height: 1.4,
     );
 
@@ -886,9 +962,9 @@ class _AssistantScreenState extends ConsumerState<AssistantScreen> {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
             decoration: BoxDecoration(
-              color: AppTokens.surface,
+              color: Theme.of(context).colorScheme.surface,
               borderRadius: BorderRadius.circular(4),
-              border: Border.all(color: AppTokens.borderDark),
+              border: Border.all(color: AppTokens.borderOf(context)),
             ),
             child: Text(
               raw.substring(1, raw.length - 1),
@@ -986,9 +1062,9 @@ class _SystemDataCardState extends State<_SystemDataCard> {
                   const SizedBox(width: AppTokens.spaceXs),
                   Text(
                     '(${widget.provenance.length} items)',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 11,
-                      color: AppTokens.muted,
+                      color: AppTokens.mutedOf(context),
                     ),
                   ),
                   const Spacer(),
@@ -1016,16 +1092,16 @@ class _SystemDataCardState extends State<_SystemDataCard> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Divider(color: AppTokens.borderDark),
+                  Divider(color: AppTokens.borderOf(context)),
 
                   // Provenance segments
                   if (widget.provenance.isNotEmpty) ...[
-                    const Text(
+                    Text(
                       'Data Provenance',
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
-                        color: AppTokens.textPrimary,
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
                     const SizedBox(height: AppTokens.spaceXs),
@@ -1035,12 +1111,12 @@ class _SystemDataCardState extends State<_SystemDataCard> {
 
                   // Tool execution records
                   if (widget.toolCalls.isNotEmpty) ...[
-                    const Text(
+                    Text(
                       'Tool Executions',
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
-                        color: AppTokens.textPrimary,
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
                     const SizedBox(height: AppTokens.spaceXs),
@@ -1063,7 +1139,7 @@ class _SystemDataCardState extends State<_SystemDataCard> {
       ProvenanceLabel.observed => (AppTokens.teal, 'Observed'),
       ProvenanceLabel.predicted => (AppTokens.amber, 'Predicted'),
       ProvenanceLabel.recommended => (_violet, 'Recommended'),
-      ProvenanceLabel.unknown => (AppTokens.muted, 'General'),
+      ProvenanceLabel.unknown => (AppTokens.mutedOf(context), 'General'),
     };
 
     return Padding(
@@ -1091,9 +1167,9 @@ class _SystemDataCardState extends State<_SystemDataCard> {
           Expanded(
             child: Text(
               seg.segment,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 12,
-                color: AppTokens.textPrimary,
+                color: Theme.of(context).colorScheme.onSurface,
                 height: 1.3,
               ),
             ),
@@ -1108,9 +1184,9 @@ class _SystemDataCardState extends State<_SystemDataCard> {
       margin: const EdgeInsets.only(bottom: 6),
       padding: const EdgeInsets.all(AppTokens.spaceSm),
       decoration: BoxDecoration(
-        color: AppTokens.card,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: AppTokens.borderDark),
+        border: Border.all(color: AppTokens.borderOf(context)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1134,7 +1210,7 @@ class _SystemDataCardState extends State<_SystemDataCard> {
             const SizedBox(height: 3),
             Text(
               call.resultSummary,
-              style: const TextStyle(fontSize: 11, color: AppTokens.muted),
+              style: TextStyle(fontSize: 11, color: AppTokens.mutedOf(context)),
             ),
           ],
         ],
@@ -1146,19 +1222,19 @@ class _SystemDataCardState extends State<_SystemDataCard> {
     return Container(
       padding: const EdgeInsets.all(AppTokens.spaceSm),
       decoration: BoxDecoration(
-        color: AppTokens.card,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: AppTokens.borderDark),
+        border: Border.all(color: AppTokens.borderOf(context)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Provenance Legend',
             style: TextStyle(
               fontSize: 10,
               fontWeight: FontWeight.w700,
-              color: AppTokens.muted,
+              color: AppTokens.mutedOf(context),
               letterSpacing: 0.3,
             ),
           ),
@@ -1210,7 +1286,7 @@ class _SystemDataCardState extends State<_SystemDataCard> {
           Expanded(
             child: Text(
               desc,
-              style: const TextStyle(fontSize: 10, color: AppTokens.muted),
+              style: TextStyle(fontSize: 10, color: AppTokens.mutedOf(context)),
             ),
           ),
         ],

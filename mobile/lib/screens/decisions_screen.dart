@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/ai_decision.dart';
+import '../providers/realtime_providers.dart';
 import '../services/prediction_service.dart';
 import '../theme/app_tokens.dart';
 import '../widgets/app_badge.dart';
@@ -9,6 +10,7 @@ import '../widgets/app_card.dart';
 import '../widgets/empty_state.dart';
 import '../widgets/error_state.dart';
 import '../widgets/loading_state.dart';
+import '../widgets/offline_banner.dart';
 
 /// Screen displaying paginated AI decision history with action type filtering
 /// and expandable details (action, junction, explanation, confidence, impact, timestamp, model version).
@@ -96,11 +98,12 @@ class _DecisionsScreenState extends ConsumerState<DecisionsScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            _buildActionFilterBar(),
+            if (ref.watch(isOfflineProvider)) const OfflineBanner(),
+            _buildActionFilterBar(theme),
             Expanded(
               child: RefreshIndicator(
                 color: AppTokens.teal,
-                backgroundColor: AppTokens.card,
+                backgroundColor: theme.colorScheme.surface,
                 onRefresh: _loadDecisions,
                 child: _buildBody(theme),
               ),
@@ -111,14 +114,14 @@ class _DecisionsScreenState extends ConsumerState<DecisionsScreen> {
     );
   }
 
-  Widget _buildActionFilterBar() {
+  Widget _buildActionFilterBar(ThemeData theme) {
     return Container(
       height: 48,
       padding: const EdgeInsets.symmetric(horizontal: AppTokens.spaceMd),
-      decoration: const BoxDecoration(
-        color: AppTokens.surface,
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
         border: Border(
-          bottom: BorderSide(color: AppTokens.borderDark),
+          bottom: BorderSide(color: AppTokens.borderOf(context)),
         ),
       ),
       child: ListView.separated(
@@ -135,16 +138,18 @@ class _DecisionsScreenState extends ConsumerState<DecisionsScreen> {
               label: Text(
                 filter,
                 style: TextStyle(
-                  color: isSelected ? AppTokens.ink : AppTokens.textPrimary,
+                  color: isSelected
+                      ? (theme.brightness == Brightness.dark ? AppTokens.ink : Colors.white)
+                      : theme.colorScheme.onSurface,
                   fontSize: 11,
                   fontWeight: FontWeight.w700,
                 ),
               ),
               selected: isSelected,
               selectedColor: AppTokens.teal,
-              backgroundColor: AppTokens.card,
+              backgroundColor: theme.colorScheme.surface,
               side: BorderSide(
-                color: isSelected ? AppTokens.teal : AppTokens.borderDark,
+                color: isSelected ? AppTokens.teal : AppTokens.borderOf(context),
               ),
               onSelected: (selected) {
                 if (selected) {
@@ -256,8 +261,8 @@ class _DecisionsScreenState extends ConsumerState<DecisionsScreen> {
                             const SizedBox(height: 2),
                             Text(
                               decision.junction ?? 'Municipal System Corridor',
-                              style: const TextStyle(
-                                color: AppTokens.textPrimary,
+                              style: TextStyle(
+                                color: theme.colorScheme.onSurface,
                                 fontWeight: FontWeight.w600,
                                 fontSize: 12,
                               ),
@@ -269,7 +274,7 @@ class _DecisionsScreenState extends ConsumerState<DecisionsScreen> {
                         isExpanded
                             ? Icons.expand_less_rounded
                             : Icons.expand_more_rounded,
-                        color: AppTokens.muted,
+                        color: AppTokens.mutedOf(context),
                       ),
                     ],
                   ),
@@ -277,7 +282,7 @@ class _DecisionsScreenState extends ConsumerState<DecisionsScreen> {
                   Text(
                     decision.reason,
                     style: TextStyle(
-                      color: isExpanded ? AppTokens.textPrimary : AppTokens.muted,
+                      color: isExpanded ? theme.colorScheme.onSurface : AppTokens.mutedOf(context),
                       fontSize: 12,
                     ),
                     maxLines: isExpanded ? null : 2,
@@ -285,7 +290,7 @@ class _DecisionsScreenState extends ConsumerState<DecisionsScreen> {
                   ),
                   if (isExpanded) ...[
                     const SizedBox(height: AppTokens.spaceMd),
-                    const Divider(color: AppTokens.borderDark),
+                    Divider(color: AppTokens.borderOf(context)),
                     const SizedBox(height: AppTokens.spaceSm),
                     _buildExpandedDetails(decision),
                   ],
@@ -310,9 +315,9 @@ class _DecisionsScreenState extends ConsumerState<DecisionsScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
+              Text(
                 'Engine Confidence',
-                style: TextStyle(color: AppTokens.muted, fontSize: 11),
+                style: TextStyle(color: AppTokens.mutedOf(context), fontSize: 11),
               ),
               Text(
                 '$confPercent%',
@@ -329,7 +334,7 @@ class _DecisionsScreenState extends ConsumerState<DecisionsScreen> {
             borderRadius: BorderRadius.circular(3),
             child: LinearProgressIndicator(
               value: decision.confidence!,
-              backgroundColor: AppTokens.surface,
+              backgroundColor: Theme.of(context).colorScheme.surface,
               valueColor: const AlwaysStoppedAnimation(AppTokens.teal),
               minHeight: 5,
             ),
@@ -377,8 +382,8 @@ class _DecisionsScreenState extends ConsumerState<DecisionsScreen> {
         const SizedBox(width: AppTokens.spaceSm),
         Text(
           '$label: ',
-          style: const TextStyle(
-            color: AppTokens.muted,
+          style: TextStyle(
+            color: AppTokens.mutedOf(context),
             fontSize: 11,
             fontWeight: FontWeight.w600,
           ),
@@ -386,8 +391,8 @@ class _DecisionsScreenState extends ConsumerState<DecisionsScreen> {
         Expanded(
           child: Text(
             value,
-            style: const TextStyle(
-              color: AppTokens.textPrimary,
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurface,
               fontSize: 11,
             ),
           ),
@@ -408,8 +413,9 @@ class _DecisionsScreenState extends ConsumerState<DecisionsScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           IconButton(
+            tooltip: 'Previous page',
             icon: const Icon(Icons.arrow_back_ios_rounded, size: 16),
-            color: _currentPage > 1 ? AppTokens.teal : AppTokens.muted,
+            color: _currentPage > 1 ? AppTokens.teal : AppTokens.mutedOf(context),
             onPressed: _currentPage > 1
                 ? () {
                     setState(() {
@@ -422,17 +428,18 @@ class _DecisionsScreenState extends ConsumerState<DecisionsScreen> {
           ),
           Text(
             'Page $_currentPage of ${paginated.pages}',
-            style: const TextStyle(
-              color: AppTokens.textPrimary,
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurface,
               fontWeight: FontWeight.w600,
               fontSize: 13,
             ),
           ),
           IconButton(
+            tooltip: 'Next page',
             icon: const Icon(Icons.arrow_forward_ios_rounded, size: 16),
             color: _currentPage < paginated.pages
                 ? AppTokens.teal
-                : AppTokens.muted,
+                : AppTokens.mutedOf(context),
             onPressed: _currentPage < paginated.pages
                 ? () {
                     setState(() {

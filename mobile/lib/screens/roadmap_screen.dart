@@ -175,7 +175,7 @@ class RoadmapScreen extends StatelessWidget {
           'Project Roadmap',
           style: theme.textTheme.titleLarge?.copyWith(
             fontWeight: FontWeight.w700,
-            color: AppTokens.textPrimary,
+            color: theme.colorScheme.onSurface,
           ),
         ),
       ),
@@ -217,7 +217,7 @@ class RoadmapScreen extends StatelessWidget {
                         Text(
                           'Planned capabilities — nothing here is live yet. Live telemetry and feature modules will be connected progressively as each phase backend is completed.',
                           style: theme.textTheme.bodySmall?.copyWith(
-                            color: AppTokens.textPrimary,
+                            color: theme.colorScheme.onSurface,
                             height: 1.4,
                           ),
                         ),
@@ -228,7 +228,7 @@ class RoadmapScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: AppTokens.spaceLg),
-            ...phases.map((phase) => _buildPhaseCard(theme, phase)),
+            ...phases.map((phase) => _buildPhaseCard(theme, phase, context)),
             const SizedBox(height: AppTokens.spaceXl),
           ],
         ),
@@ -236,7 +236,7 @@ class RoadmapScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildPhaseCard(ThemeData theme, _RoadmapPhase phase) {
+  Widget _buildPhaseCard(ThemeData theme, _RoadmapPhase phase, BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(bottom: AppTokens.spaceMd),
       child: AppCard(
@@ -249,14 +249,14 @@ class RoadmapScreen extends StatelessWidget {
               children: [
                 AppBadge(
                   label: phase.phaseNumber,
-                  color: phase.isCurrent ? AppTokens.teal : AppTokens.muted,
+                  color: phase.isCurrent ? AppTokens.teal : AppTokens.mutedOf(context),
                 ),
                 const SizedBox(width: AppTokens.spaceSm),
                 Expanded(
                   child: Text(
                     phase.title,
                     style: theme.textTheme.titleMedium?.copyWith(
-                      color: AppTokens.textPrimary,
+                      color: theme.colorScheme.onSurface,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -271,16 +271,16 @@ class RoadmapScreen extends StatelessWidget {
             Text(
               phase.summary,
               style: theme.textTheme.bodyMedium?.copyWith(
-                color: AppTokens.muted,
+                color: AppTokens.mutedOf(context),
               ),
             ),
             const SizedBox(height: AppTokens.spaceMd),
-            const Divider(color: AppTokens.borderDark),
+            Divider(color: AppTokens.borderOf(context)),
             const SizedBox(height: AppTokens.spaceSm),
             Text(
               'Planned Deliverables:',
               style: theme.textTheme.labelSmall?.copyWith(
-                color: AppTokens.textPrimary,
+                color: theme.colorScheme.onSurface,
                 fontWeight: FontWeight.w600,
                 letterSpacing: 0.5,
               ),
@@ -300,7 +300,7 @@ class RoadmapScreen extends StatelessWidget {
                         decoration: BoxDecoration(
                           color: phase.isCurrent
                               ? AppTokens.teal
-                              : AppTokens.muted,
+                              : AppTokens.mutedOf(context),
                           shape: BoxShape.circle,
                         ),
                       ),
@@ -310,7 +310,7 @@ class RoadmapScreen extends StatelessWidget {
                       child: Text(
                         item,
                         style: theme.textTheme.bodySmall?.copyWith(
-                          color: AppTokens.textPrimary.withAlpha(220),
+                          color: theme.colorScheme.onSurface.withAlpha(220),
                         ),
                       ),
                     ),

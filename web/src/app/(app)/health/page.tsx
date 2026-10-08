@@ -99,10 +99,14 @@ export default function HealthPage() {
   } = useApiQuery<GatewayHealth>({
     queryKey: ["health-gateway"],
     endpoint: "/health",
+    queryOptions: {
+      refetchInterval: 60000,
+      refetchOnWindowFocus: true,
+    },
   });
 
   // 2. Gateway Version
-  // No WS topic for health-version; polling retained intentionally
+  // Static version rarely changes; refresh on window focus rather than aggressive polling
   const {
     data: versionData,
     refetch: refetchVersion,
@@ -110,12 +114,13 @@ export default function HealthPage() {
     queryKey: ["health-version"],
     endpoint: "/version",
     queryOptions: {
-      refetchInterval: 30000,
+      refetchInterval: false,
+      refetchOnWindowFocus: true,
     },
   });
 
   // 3. AI Forecasting Latest Model
-  // No WS topic for health-model-latest; polling retained intentionally
+  // Non-critical model registry polling reduced to 60s
   const {
     data: latestModel,
     isLoading: modelLoading,
@@ -125,13 +130,14 @@ export default function HealthPage() {
     queryKey: ["health-model-latest"],
     endpoint: "/forecasting/models/latest",
     queryOptions: {
-      refetchInterval: 20000,
+      refetchInterval: 60000,
+      refetchOnWindowFocus: true,
       retry: false, // 404 is valid if no model registered yet
     },
   });
 
   // 3b. AI Forecasting Models Count
-  // No WS topic for health-models-list; polling retained intentionally
+  // Non-critical models list polling reduced to 60s
   const {
     data: modelsList,
     refetch: refetchModelsList,
@@ -139,13 +145,14 @@ export default function HealthPage() {
     queryKey: ["health-models-list"],
     endpoint: "/forecasting/models",
     queryOptions: {
-      refetchInterval: 30000,
+      refetchInterval: 60000,
+      refetchOnWindowFocus: true,
       retry: false,
     },
   });
 
   // 4. DB Services Check: Intersections table query
-  // No WS topic for health-db-junctions; polling retained intentionally
+  // Reduced to 60s interval with refetch on window focus
   const {
     data: dbJunctions,
     isLoading: dbLoading,
@@ -156,7 +163,8 @@ export default function HealthPage() {
     endpoint: "/junctions",
     params: { per_page: 1 },
     queryOptions: {
-      refetchInterval: 15000,
+      refetchInterval: 60000,
+      refetchOnWindowFocus: true,
     },
   });
 
@@ -168,6 +176,9 @@ export default function HealthPage() {
     queryKey: ["health-db-signals"],
     endpoint: "/signals",
     params: { per_page: 1 },
+    queryOptions: {
+      refetchOnWindowFocus: true,
+    },
   });
 
   // 6. Telemetry Records DB Check
@@ -178,6 +189,9 @@ export default function HealthPage() {
     queryKey: ["health-telemetry-records"],
     endpoint: "/traffic-records",
     params: { per_page: 1 },
+    queryOptions: {
+      refetchOnWindowFocus: true,
+    },
   });
 
   // 7. Vehicle Events Stream Check
@@ -188,6 +202,9 @@ export default function HealthPage() {
     queryKey: ["health-vehicle-events"],
     endpoint: "/vehicle-events",
     params: { per_page: 1 },
+    queryOptions: {
+      refetchOnWindowFocus: true,
+    },
   });
 
   const handleRefreshAll = () => {
@@ -354,7 +371,7 @@ export default function HealthPage() {
 
               <div className="pt-3 mt-4 border-t border-white/5 text-[10px] text-muted flex items-center justify-between">
                 <span>Polling Interval:</span>
-                <span className="font-mono text-accent">15s</span>
+                <span className="font-mono text-accent">60s</span>
               </div>
             </Card>
 

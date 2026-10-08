@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -13,6 +15,7 @@ import '../widgets/app_card.dart';
 import '../widgets/empty_state.dart';
 import '../widgets/error_state.dart';
 import '../widgets/loading_state.dart';
+import '../widgets/volume_trend_chart.dart';
 
 /// Live Traffic Telemetry screen featuring volume charts, corridor metrics,
 /// and an infinite-scrolling vehicle perception event feed.
@@ -38,6 +41,9 @@ class _TrafficScreenState extends ConsumerState<TrafficScreen> {
   int _eventPage = 1;
   int _eventTotalPages = 1;
 
+  Timer? _wsDebounceTimer;
+  bool _isSyncing = false;
+
   @override
   void initState() {
     super.initState();
@@ -48,9 +54,27 @@ class _TrafficScreenState extends ConsumerState<TrafficScreen> {
 
   @override
   void dispose() {
+    _wsDebounceTimer?.cancel();
     _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
     super.dispose();
+  }
+
+  void _scheduleDebouncedRefresh() {
+    _wsDebounceTimer?.cancel();
+    _wsDebounceTimer = Timer(const Duration(milliseconds: 1500), () async {
+      if (mounted && !_isSyncing) {
+        _isSyncing = true;
+        try {
+          await Future.wait([
+            _loadSummary(isBackgroundRefresh: true),
+            _loadInitialEvents(isBackgroundRefresh: true),
+          ]);
+        } finally {
+          _isSyncing = false;
+        }
+      }
+    });
   }
 
   void _onScroll() {
@@ -156,16 +180,14 @@ class _TrafficScreenState extends ConsumerState<TrafficScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Real-time WebSocket invalidation: on traffic.update and congestion.change,
-    // refresh volume aggregation trends and vehicle detection feed
+    // Real-time WebSocket invalidation: debounced on burst events
     for (final topic in const [
       RealtimeTopics.trafficUpdate,
       RealtimeTopics.congestionChange,
     ]) {
       ref.listen(realtimeTopicEventProvider(topic), (_, next) {
         if (next.hasValue) {
-          _loadSummary(isBackgroundRefresh: true);
-          _loadInitialEvents(isBackgroundRefresh: true);
+          _scheduleDebouncedRefresh();
         }
       });
     }
@@ -175,7 +197,7 @@ class _TrafficScreenState extends ConsumerState<TrafficScreen> {
     return RefreshIndicator(
       onRefresh: _refreshAll,
       color: AppTokens.teal,
-      backgroundColor: AppTokens.card,
+      backgroundColor: theme.cardTheme.color ?? AppTokens.cardOf(context),
       child: CustomScrollView(
         controller: _scrollController,
         physics: const AlwaysScrollableScrollPhysics(),
@@ -200,7 +222,7 @@ class _TrafficScreenState extends ConsumerState<TrafficScreen> {
                         'Live Vehicle Detections',
                         style: theme.textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.w700,
-                          color: AppTokens.textPrimary,
+                          color: theme.colorScheme.onSurface,
                         ),
                       ),
                       const Spacer(),
@@ -234,13 +256,13 @@ class _TrafficScreenState extends ConsumerState<TrafficScreen> {
                   'Traffic Flow & Volume',
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w700,
-                    color: AppTokens.textPrimary,
+                    color: theme.colorScheme.onSurface,
                   ),
                 ),
                 Text(
                   'Telemetry aggregation window',
                   style: theme.textTheme.bodySmall?.copyWith(
-                    color: AppTokens.muted,
+                    color: AppTokens.mutedOf(context),
                   ),
                 ),
               ],
@@ -271,8 +293,8 @@ class _TrafficScreenState extends ConsumerState<TrafficScreen> {
             style: SegmentedButton.styleFrom(
               selectedBackgroundColor: AppTokens.teal.withAlpha(40),
               selectedForegroundColor: AppTokens.teal,
-              foregroundColor: AppTokens.muted,
-              backgroundColor: AppTokens.surface,
+              foregroundColor: AppTokens.mutedOf(context),
+              backgroundColor: Theme.of(context).colorScheme.surface,
             ),
           ),
         ],
@@ -305,12 +327,12 @@ class _TrafficScreenState extends ConsumerState<TrafficScreen> {
     }
 
     if (_summaryBuckets.isEmpty) {
-      return const AppCard(
-        padding: EdgeInsets.all(AppTokens.spaceXl),
+      return AppCard(
+        padding: const EdgeInsets.all(AppTokens.spaceXl),
         child: Center(
           child: Text(
             'No telemetry buckets recorded for the selected window',
-            style: TextStyle(color: AppTokens.muted),
+            style: TextStyle(color: AppTokens.mutedOf(context)),
           ),
         ),
       );
@@ -327,7 +349,7 @@ class _TrafficScreenState extends ConsumerState<TrafficScreen> {
                 'Volume Trend & Congestion Level',
                 style: theme.textTheme.titleSmall?.copyWith(
                   fontWeight: FontWeight.w700,
-                  color: AppTokens.textPrimary,
+                  color: theme.colorScheme.onSurface,
                 ),
               ),
               const Spacer(),
@@ -335,25 +357,20 @@ class _TrafficScreenState extends ConsumerState<TrafficScreen> {
                 children: [
                   Container(width: 8, height: 8, color: AppTokens.teal),
                   const SizedBox(width: 4),
-                  const Text('Volume', style: TextStyle(color: AppTokens.muted, fontSize: 11)),
+                  Text('Volume', style: TextStyle(color: AppTokens.mutedOf(context), fontSize: 11)),
                   const SizedBox(width: 10),
                   Container(width: 8, height: 8, color: AppTokens.amber),
                   const SizedBox(width: 4),
-                  const Text('Congestion %', style: TextStyle(color: AppTokens.muted, fontSize: 11)),
+                  Text('Congestion %', style: TextStyle(color: AppTokens.mutedOf(context), fontSize: 11)),
                 ],
               ),
             ],
           ),
           const SizedBox(height: AppTokens.spaceMd),
-          SizedBox(
+          VolumeTrendChart(
+            buckets: _summaryBuckets,
+            isHourly: _selectedBucket == 'hour',
             height: 180,
-            width: double.infinity,
-            child: CustomPaint(
-              painter: VolumeTrendChartPainter(
-                buckets: _summaryBuckets,
-                isHourly: _selectedBucket == 'hour',
-              ),
-            ),
           ),
         ],
       ),
@@ -452,17 +469,17 @@ class _TrafficScreenState extends ConsumerState<TrafficScreen> {
               const SizedBox(width: 6),
               Text(
                 title,
-                style: const TextStyle(color: AppTokens.muted, fontSize: 11),
+                style: TextStyle(color: AppTokens.mutedOf(context), fontSize: 11),
               ),
             ],
           ),
           const SizedBox(height: 6),
           Text(
             value,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w800,
-              color: AppTokens.textPrimary,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
         ],
@@ -569,9 +586,9 @@ class _TrafficScreenState extends ConsumerState<TrafficScreen> {
                   children: [
                     Text(
                       event.vehicleType.toUpperCase(),
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontWeight: FontWeight.w700,
-                        color: AppTokens.textPrimary,
+                        color: Theme.of(context).colorScheme.onSurface,
                         fontSize: 13,
                       ),
                     ),
@@ -579,7 +596,7 @@ class _TrafficScreenState extends ConsumerState<TrafficScreen> {
                       const SizedBox(width: 6),
                       Text(
                         '• ${event.direction!}',
-                        style: const TextStyle(color: AppTokens.muted, fontSize: 12),
+                        style: TextStyle(color: AppTokens.mutedOf(context), fontSize: 12),
                       ),
                     ],
                   ],
@@ -587,7 +604,7 @@ class _TrafficScreenState extends ConsumerState<TrafficScreen> {
                 const SizedBox(height: 2),
                 Text(
                   'Node #${event.intersectionId ?? "--"} • Lane #${event.laneId ?? "--"}',
-                  style: const TextStyle(color: AppTokens.muted, fontSize: 11),
+                  style: TextStyle(color: AppTokens.mutedOf(context), fontSize: 11),
                 ),
               ],
             ),
@@ -608,7 +625,7 @@ class _TrafficScreenState extends ConsumerState<TrafficScreen> {
               if (event.confidence != null)
                 Text(
                   '${(event.confidence! * 100).toStringAsFixed(0)}% conf',
-                  style: const TextStyle(color: AppTokens.muted, fontSize: 10),
+                  style: TextStyle(color: AppTokens.mutedOf(context), fontSize: 10),
                 ),
             ],
           ),
@@ -618,85 +635,3 @@ class _TrafficScreenState extends ConsumerState<TrafficScreen> {
   }
 }
 
-/// Custom vector chart painter drawing volume bars and congestion curve.
-class VolumeTrendChartPainter extends CustomPainter {
-  VolumeTrendChartPainter({
-    required this.buckets,
-    required this.isHourly,
-  });
-
-  final List<TrafficSummaryBucket> buckets;
-  final bool isHourly;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    if (buckets.isEmpty) return;
-
-    final n = buckets.length;
-    final maxVol = buckets
-        .map((b) => b.avgVehicleCount)
-        .fold<double>(1.0, (a, b) => a > b ? a : b);
-
-    // Gridlines
-    final gridPaint = Paint()
-      ..color = AppTokens.borderDark
-      ..strokeWidth = 1.0;
-
-    for (int i = 1; i <= 3; i++) {
-      final y = size.height * (i / 4);
-      canvas.drawLine(Offset(0, y), Offset(size.width, y), gridPaint);
-    }
-
-    final barWidth = (size.width / n) * 0.55;
-    final slotWidth = size.width / n;
-
-    final barPaint = Paint()
-      ..color = AppTokens.teal.withAlpha(160)
-      ..style = PaintingStyle.fill;
-
-    // Congestion line path
-    final linePaint = Paint()
-      ..color = AppTokens.amber
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.0;
-
-    final linePath = Path();
-
-    for (int i = 0; i < n; i++) {
-      final b = buckets[i];
-      final centerX = (i * slotWidth) + (slotWidth / 2);
-
-      // Bar height
-      final normalizedVol = b.avgVehicleCount / maxVol;
-      final barHeight = normalizedVol * (size.height - 24);
-      final barRect = RRect.fromRectAndRadius(
-        Rect.fromLTWH(
-          centerX - (barWidth / 2),
-          size.height - barHeight - 16,
-          barWidth,
-          barHeight,
-        ),
-        const Radius.circular(3),
-      );
-      canvas.drawRRect(barRect, barPaint);
-
-      // Congestion point (0-100%)
-      final congY = (size.height - 24) - ((b.avgCongestion / 100.0) * (size.height - 30));
-      if (i == 0) {
-        linePath.moveTo(centerX, congY);
-      } else {
-        linePath.lineTo(centerX, congY);
-      }
-
-      // Draw point on congestion line
-      canvas.drawCircle(Offset(centerX, congY), 2.5, Paint()..color = AppTokens.amber);
-    }
-
-    canvas.drawPath(linePath, linePaint);
-  }
-
-  @override
-  bool shouldRepaint(covariant VolumeTrendChartPainter oldDelegate) {
-    return oldDelegate.buckets != buckets || oldDelegate.isHourly != isHourly;
-  }
-}

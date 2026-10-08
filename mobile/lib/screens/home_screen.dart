@@ -58,7 +58,7 @@ class _HomeScreenState extends State<HomeScreen> {
         child: RefreshIndicator(
           onRefresh: _checkHealth,
           color: AppTokens.teal,
-          backgroundColor: AppTokens.card,
+          backgroundColor: theme.colorScheme.surface,
           child: ListView(
             padding: const EdgeInsets.symmetric(
               horizontal: AppTokens.spaceMd,
@@ -134,7 +134,7 @@ class _HomeScreenState extends State<HomeScreen> {
           Text(
             'AI TrafficOS',
             style: theme.textTheme.displaySmall?.copyWith(
-              color: AppTokens.textPrimary,
+              color: theme.colorScheme.onSurface,
               fontWeight: FontWeight.w800,
               letterSpacing: -0.5,
             ),
@@ -143,7 +143,7 @@ class _HomeScreenState extends State<HomeScreen> {
           Text(
             'Intelligent traffic management, reimagined.',
             style: theme.textTheme.bodyMedium?.copyWith(
-              color: AppTokens.muted,
+              color: AppTokens.mutedOf(context),
               fontSize: 15,
             ),
           ),
@@ -205,7 +205,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: Text(
                         'Checking backend health at ${_apiClient.baseUrl}...',
                         style: theme.textTheme.bodyMedium?.copyWith(
-                          color: AppTokens.textPrimary,
+                          color: theme.colorScheme.onSurface,
                         ),
                       ),
                     ),
@@ -228,27 +228,27 @@ class _HomeScreenState extends State<HomeScreen> {
                 Text(
                   'Health check not initialized',
                   style: theme.textTheme.bodyMedium?.copyWith(
-                    color: AppTokens.muted,
+                    color: AppTokens.mutedOf(context),
                   ),
                 ),
               ],
               const SizedBox(height: AppTokens.spaceMd),
-              const Divider(color: AppTokens.borderDark),
+              Divider(color: AppTokens.borderOf(context)),
               const SizedBox(height: AppTokens.spaceSm),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.info_outline_rounded,
                     size: 15,
-                    color: AppTokens.muted,
+                    color: AppTokens.mutedOf(context),
                   ),
                   const SizedBox(width: AppTokens.spaceXs),
                   Expanded(
                     child: Text(
                       'Phase 1 foundation — live data arrives in later phases.',
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: AppTokens.muted,
+                        color: AppTokens.mutedOf(context),
                         fontSize: 11,
                         fontStyle: FontStyle.italic,
                       ),
@@ -331,7 +331,7 @@ class _HomeScreenState extends State<HomeScreen> {
           Text(
             'Timestamp: ${health.timestamp!.toUtc().toIso8601String()}',
             style: theme.textTheme.bodySmall?.copyWith(
-              color: AppTokens.muted,
+              color: AppTokens.mutedOf(context),
               fontSize: 11,
             ),
           ),
@@ -408,7 +408,7 @@ class _HomeScreenState extends State<HomeScreen> {
         Text(
           'Target: ${_apiClient.baseUrl}/api/v1/health',
           style: theme.textTheme.bodySmall?.copyWith(
-            color: AppTokens.muted,
+            color: AppTokens.mutedOf(context),
             fontSize: 11,
           ),
         ),
@@ -522,7 +522,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         Text(
                           item.name,
                           style: theme.textTheme.titleSmall?.copyWith(
-                            color: AppTokens.textPrimary,
+                            color: theme.colorScheme.onSurface,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -530,7 +530,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         Text(
                           item.description,
                           style: theme.textTheme.bodySmall?.copyWith(
-                            color: AppTokens.muted,
+                            color: AppTokens.mutedOf(context),
                             fontSize: 12,
                           ),
                         ),

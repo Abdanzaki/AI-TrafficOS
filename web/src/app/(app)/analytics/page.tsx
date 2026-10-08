@@ -236,14 +236,17 @@ export default function AnalyticsPage() {
 
     let totalObs = 0;
     let sumVehicles = 0;
+    let weightedCongestionSum = 0;
     let sumCongestion = 0;
     let sumSpeed = 0;
     let speedCount = 0;
 
     for (const b of trafficSummary) {
-      totalObs += b.record_count;
+      const count = b.record_count || 0;
+      totalObs += count;
       sumVehicles += b.avg_vehicle_count;
       sumCongestion += b.avg_congestion;
+      weightedCongestionSum += b.avg_congestion * count;
       if (b.avg_speed != null) {
         sumSpeed += b.avg_speed;
         speedCount++;
@@ -254,7 +257,7 @@ export default function AnalyticsPage() {
     return {
       totalObservations: totalObs,
       avgVehicles: n > 0 ? sumVehicles / n : null,
-      avgCongestion: n > 0 ? sumCongestion / n : null,
+      avgCongestion: totalObs > 0 ? weightedCongestionSum / totalObs : (n > 0 ? sumCongestion / n : null),
       avgSpeed: speedCount > 0 ? sumSpeed / speedCount : null,
     };
   }, [trafficSummary]);

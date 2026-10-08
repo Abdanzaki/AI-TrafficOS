@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/junction.dart';
+import '../models/road_segment.dart';
+import '../providers/realtime_providers.dart';
 import '../services/api_client.dart';
 import '../services/junction_service.dart';
 import '../services/map_provider.dart';
@@ -11,6 +13,7 @@ import '../widgets/empty_state.dart';
 import '../widgets/error_state.dart';
 import '../widgets/junction_map.dart';
 import '../widgets/loading_state.dart';
+import '../widgets/offline_banner.dart';
 
 /// Spatial Network Map screen presenting real-time physical junction nodes,
 /// status color coding, and filter selectors.
@@ -26,6 +29,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
   bool _isLoading = true;
   String? _errorMessage;
   List<Junction> _junctions = [];
+  List<RoadSegment> _roads = [];
 
   // Default spatial provider
   final MapProvider _mapProvider = const SchematicJunctionMapProvider();
@@ -44,10 +48,16 @@ class _MapScreenState extends ConsumerState<MapScreen> {
 
     try {
       final service = ref.read(junctionServiceProvider);
-      final paged = await service.getJunctions(page: 1, perPage: 100);
+      final results = await Future.wait([
+        service.getJunctions(page: 1, perPage: 100),
+        service.getRoads(perPage: 100),
+      ]);
+      final paged = results[0] as PaginatedJunctions;
+      final roads = results[1] as List<RoadSegment>;
       if (mounted) {
         setState(() {
           _junctions = paged.items;
+          _roads = roads;
           _isLoading = false;
         });
       }
@@ -67,22 +77,29 @@ class _MapScreenState extends ConsumerState<MapScreen> {
 
     return Scaffold(
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(AppTokens.spaceMd),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildTopBar(theme),
-              const SizedBox(height: AppTokens.spaceSm),
-              _buildFilterChips(),
-              const SizedBox(height: AppTokens.spaceSm),
-              Expanded(
-                child: _buildMapArea(context),
+        child: Column(
+          children: [
+            if (ref.watch(isOfflineProvider)) const OfflineBanner(),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(AppTokens.spaceMd),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildTopBar(theme),
+                    const SizedBox(height: AppTokens.spaceSm),
+                    _buildFilterChips(),
+                    const SizedBox(height: AppTokens.spaceSm),
+                    Expanded(
+                      child: _buildMapArea(context),
+                    ),
+                    const SizedBox(height: AppTokens.spaceSm),
+                    _buildLegendBar(theme),
+                  ],
+                ),
               ),
-              const SizedBox(height: AppTokens.spaceSm),
-              _buildLegendBar(theme),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -114,13 +131,13 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                   'Spatial Network Topology',
                   style: theme.textTheme.titleSmall?.copyWith(
                     fontWeight: FontWeight.w700,
-                    color: AppTokens.textPrimary,
+                    color: theme.colorScheme.onSurface,
                   ),
                 ),
                 Text(
                   'Provider: ${_mapProvider.name} (WGS 84 Projection)',
                   style: theme.textTheme.bodySmall?.copyWith(
-                    color: AppTokens.muted,
+                    color: AppTokens.mutedOf(context),
                     fontSize: 11,
                   ),
                 ),
@@ -165,16 +182,16 @@ class _MapScreenState extends ConsumerState<MapScreen> {
         }
       },
       selectedColor: AppTokens.teal.withAlpha(35),
-      backgroundColor: AppTokens.surface,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       labelStyle: TextStyle(
-        color: isSelected ? AppTokens.teal : AppTokens.muted,
+        color: isSelected ? AppTokens.teal : AppTokens.mutedOf(context),
         fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
         fontSize: 12,
       ),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(8),
         side: BorderSide(
-          color: isSelected ? AppTokens.teal.withAlpha(90) : AppTokens.borderDark,
+          color: isSelected ? AppTokens.teal.withAlpha(90) : AppTokens.borderOf(context),
         ),
       ),
     );
@@ -213,6 +230,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     return _mapProvider.buildJunctionMap(
       context: context,
       junctions: _junctions,
+      roads: _roads,
       filter: _activeFilter,
     );
   }
@@ -221,45 +239,54 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: AppTokens.surface,
+        color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: AppTokens.borderDark),
+        border: Border.all(color: theme.colorScheme.outline.withAlpha(60)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          _buildLegendItem(AppTokens.teal, 'Active / Fluid'),
-          _buildLegendItem(AppTokens.amber, 'Maintenance / Congested'),
-          _buildLegendItem(AppTokens.danger, 'Offline / Incident'),
+          _buildLegendItem(AppTokens.teal, 'Active (●)', isCircle: true),
+          _buildLegendItem(AppTokens.amber, 'Caution (◆)', isDiamond: true),
+          _buildLegendItem(AppTokens.danger, 'Offline (■)', isSquare: true),
         ],
       ),
     );
   }
 
-  Widget _buildLegendItem(Color color, String label) {
+  Widget _buildLegendItem(Color color, String label, {bool isCircle = false, bool isDiamond = false, bool isSquare = false}) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Container(
-          width: 8,
-          height: 8,
-          decoration: BoxDecoration(
+        if (isDiamond)
+          Transform.rotate(
+            angle: 0.785398, // 45 degrees
+            child: Container(
+              width: 7,
+              height: 7,
+              color: color,
+            ),
+          )
+        else if (isSquare)
+          Container(
+            width: 7,
+            height: 7,
             color: color,
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: color.withAlpha(80),
-                blurRadius: 4,
-                spreadRadius: 1,
-              ),
-            ],
+          )
+        else
+          Container(
+            width: 8,
+            height: 8,
+            decoration: BoxDecoration(
+              color: color,
+              shape: BoxShape.circle,
+            ),
           ),
-        ),
         const SizedBox(width: 6),
         Text(
           label,
-          style: const TextStyle(
-            color: AppTokens.muted,
+          style: TextStyle(
+            color: AppTokens.mutedOf(context),
             fontSize: 11,
             fontWeight: FontWeight.w500,
           ),

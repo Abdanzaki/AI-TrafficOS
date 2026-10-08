@@ -15,6 +15,7 @@ import '../widgets/app_card.dart';
 import '../widgets/empty_state.dart';
 import '../widgets/error_state.dart';
 import '../widgets/loading_state.dart';
+import '../widgets/offline_banner.dart';
 import 'incident_detail_screen.dart';
 
 /// Comprehensive incidents queue and lifecycle management screen.
@@ -145,10 +146,10 @@ class _IncidentsScreenState extends ConsumerState<IncidentsScreen> {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: AppTokens.card,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-        side: BorderSide(color: AppTokens.borderDark),
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        side: BorderSide(color: AppTokens.borderOf(context)),
       ),
       builder: (ctx) {
         return _CreateIncidentFormSheet(
@@ -184,7 +185,9 @@ class _IncidentsScreenState extends ConsumerState<IncidentsScreen> {
           ? FloatingActionButton.extended(
               onPressed: _openCreateIncidentSheet,
               backgroundColor: AppTokens.teal,
-              foregroundColor: AppTokens.ink,
+              foregroundColor: Theme.of(context).brightness == Brightness.dark
+                  ? AppTokens.ink
+                  : Colors.white,
               icon: const Icon(Icons.add_alert_rounded),
               label: const Text(
                 'Report Incident',
@@ -192,37 +195,45 @@ class _IncidentsScreenState extends ConsumerState<IncidentsScreen> {
               ),
             )
           : null,
-      body: RefreshIndicator(
-        onRefresh: _loadInitialIncidents,
-        color: AppTokens.teal,
-        backgroundColor: AppTokens.card,
-        child: CustomScrollView(
-          controller: _scrollController,
-          physics: const AlwaysScrollableScrollPhysics(),
-          slivers: [
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.all(AppTokens.spaceMd),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildHeader(),
-                    const SizedBox(height: AppTokens.spaceSm),
-                    _buildStatusFilterRow(),
-                    const SizedBox(height: AppTokens.spaceXs),
-                    _buildSeverityFilterRow(),
-                  ],
-                ),
+      body: Column(
+        children: [
+          if (ref.watch(isOfflineProvider)) const OfflineBanner(),
+          Expanded(
+            child: RefreshIndicator(
+              onRefresh: _loadInitialIncidents,
+              color: AppTokens.teal,
+              backgroundColor: Theme.of(context).colorScheme.surface,
+              child: CustomScrollView(
+                controller: _scrollController,
+                physics: const AlwaysScrollableScrollPhysics(),
+                slivers: [
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.all(AppTokens.spaceMd),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildHeader(),
+                          const SizedBox(height: AppTokens.spaceSm),
+                          _buildStatusFilterRow(),
+                          const SizedBox(height: AppTokens.spaceXs),
+                          _buildSeverityFilterRow(),
+                        ],
+                      ),
+                    ),
+                  ),
+                  _buildListContent(),
+                ],
               ),
             ),
-            _buildListContent(),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildHeader() {
+    final theme = Theme.of(context);
     return AppCard(
       padding: const EdgeInsets.all(AppTokens.spaceMd),
       child: Row(
@@ -240,7 +251,7 @@ class _IncidentsScreenState extends ConsumerState<IncidentsScreen> {
             ),
           ),
           const SizedBox(width: AppTokens.spaceSm),
-          const Expanded(
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -249,12 +260,12 @@ class _IncidentsScreenState extends ConsumerState<IncidentsScreen> {
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
-                    color: AppTokens.textPrimary,
+                    color: theme.colorScheme.onSurface,
                   ),
                 ),
                 Text(
                   'Active hazards, lane blockages & perception anomalies',
-                  style: TextStyle(color: AppTokens.muted, fontSize: 11),
+                  style: TextStyle(color: AppTokens.mutedOf(context), fontSize: 11),
                 ),
               ],
             ),
@@ -383,21 +394,24 @@ class _IncidentsScreenState extends ConsumerState<IncidentsScreen> {
     required VoidCallback onSelected,
     Color activeColor = AppTokens.teal,
   }) {
+    final theme = Theme.of(context);
     return ChoiceChip(
       label: Text(label),
       selected: isSelected,
       onSelected: (_) => onSelected(),
       selectedColor: activeColor.withAlpha(35),
-      backgroundColor: AppTokens.surface,
+      backgroundColor: theme.colorScheme.surface,
+      labelPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      visualDensity: VisualDensity.standard,
       labelStyle: TextStyle(
-        color: isSelected ? activeColor : AppTokens.muted,
+        color: isSelected ? activeColor : AppTokens.mutedOf(context),
         fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-        fontSize: 11,
+        fontSize: 12,
       ),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(8),
         side: BorderSide(
-          color: isSelected ? activeColor.withAlpha(90) : AppTokens.borderDark,
+          color: isSelected ? activeColor.withAlpha(90) : theme.colorScheme.outline.withAlpha(60),
         ),
       ),
     );
@@ -504,9 +518,9 @@ class _IncidentsScreenState extends ConsumerState<IncidentsScreen> {
               children: [
                 Text(
                   incident.displayTitle,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.w600,
-                    color: AppTokens.textPrimary,
+                    color: Theme.of(context).colorScheme.onSurface,
                     fontSize: 14,
                   ),
                   maxLines: 1,
@@ -524,13 +538,13 @@ class _IncidentsScreenState extends ConsumerState<IncidentsScreen> {
                       ),
                     ),
                     const SizedBox(width: 6),
-                    const Text('•', style: TextStyle(color: AppTokens.muted)),
+                    Text('•', style: TextStyle(color: AppTokens.mutedOf(context))),
                     const SizedBox(width: 6),
                     Expanded(
                       child: Text(
                         incident.createdAt.toLocal().toString().split(".")[0],
-                        style: const TextStyle(
-                          color: AppTokens.muted,
+                        style: TextStyle(
+                          color: AppTokens.mutedOf(context),
                           fontSize: 11,
                         ),
                         overflow: TextOverflow.ellipsis,
@@ -547,9 +561,9 @@ class _IncidentsScreenState extends ConsumerState<IncidentsScreen> {
             color: incident.statusColor,
           ),
           const SizedBox(width: 4),
-          const Icon(
+          Icon(
             Icons.chevron_right_rounded,
-            color: AppTokens.muted,
+            color: AppTokens.mutedOf(context),
             size: 18,
           ),
         ],
@@ -672,22 +686,22 @@ class _CreateIncidentFormSheetState
                     width: 36,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: AppTokens.muted.withAlpha(80),
+                      color: AppTokens.mutedOf(context).withAlpha(80),
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
                 ),
                 const SizedBox(height: AppTokens.spaceMd),
-                const Row(
+                Row(
                   children: [
-                    Icon(Icons.report_problem_rounded, color: AppTokens.amber),
-                    SizedBox(width: AppTokens.spaceSm),
+                    const Icon(Icons.report_problem_rounded, color: AppTokens.amber),
+                    const SizedBox(width: AppTokens.spaceSm),
                     Text(
                       'Report Traffic Incident',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
-                        color: AppTokens.textPrimary,
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
                   ],
@@ -741,12 +755,12 @@ class _CreateIncidentFormSheetState
                   },
                 ),
                 const SizedBox(height: AppTokens.spaceMd),
-                const Text(
+                Text(
                   'Severity Level',
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
-                    color: AppTokens.textPrimary,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
                 const SizedBox(height: 6),
@@ -761,9 +775,12 @@ class _CreateIncidentFormSheetState
                         if (val) setState(() => _severity = sev);
                       },
                       selectedColor: AppTokens.teal.withAlpha(40),
-                      backgroundColor: AppTokens.surface,
+                      backgroundColor: AppTokens.surfaceOf(context),
+                      labelPadding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 6),
                       labelStyle: TextStyle(
-                        color: isSel ? AppTokens.teal : AppTokens.muted,
+                        color:
+                            isSel ? AppTokens.teal : AppTokens.mutedOf(context),
                         fontWeight: isSel ? FontWeight.w700 : FontWeight.w500,
                         fontSize: 11,
                       ),
@@ -771,33 +788,42 @@ class _CreateIncidentFormSheetState
                   }).toList(),
                 ),
                 const SizedBox(height: AppTokens.spaceMd),
-                const Text(
+                Text(
                   'Associated Intersection (Optional)',
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
-                    color: AppTokens.textPrimary,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
                 const SizedBox(height: 6),
                 _isLoadingJunctions
                     ? const LinearProgressIndicator(color: AppTokens.teal)
                     : DropdownButtonFormField<int?>(
+                        isExpanded: true,
                         initialValue: _selectedIntersectionId,
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           filled: true,
-                          fillColor: AppTokens.surface,
+                          fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
                         ),
-                        dropdownColor: AppTokens.card,
+                        dropdownColor: Theme.of(context).colorScheme.surface,
                         hint: const Text('Select affected junction'),
                         items: [
                           const DropdownMenuItem<int?>(
                             value: null,
-                            child: Text('None / Mid-block segment'),
+                            child: Text(
+                              'None / Mid-block segment',
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                            ),
                           ),
                           ..._junctions.map((j) => DropdownMenuItem<int?>(
                                 value: j.id,
-                                child: Text('${j.name} (${j.code})'),
+                                child: Text(
+                                  '${j.name} (${j.code})',
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                ),
                               )),
                         ],
                         onChanged: (val) {
@@ -811,19 +837,25 @@ class _CreateIncidentFormSheetState
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppTokens.teal,
-                      foregroundColor: AppTokens.ink,
+                      foregroundColor: Theme.of(context).brightness == Brightness.dark
+                          ? AppTokens.ink
+                          : Colors.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
                     onPressed: _isSubmitting ? null : _submit,
                     child: _isSubmitting
-                        ? const SizedBox(
+                        ? SizedBox(
                             width: 20,
                             height: 20,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation(AppTokens.ink),
+                              valueColor: AlwaysStoppedAnimation(
+                                Theme.of(context).brightness == Brightness.dark
+                                    ? AppTokens.ink
+                                    : Colors.white,
+                              ),
                             ),
                           )
                         : const Text(

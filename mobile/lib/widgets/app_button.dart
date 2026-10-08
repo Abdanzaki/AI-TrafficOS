@@ -38,7 +38,7 @@ class AppButton extends StatelessWidget {
     final isEnabled = onPressed != null && !isLoading;
 
     final baseForeground = isPrimary ? AppTokens.ink : AppTokens.teal;
-    final foregroundColor = isEnabled ? baseForeground : AppTokens.muted;
+    final foregroundColor = isEnabled ? baseForeground : AppTokens.mutedOf(context);
 
     final content = Row(
       mainAxisSize: isFullWidth ? MainAxisSize.max : MainAxisSize.min,
@@ -89,7 +89,7 @@ class AppButton extends StatelessWidget {
         style: buttonStyle.copyWith(
           backgroundColor: WidgetStateProperty.resolveWith((states) {
             if (states.contains(WidgetState.disabled)) {
-              return AppTokens.surface;
+              return AppTokens.surfaceOf(context);
             }
             return AppTokens.teal;
           }),
@@ -104,7 +104,7 @@ class AppButton extends StatelessWidget {
         style: buttonStyle.copyWith(
           side: WidgetStateProperty.resolveWith((states) {
             if (states.contains(WidgetState.disabled)) {
-              return const BorderSide(color: AppTokens.borderDark, width: 1.5);
+              return BorderSide(color: AppTokens.borderOf(context), width: 1.5);
             }
             return const BorderSide(color: AppTokens.teal, width: 1.5);
           }),

@@ -33,6 +33,7 @@ import { Stat } from "@/components/ui/Stat";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { Pagination } from "@/components/ui/Pagination";
 import {
   VehicleClassBarChart,
   type VehicleClassItem,
@@ -1058,7 +1059,7 @@ export default function TrafficPage() {
 
                 {eventsData?.items && eventsData.items.length > 0 ? (
                   <div className="overflow-x-auto">
-                    <table className="w-full text-left text-xs">
+                    <table className="w-full min-w-[600px] text-left text-xs">
                       <thead>
                         <tr className="border-b border-white/10 text-muted font-mono uppercase text-[11px]">
                           <th className="py-2.5 px-3">Timestamp</th>
@@ -1177,7 +1178,7 @@ export default function TrafficPage() {
           ) : (
             <Card className="overflow-hidden border-white/10">
               <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse text-xs sm:text-sm">
+                <table className="w-full min-w-[760px] text-left border-collapse text-xs sm:text-sm">
                   <thead>
                     <tr className="border-b border-white/10 bg-surface/60 text-muted uppercase text-[11px] font-semibold tracking-wider font-mono">
                       <th className="py-3 px-4">Recorded At</th>
@@ -1229,7 +1230,7 @@ export default function TrafficPage() {
                               {r.source}
                             </Badge>
                           </td>
-                          <td className="py-3 px-4 text-right text-muted/60">
+                          <td className="py-3 px-4 text-right text-muted">
                             #{r.id}
                           </td>
                         </tr>
@@ -1240,29 +1241,14 @@ export default function TrafficPage() {
               </div>
 
               {recordsData.pages > 1 && (
-                <div className="p-4 border-t border-white/10 flex items-center justify-between text-xs text-muted">
-                  <span>
-                    Page {recordsData.page} of {recordsData.pages}
-                  </span>
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      disabled={recordsPage <= 1}
-                      onClick={() => setRecordsPage((p) => Math.max(1, p - 1))}
-                      className="px-3 py-1 rounded bg-surface border border-white/10 disabled:opacity-40 hover:text-text cursor-pointer disabled:cursor-not-allowed"
-                    >
-                      Previous
-                    </button>
-                    <button
-                      type="button"
-                      disabled={recordsPage >= recordsData.pages}
-                      onClick={() => setRecordsPage((p) => Math.min(recordsData.pages, p + 1))}
-                      className="px-3 py-1 rounded bg-surface border border-white/10 disabled:opacity-40 hover:text-text cursor-pointer disabled:cursor-not-allowed"
-                    >
-                      Next
-                    </button>
-                  </div>
-                </div>
+                <Pagination
+                  page={recordsPage}
+                  totalPages={recordsData.pages}
+                  totalRecords={recordsData.total}
+                  perPage={50}
+                  onPageChange={setRecordsPage}
+                  recordLabel="telemetry records"
+                />
               )}
             </Card>
           )}

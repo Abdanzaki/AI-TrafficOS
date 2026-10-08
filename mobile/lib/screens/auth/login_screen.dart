@@ -66,7 +66,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: AppTokens.ink,
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -127,170 +127,178 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         Text(
           'AI TrafficOS',
           style: theme.textTheme.headlineMedium?.copyWith(
-            color: AppTokens.textPrimary,
-            fontWeight: FontWeight.w800,
-            letterSpacing: -0.5,
-          ),
-        ),
-        const SizedBox(height: AppTokens.spaceXs),
-        Text(
-          'Municipal Autonomous Traffic Platform',
-          style: theme.textTheme.bodyMedium?.copyWith(
-            color: AppTokens.muted,
-          ),
-        ),
-      ],
-    );
-  }
+        color: theme.colorScheme.onSurface,
+        fontWeight: FontWeight.w800,
+        letterSpacing: -0.5,
+      ),
+    ),
+    const SizedBox(height: AppTokens.spaceXs),
+    Text(
+      'Municipal Autonomous Traffic Platform',
+      style: theme.textTheme.bodyMedium?.copyWith(
+        color: AppTokens.mutedOf(context),
+      ),
+    ),
+  ],
+);
+}
 
-  Widget _buildFormCard(ThemeData theme) {
-    return AppCard(
-      padding: const EdgeInsets.all(AppTokens.spaceLg),
-      child: Form(
-        key: _formKey,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              'Sign In',
-              style: theme.textTheme.titleLarge?.copyWith(
-                color: AppTokens.textPrimary,
-                fontWeight: FontWeight.w700,
-              ),
+Widget _buildFormCard(ThemeData theme) {
+return AppCard(
+  padding: const EdgeInsets.all(AppTokens.spaceLg),
+  child: Form(
+    key: _formKey,
+    child: AutofillGroup(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            'Sign In',
+            style: theme.textTheme.titleLarge?.copyWith(
+              color: theme.colorScheme.onSurface,
+              fontWeight: FontWeight.w700,
             ),
-            const SizedBox(height: AppTokens.spaceXs),
-            Text(
-              'Enter your municipal account credentials to continue',
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: AppTokens.muted,
-              ),
+          ),
+          const SizedBox(height: AppTokens.spaceXs),
+          Text(
+            'Enter your municipal account credentials to continue',
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: AppTokens.mutedOf(context),
             ),
-            if (_errorMessage != null) ...[
-              const SizedBox(height: AppTokens.spaceMd),
-              Container(
-                padding: const EdgeInsets.all(AppTokens.spaceSm),
-                decoration: BoxDecoration(
-                  color: AppTokens.danger.withAlpha(25),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: AppTokens.danger.withAlpha(80),
-                  ),
+          ),
+          if (_errorMessage != null) ...[
+            const SizedBox(height: AppTokens.spaceMd),
+            Container(
+              padding: const EdgeInsets.all(AppTokens.spaceSm),
+              decoration: BoxDecoration(
+                color: AppTokens.danger.withAlpha(25),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: AppTokens.danger.withAlpha(80),
                 ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Icon(
-                      Icons.error_outline_rounded,
-                      color: AppTokens.danger,
-                      size: 18,
-                    ),
-                    const SizedBox(width: AppTokens.spaceSm),
-                    Expanded(
-                      child: Text(
-                        _errorMessage!,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: AppTokens.danger,
-                          fontWeight: FontWeight.w500,
-                        ),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Icon(
+                    Icons.error_outline_rounded,
+                    color: AppTokens.danger,
+                    size: 18,
+                  ),
+                  const SizedBox(width: AppTokens.spaceSm),
+                  Expanded(
+                    child: Text(
+                      _errorMessage!,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: AppTokens.danger,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
-                  ],
-                ),
-              ),
-            ],
-            const SizedBox(height: AppTokens.spaceLg),
-            TextFormField(
-              controller: _emailController,
-              keyboardType: TextInputType.emailAddress,
-              autocorrect: false,
-              style: const TextStyle(color: AppTokens.textPrimary),
-              decoration: InputDecoration(
-                labelText: 'Email Address',
-                labelStyle: const TextStyle(color: AppTokens.muted),
-                prefixIcon: const Icon(Icons.email_outlined, color: AppTokens.muted, size: 20),
-                filled: true,
-                fillColor: AppTokens.ink,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: const BorderSide(color: AppTokens.borderDark),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: const BorderSide(color: AppTokens.borderDark),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: const BorderSide(color: AppTokens.teal),
-                ),
-              ),
-              validator: (val) {
-                if (val == null || val.trim().isEmpty) {
-                  return 'Please enter your email';
-                }
-                if (!val.contains('@') || !val.contains('.')) {
-                  return 'Please enter a valid email address';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: AppTokens.spaceMd),
-            TextFormField(
-              controller: _passwordController,
-              obscureText: _obscurePassword,
-              style: const TextStyle(color: AppTokens.textPrimary),
-              decoration: InputDecoration(
-                labelText: 'Password',
-                labelStyle: const TextStyle(color: AppTokens.muted),
-                prefixIcon: const Icon(Icons.lock_outline_rounded, color: AppTokens.muted, size: 20),
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    _obscurePassword
-                        ? Icons.visibility_outlined
-                        : Icons.visibility_off_outlined,
-                    color: AppTokens.muted,
-                    size: 20,
                   ),
-                  onPressed: () {
-                    setState(() {
-                      _obscurePassword = !_obscurePassword;
-                    });
-                  },
-                ),
-                filled: true,
-                fillColor: AppTokens.ink,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: const BorderSide(color: AppTokens.borderDark),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: const BorderSide(color: AppTokens.borderDark),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: const BorderSide(color: AppTokens.teal),
-                ),
+                ],
               ),
-              validator: (val) {
-                if (val == null || val.isEmpty) {
-                  return 'Please enter your password';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: AppTokens.spaceLg),
-            AppButton(
-              text: 'Sign In',
-              icon: Icons.login_rounded,
-              variant: AppButtonVariant.primary,
-              isLoading: _isLoading,
-              onPressed: _isLoading ? null : _submitLogin,
             ),
           ],
-        ),
+          const SizedBox(height: AppTokens.spaceLg),
+          TextFormField(
+            controller: _emailController,
+            keyboardType: TextInputType.emailAddress,
+            textInputAction: TextInputAction.next,
+            autofillHints: const [AutofillHints.email, AutofillHints.username],
+            autocorrect: false,
+            style: TextStyle(color: theme.colorScheme.onSurface),
+            decoration: InputDecoration(
+              labelText: 'Email Address',
+              labelStyle: TextStyle(color: AppTokens.mutedOf(context)),
+              prefixIcon: Icon(Icons.email_outlined, color: AppTokens.mutedOf(context), size: 20),
+              filled: true,
+              fillColor: theme.colorScheme.surfaceContainerHighest,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide(color: theme.colorScheme.outline.withAlpha(60)),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide(color: theme.colorScheme.outline.withAlpha(60)),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: const BorderSide(color: AppTokens.teal),
+              ),
+            ),
+            validator: (val) {
+              if (val == null || val.trim().isEmpty) {
+                return 'Please enter your email';
+              }
+              if (!val.contains('@') || !val.contains('.')) {
+                return 'Please enter a valid email address';
+              }
+              return null;
+            },
+          ),
+          const SizedBox(height: AppTokens.spaceMd),
+          TextFormField(
+            controller: _passwordController,
+            obscureText: _obscurePassword,
+            textInputAction: TextInputAction.done,
+            autofillHints: const [AutofillHints.password],
+            onFieldSubmitted: (_) => _submitLogin(),
+            style: TextStyle(color: theme.colorScheme.onSurface),
+            decoration: InputDecoration(
+              labelText: 'Password',
+              labelStyle: TextStyle(color: AppTokens.mutedOf(context)),
+              prefixIcon: Icon(Icons.lock_outline_rounded, color: AppTokens.mutedOf(context), size: 20),
+              suffixIcon: IconButton(
+                tooltip: _obscurePassword ? 'Show password' : 'Hide password',
+                icon: Icon(
+                  _obscurePassword
+                      ? Icons.visibility_outlined
+                      : Icons.visibility_off_outlined,
+                  color: AppTokens.mutedOf(context),
+                  size: 20,
+                ),
+                onPressed: () {
+                  setState(() {
+                    _obscurePassword = !_obscurePassword;
+                  });
+                },
+              ),
+              filled: true,
+              fillColor: theme.colorScheme.surfaceContainerHighest,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide(color: theme.colorScheme.outline.withAlpha(60)),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide(color: theme.colorScheme.outline.withAlpha(60)),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: const BorderSide(color: AppTokens.teal),
+              ),
+            ),
+            validator: (val) {
+              if (val == null || val.isEmpty) {
+                return 'Please enter your password';
+              }
+              return null;
+            },
+          ),
+          const SizedBox(height: AppTokens.spaceLg),
+          AppButton(
+            text: 'Sign In',
+            icon: Icons.login_rounded,
+            variant: AppButtonVariant.primary,
+            isLoading: _isLoading,
+            onPressed: _isLoading ? null : _submitLogin,
+          ),
+        ],
       ),
-    );
-  }
+    ),
+  ),
+);
+}
 
   Widget _buildRegisterLink(ThemeData theme) {
     return Row(
@@ -299,7 +307,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         Text(
           "Don't have an account?",
           style: theme.textTheme.bodyMedium?.copyWith(
-            color: AppTokens.muted,
+            color: AppTokens.mutedOf(context),
           ),
         ),
         TextButton(

@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useId } from "react";
 import {
   ResponsiveContainer,
   AreaChart,
@@ -9,6 +9,7 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
+  Legend,
 } from "recharts";
 
 export interface AreaTrafficPoint {
@@ -75,6 +76,10 @@ export const AreaTrafficChart: React.FC<AreaTrafficChartProps> = ({
   className = "",
   showCongestion = true,
 }) => {
+  const chartId = useId();
+  const vehiclesGradId = `vehiclesGradient-${chartId.replace(/:/g, "")}`;
+  const congestionGradId = `congestionGradient-${chartId.replace(/:/g, "")}`;
+
   if (!data || data.length === 0) {
     return (
       <div
@@ -91,14 +96,14 @@ export const AreaTrafficChart: React.FC<AreaTrafficChartProps> = ({
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart
           data={data}
-          margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+          margin={{ top: 10, right: 25, left: 10, bottom: 0 }}
         >
           <defs>
-            <linearGradient id="vehiclesGradient" x1="0" y1="0" x2="0" y2="1">
+            <linearGradient id={vehiclesGradId} x1="0" y1="0" x2="0" y2="1">
               <stop offset="5%" stopColor="#00D9A8" stopOpacity={0.4} />
               <stop offset="95%" stopColor="#00D9A8" stopOpacity={0.0} />
             </linearGradient>
-            <linearGradient id="congestionGradient" x1="0" y1="0" x2="0" y2="1">
+            <linearGradient id={congestionGradId} x1="0" y1="0" x2="0" y2="1">
               <stop offset="5%" stopColor="#FFB800" stopOpacity={0.4} />
               <stop offset="95%" stopColor="#FFB800" stopOpacity={0.0} />
             </linearGradient>
@@ -116,31 +121,57 @@ export const AreaTrafficChart: React.FC<AreaTrafficChartProps> = ({
             axisLine={{ stroke: "rgba(255, 255, 255, 0.1)" }}
           />
           <YAxis
-            stroke="#8B93B0"
+            yAxisId="vehicles"
+            stroke="#00D9A8"
             fontSize={11}
             tickLine={false}
             axisLine={false}
             tickFormatter={(v) => (v >= 1000 ? `${(v / 1000).toFixed(1)}k` : `${v}`)}
           />
+          {showCongestion && (
+            <YAxis
+              yAxisId="congestion"
+              orientation="right"
+              stroke="#FFB800"
+              fontSize={11}
+              domain={[0, 100]}
+              unit="%"
+              tickLine={false}
+              axisLine={false}
+              tickFormatter={(v) => `${v}%`}
+            />
+          )}
           <Tooltip content={<CustomTooltip />} />
+          <Legend
+            verticalAlign="top"
+            height={32}
+            iconType="circle"
+            wrapperStyle={{
+              fontSize: 12,
+              paddingBottom: 4,
+              color: "#8B93B0",
+            }}
+          />
           <Area
+            yAxisId="vehicles"
             type="monotone"
             dataKey="vehicles"
             name="Vehicles"
             stroke="#00D9A8"
             strokeWidth={2}
             fillOpacity={1}
-            fill="url(#vehiclesGradient)"
+            fill={`url(#${vehiclesGradId})`}
           />
           {showCongestion && (
             <Area
+              yAxisId="congestion"
               type="monotone"
               dataKey="congestion"
               name="Congestion"
               stroke="#FFB800"
               strokeWidth={1.5}
               fillOpacity={1}
-              fill="url(#congestionGradient)"
+              fill={`url(#${congestionGradId})`}
             />
           )}
         </AreaChart>

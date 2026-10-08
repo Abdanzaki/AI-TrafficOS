@@ -13,6 +13,7 @@ import '../widgets/app_card.dart';
 import '../widgets/empty_state.dart';
 import '../widgets/error_state.dart';
 import '../widgets/loading_state.dart';
+import '../widgets/offline_banner.dart';
 import 'signal_detail_screen.dart';
 
 /// Screen listing municipal traffic signals with pagination and junction filtering.
@@ -115,11 +116,12 @@ class _SignalsScreenState extends ConsumerState<SignalsScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            _buildJunctionFilterBar(),
+            if (ref.watch(isOfflineProvider)) const OfflineBanner(),
+            _buildJunctionFilterBar(theme),
             Expanded(
               child: RefreshIndicator(
                 color: AppTokens.teal,
-                backgroundColor: AppTokens.card,
+                backgroundColor: AppTokens.cardOf(context),
                 onRefresh: _loadSignals,
                 child: _buildBody(theme),
               ),
@@ -130,16 +132,16 @@ class _SignalsScreenState extends ConsumerState<SignalsScreen> {
     );
   }
 
-  Widget _buildJunctionFilterBar() {
+  Widget _buildJunctionFilterBar(ThemeData theme) {
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppTokens.spaceMd,
         vertical: AppTokens.spaceSm,
       ),
-      decoration: const BoxDecoration(
-        color: AppTokens.surface,
+      decoration: BoxDecoration(
+        color: AppTokens.surfaceOf(context),
         border: Border(
-          bottom: BorderSide(color: AppTokens.borderDark),
+          bottom: BorderSide(color: AppTokens.borderOf(context)),
         ),
       ),
       child: Row(
@@ -155,22 +157,22 @@ class _SignalsScreenState extends ConsumerState<SignalsScreen> {
               child: DropdownButton<int?>(
                 value: _selectedIntersectionId,
                 isExpanded: true,
-                dropdownColor: AppTokens.card,
-                hint: const Text(
+                dropdownColor: AppTokens.cardOf(context),
+                hint: Text(
                   'All Junctions',
-                  style: TextStyle(color: AppTokens.textPrimary, fontSize: 13),
+                  style: TextStyle(color: AppTokens.textPrimaryOf(context), fontSize: 13),
                 ),
-                icon: const Icon(
+                icon: Icon(
                   Icons.arrow_drop_down_rounded,
-                  color: AppTokens.muted,
+                  color: AppTokens.mutedOf(context),
                 ),
                 items: [
-                  const DropdownMenuItem<int?>(
+                  DropdownMenuItem<int?>(
                     value: null,
                     child: Text(
                       'All Junctions',
                       style: TextStyle(
-                        color: AppTokens.textPrimary,
+                        color: AppTokens.textPrimaryOf(context),
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
                       ),
@@ -181,8 +183,8 @@ class _SignalsScreenState extends ConsumerState<SignalsScreen> {
                       value: j.id,
                       child: Text(
                         '#${j.id} — ${j.name}',
-                        style: const TextStyle(
-                          color: AppTokens.textPrimary,
+                        style: TextStyle(
+                          color: AppTokens.textPrimaryOf(context),
                           fontSize: 13,
                         ),
                         overflow: TextOverflow.ellipsis,
@@ -202,7 +204,7 @@ class _SignalsScreenState extends ConsumerState<SignalsScreen> {
           ),
           if (_selectedIntersectionId != null)
             IconButton(
-              icon: const Icon(Icons.close_rounded, size: 18, color: AppTokens.muted),
+              icon: Icon(Icons.close_rounded, size: 18, color: AppTokens.mutedOf(context)),
               tooltip: 'Clear filter',
               onPressed: () {
                 setState(() {
@@ -292,7 +294,7 @@ class _SignalsScreenState extends ConsumerState<SignalsScreen> {
                     child: Text(
                       signal.name,
                       style: theme.textTheme.titleSmall?.copyWith(
-                        color: AppTokens.textPrimary,
+                        color: theme.colorScheme.onSurface,
                         fontWeight: FontWeight.w700,
                       ),
                       overflow: TextOverflow.ellipsis,
@@ -316,14 +318,14 @@ class _SignalsScreenState extends ConsumerState<SignalsScreen> {
                           vertical: 2,
                         ),
                         decoration: BoxDecoration(
-                          color: AppTokens.surface,
+                          color: theme.colorScheme.surface,
                           borderRadius: BorderRadius.circular(4),
-                          border: Border.all(color: AppTokens.borderDark),
+                          border: Border.all(color: AppTokens.borderOf(context)),
                         ),
                         child: Text(
                           'Junction #${signal.intersectionId}',
-                          style: const TextStyle(
-                            color: AppTokens.muted,
+                          style: TextStyle(
+                            color: AppTokens.mutedOf(context),
                             fontSize: 11,
                             fontWeight: FontWeight.w500,
                           ),
@@ -336,7 +338,7 @@ class _SignalsScreenState extends ConsumerState<SignalsScreen> {
                             Text(
                               'Phase: ',
                               style: theme.textTheme.bodySmall?.copyWith(
-                                color: AppTokens.muted,
+                                color: AppTokens.mutedOf(context),
                                 fontSize: 12,
                               ),
                             ),
@@ -358,9 +360,9 @@ class _SignalsScreenState extends ConsumerState<SignalsScreen> {
                   ),
                 ],
               ),
-              trailing: const Icon(
+              trailing: Icon(
                 Icons.chevron_right_rounded,
-                color: AppTokens.muted,
+                color: AppTokens.mutedOf(context),
               ),
               onTap: () {
                 Navigator.of(context).push(
@@ -388,8 +390,9 @@ class _SignalsScreenState extends ConsumerState<SignalsScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           IconButton(
+            tooltip: 'Previous page',
             icon: const Icon(Icons.arrow_back_ios_rounded, size: 16),
-            color: _currentPage > 1 ? AppTokens.teal : AppTokens.muted,
+            color: _currentPage > 1 ? AppTokens.teal : AppTokens.mutedOf(context),
             onPressed: _currentPage > 1
                 ? () {
                     setState(() => _currentPage--);
@@ -399,17 +402,18 @@ class _SignalsScreenState extends ConsumerState<SignalsScreen> {
           ),
           Text(
             'Page $_currentPage of ${paginated.pages}',
-            style: const TextStyle(
-              color: AppTokens.textPrimary,
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurface,
               fontWeight: FontWeight.w600,
               fontSize: 13,
             ),
           ),
           IconButton(
+            tooltip: 'Next page',
             icon: const Icon(Icons.arrow_forward_ios_rounded, size: 16),
             color: _currentPage < paginated.pages
                 ? AppTokens.teal
-                : AppTokens.muted,
+                : AppTokens.mutedOf(context),
             onPressed: _currentPage < paginated.pages
                 ? () {
                     setState(() => _currentPage++);

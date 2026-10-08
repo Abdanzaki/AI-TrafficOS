@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/control_recommendation.dart';
 import '../models/junction.dart';
+import '../providers/realtime_providers.dart';
 import '../services/auth_service.dart';
 import '../services/control_service.dart';
 import '../services/junction_service.dart';
@@ -13,6 +14,7 @@ import '../widgets/app_card.dart';
 import '../widgets/empty_state.dart';
 import '../widgets/error_state.dart';
 import '../widgets/loading_state.dart';
+import '../widgets/offline_banner.dart';
 
 /// Screen providing per-junction intelligent traffic control recommendations,
 /// queue-proportional Webster optimization, and macroscopic what-if plan simulation.
@@ -205,12 +207,13 @@ class _ControlScreenState extends ConsumerState<ControlScreen> {
       body: SafeArea(
         child: Column(
           children: [
+            if (ref.watch(isOfflineProvider)) const OfflineBanner(),
             _buildSafetyBanner(),
-            _buildJunctionSelectorBar(),
+            _buildJunctionSelectorBar(theme),
             Expanded(
               child: RefreshIndicator(
                 color: AppTokens.teal,
-                backgroundColor: AppTokens.card,
+                backgroundColor: theme.colorScheme.surface,
                 onRefresh: () async {
                   if (_selectedIntersectionId != null) {
                     await _loadRecommendation(_selectedIntersectionId!);
@@ -257,16 +260,16 @@ class _ControlScreenState extends ConsumerState<ControlScreen> {
     );
   }
 
-  Widget _buildJunctionSelectorBar() {
+  Widget _buildJunctionSelectorBar(ThemeData theme) {
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppTokens.spaceMd,
         vertical: AppTokens.spaceSm,
       ),
-      decoration: const BoxDecoration(
-        color: AppTokens.surface,
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
         border: Border(
-          bottom: BorderSide(color: AppTokens.borderDark),
+          bottom: BorderSide(color: AppTokens.borderOf(context)),
         ),
       ),
       child: Row(
@@ -282,22 +285,22 @@ class _ControlScreenState extends ConsumerState<ControlScreen> {
               child: DropdownButton<int>(
                 value: _selectedIntersectionId,
                 isExpanded: true,
-                dropdownColor: AppTokens.card,
-                hint: const Text(
+                dropdownColor: theme.colorScheme.surface,
+                hint: Text(
                   'Select Junction...',
-                  style: TextStyle(color: AppTokens.textPrimary, fontSize: 13),
+                  style: TextStyle(color: theme.colorScheme.onSurface, fontSize: 13),
                 ),
-                icon: const Icon(
+                icon: Icon(
                   Icons.arrow_drop_down_rounded,
-                  color: AppTokens.muted,
+                  color: AppTokens.mutedOf(context),
                 ),
                 items: _junctions.map((j) {
                   return DropdownMenuItem<int>(
                     value: j.id,
                     child: Text(
                       'Junction #${j.id} — ${j.name}',
-                      style: const TextStyle(
-                        color: AppTokens.textPrimary,
+                      style: TextStyle(
+                        color: theme.colorScheme.onSurface,
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
                       ),
@@ -373,10 +376,10 @@ class _ControlScreenState extends ConsumerState<ControlScreen> {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: AppTokens.amber.withAlpha(80)),
       ),
-      child: const Row(
+      child: Row(
         children: [
-          Icon(Icons.info_outline_rounded, color: AppTokens.amber, size: 22),
-          SizedBox(width: AppTokens.spaceMd),
+          const Icon(Icons.info_outline_rounded, color: AppTokens.amber, size: 22),
+          const SizedBox(width: AppTokens.spaceMd),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -384,15 +387,15 @@ class _ControlScreenState extends ConsumerState<ControlScreen> {
                 Text(
                   'Read-Only Operator Mode',
                   style: TextStyle(
-                    color: AppTokens.textPrimary,
+                    color: Theme.of(context).colorScheme.onSurface,
                     fontWeight: FontWeight.w700,
                     fontSize: 13,
                   ),
                 ),
-                SizedBox(height: 2),
+                const SizedBox(height: 2),
                 Text(
                   'Signal timing optimization execution and manual hardware override commands are restricted to Traffic Officers and System Administrators.',
-                  style: TextStyle(color: AppTokens.muted, fontSize: 12),
+                  style: TextStyle(color: AppTokens.mutedOf(context), fontSize: 12),
                 ),
               ],
             ),
@@ -423,7 +426,7 @@ class _ControlScreenState extends ConsumerState<ControlScreen> {
               Text(
                 'Supervisory Recommendation',
                 style: theme.textTheme.titleSmall?.copyWith(
-                  color: AppTokens.textPrimary,
+                  color: theme.colorScheme.onSurface,
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -436,8 +439,8 @@ class _ControlScreenState extends ConsumerState<ControlScreen> {
           const SizedBox(height: AppTokens.spaceSm),
           Text(
             rec.reason,
-            style: const TextStyle(
-              color: AppTokens.textPrimary,
+            style: TextStyle(
+              color: theme.colorScheme.onSurface,
               fontSize: 14,
               fontWeight: FontWeight.w500,
             ),
@@ -450,8 +453,8 @@ class _ControlScreenState extends ConsumerState<ControlScreen> {
               Expanded(
                 child: Text(
                   'Expected Impact: ${rec.expectedImpact}',
-                  style: const TextStyle(
-                    color: AppTokens.muted,
+                  style: TextStyle(
+                    color: AppTokens.mutedOf(context),
                     fontSize: 12,
                   ),
                 ),
@@ -463,9 +466,9 @@ class _ControlScreenState extends ConsumerState<ControlScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
+                Text(
                   'Algorithmic Confidence',
-                  style: TextStyle(color: AppTokens.muted, fontSize: 11),
+                  style: TextStyle(color: AppTokens.mutedOf(context), fontSize: 11),
                 ),
                 Text(
                   '${(rec.confidence! * 100).toInt()}%',
@@ -482,7 +485,7 @@ class _ControlScreenState extends ConsumerState<ControlScreen> {
               borderRadius: BorderRadius.circular(4),
               child: LinearProgressIndicator(
                 value: rec.confidence!,
-                backgroundColor: AppTokens.surface,
+                backgroundColor: theme.colorScheme.surface,
                 valueColor: const AlwaysStoppedAnimation(AppTokens.teal),
                 minHeight: 6,
               ),
@@ -490,12 +493,12 @@ class _ControlScreenState extends ConsumerState<ControlScreen> {
           ],
           if (rec.current != null) ...[
             const SizedBox(height: AppTokens.spaceMd),
-            const Divider(color: AppTokens.borderDark),
+            Divider(color: AppTokens.borderOf(context)),
             const SizedBox(height: AppTokens.spaceSm),
-            const Text(
+            Text(
               'Observed Traffic Conditions Snapshot:',
               style: TextStyle(
-                color: AppTokens.muted,
+                color: AppTokens.mutedOf(context),
                 fontSize: 11,
                 fontWeight: FontWeight.w600,
               ),
@@ -533,9 +536,9 @@ class _ControlScreenState extends ConsumerState<ControlScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: AppTokens.surface,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppTokens.borderDark),
+        border: Border.all(color: AppTokens.borderOf(context)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -543,12 +546,12 @@ class _ControlScreenState extends ConsumerState<ControlScreen> {
         children: [
           Text(
             label,
-            style: const TextStyle(color: AppTokens.muted, fontSize: 10),
+            style: TextStyle(color: AppTokens.mutedOf(context), fontSize: 10),
           ),
           Text(
             value,
-            style: const TextStyle(
-              color: AppTokens.textPrimary,
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurface,
               fontWeight: FontWeight.w700,
               fontSize: 12,
             ),
@@ -571,16 +574,16 @@ class _ControlScreenState extends ConsumerState<ControlScreen> {
               Text(
                 'Signal Timing Optimization',
                 style: theme.textTheme.titleSmall?.copyWith(
-                  color: AppTokens.textPrimary,
+                  color: theme.colorScheme.onSurface,
                   fontWeight: FontWeight.w700,
                 ),
               ),
             ],
           ),
           const SizedBox(height: AppTokens.spaceSm),
-          const Text(
+          Text(
             'Calculate queue-proportional Webster green split allocations adhering to statutory minimum and clearance boundaries.',
-            style: TextStyle(color: AppTokens.muted, fontSize: 12),
+            style: TextStyle(color: AppTokens.mutedOf(context), fontSize: 12),
           ),
           const SizedBox(height: AppTokens.spaceMd),
           if (!isAnalyst) ...[
@@ -597,25 +600,25 @@ class _ControlScreenState extends ConsumerState<ControlScreen> {
             Container(
               padding: const EdgeInsets.all(AppTokens.spaceMd),
               decoration: BoxDecoration(
-                color: AppTokens.surface,
+                color: theme.colorScheme.surface,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: AppTokens.teal.withAlpha(80)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Row(
+                  Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
                         'Optimized Signal Plan',
                         style: TextStyle(
-                          color: AppTokens.textPrimary,
+                          color: theme.colorScheme.onSurface,
                           fontWeight: FontWeight.w700,
                           fontSize: 14,
                         ),
                       ),
-                      AppBadge(label: 'PASSED SAFETY VALIDATION', color: AppTokens.success),
+                      const AppBadge(label: 'PASSED SAFETY VALIDATION', color: AppTokens.success),
                     ],
                   ),
                   const SizedBox(height: AppTokens.spaceSm),
@@ -624,10 +627,10 @@ class _ControlScreenState extends ConsumerState<ControlScreen> {
                     style: const TextStyle(color: AppTokens.teal, fontSize: 12),
                   ),
                   const SizedBox(height: AppTokens.spaceMd),
-                  const Text(
+                  Text(
                     'Recommended Green Allocations:',
                     style: TextStyle(
-                      color: AppTokens.muted,
+                      color: AppTokens.mutedOf(context),
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
                     ),
@@ -641,8 +644,8 @@ class _ControlScreenState extends ConsumerState<ControlScreen> {
                         children: [
                           Text(
                             'Phase ${e.key}',
-                            style: const TextStyle(
-                              color: AppTokens.textPrimary,
+                            style: TextStyle(
+                              color: theme.colorScheme.onSurface,
                               fontSize: 13,
                             ),
                           ),
@@ -682,16 +685,16 @@ class _ControlScreenState extends ConsumerState<ControlScreen> {
               Text(
                 'What-If Macroscopic Simulation',
                 style: theme.textTheme.titleSmall?.copyWith(
-                  color: AppTokens.textPrimary,
+                  color: theme.colorScheme.onSurface,
                   fontWeight: FontWeight.w700,
                 ),
               ),
             ],
           ),
           const SizedBox(height: AppTokens.spaceSm),
-          const Text(
+          Text(
             'Test candidate timing plans against a point-queue macroscopic traffic model. Measures real mathematical deltas without fabricating gains.',
-            style: TextStyle(color: AppTokens.muted, fontSize: 12),
+            style: TextStyle(color: AppTokens.mutedOf(context), fontSize: 12),
           ),
           const SizedBox(height: AppTokens.spaceMd),
           Row(
@@ -702,8 +705,8 @@ class _ControlScreenState extends ConsumerState<ControlScreen> {
                   children: [
                     Text(
                       'Phase 1: ${_proposedGreenPhase1.toInt()}s',
-                      style: const TextStyle(
-                        color: AppTokens.textPrimary,
+                      style: TextStyle(
+                        color: theme.colorScheme.onSurface,
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                       ),
@@ -714,7 +717,7 @@ class _ControlScreenState extends ConsumerState<ControlScreen> {
                       max: 90,
                       divisions: 16,
                       activeColor: AppTokens.amber,
-                      inactiveColor: AppTokens.surface,
+                      inactiveColor: theme.colorScheme.surfaceContainerHighest,
                       onChanged: (val) => setState(() => _proposedGreenPhase1 = val),
                     ),
                   ],
@@ -726,8 +729,8 @@ class _ControlScreenState extends ConsumerState<ControlScreen> {
                   children: [
                     Text(
                       'Phase 2: ${_proposedGreenPhase2.toInt()}s',
-                      style: const TextStyle(
-                        color: AppTokens.textPrimary,
+                      style: TextStyle(
+                        color: theme.colorScheme.onSurface,
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                       ),
@@ -738,7 +741,7 @@ class _ControlScreenState extends ConsumerState<ControlScreen> {
                       max: 90,
                       divisions: 16,
                       activeColor: AppTokens.amber,
-                      inactiveColor: AppTokens.surface,
+                      inactiveColor: theme.colorScheme.surfaceContainerHighest,
                       onChanged: (val) => setState(() => _proposedGreenPhase2 = val),
                     ),
                   ],
@@ -760,7 +763,7 @@ class _ControlScreenState extends ConsumerState<ControlScreen> {
             Container(
               padding: const EdgeInsets.all(AppTokens.spaceMd),
               decoration: BoxDecoration(
-                color: AppTokens.surface,
+                color: theme.colorScheme.surface,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
                   color: comp.isProposedBetter ? AppTokens.success : AppTokens.amber,
@@ -772,10 +775,10 @@ class _ControlScreenState extends ConsumerState<ControlScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
+                      Text(
                         'Measured Simulation Deltas',
                         style: TextStyle(
-                          color: AppTokens.textPrimary,
+                          color: theme.colorScheme.onSurface,
                           fontWeight: FontWeight.w700,
                           fontSize: 14,
                         ),
@@ -811,14 +814,14 @@ class _ControlScreenState extends ConsumerState<ControlScreen> {
                     ],
                   ),
                   const SizedBox(height: AppTokens.spaceMd),
-                  const Divider(color: AppTokens.borderDark),
+                  Divider(color: AppTokens.borderOf(context)),
                   const SizedBox(height: AppTokens.spaceSm),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
                         'Baseline Wait: ${comp.currentResult.totalWaitVehMin.toStringAsFixed(1)}m',
-                        style: const TextStyle(color: AppTokens.muted, fontSize: 11),
+                        style: TextStyle(color: AppTokens.mutedOf(context), fontSize: 11),
                       ),
                       Text(
                         'Proposed Wait: ${comp.proposedResult.totalWaitVehMin.toStringAsFixed(1)}m',
@@ -851,7 +854,7 @@ class _ControlScreenState extends ConsumerState<ControlScreen> {
       children: [
         Text(
           label,
-          style: const TextStyle(color: AppTokens.muted, fontSize: 11),
+          style: TextStyle(color: AppTokens.mutedOf(context), fontSize: 11),
         ),
         const SizedBox(height: 2),
         Text(

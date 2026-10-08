@@ -28,7 +28,10 @@ import {
   Cpu,
   Sparkles,
 } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useAuth, type UserRole } from "@/lib/auth";
+import { useApiQuery } from "@/lib/use-api";
+import { useTopic } from "@/lib/realtime";
 import { Badge, type BadgeVariant } from "./ui/Badge";
 import { Button } from "./ui/Button";
 import { ConnectionStatus } from "./ConnectionStatus";
@@ -92,6 +95,24 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
   const [mobileOpen, setMobileOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
+  const queryClient = useQueryClient();
+
+  useTopic("notification.created", () => {
+    queryClient.invalidateQueries({ queryKey: ["notifications-unread-count"] });
+  });
+
+  const { data: unreadData } = useApiQuery<{ items: unknown[]; total: number }>({
+    queryKey: ["notifications-unread-count"],
+    endpoint: "/notifications/me",
+    params: { is_read: false, per_page: 1 },
+    queryOptions: {
+      enabled: !!user,
+      refetchInterval: 60000,
+    },
+  });
+
+  const unreadCount = unreadData?.total ?? 0;
+
   const roleVariant: Record<UserRole, BadgeVariant> = {
     admin: "teal",
     traffic_officer: "amber",
@@ -136,7 +157,7 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
         <div className="h-16 flex items-center justify-between px-4 border-b border-white/10 shrink-0">
           <Link
             href="/dashboard"
-            className="flex items-center gap-2.5 overflow-hidden focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent rounded-lg"
+            className="flex items-center gap-2.5 overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded-lg"
           >
             <div className="w-9 h-9 rounded-xl bg-accent/15 border border-accent/40 flex items-center justify-center text-accent shrink-0 shadow-sm">
               <Cpu className="w-5 h-5" />
@@ -147,7 +168,7 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
                   AI TrafficOS
                 </span>
                 <span className="text-[10px] text-muted font-mono uppercase tracking-wider mt-0.5">
-                  Phase 7 Command
+                  Command
                 </span>
               </div>
             )}
@@ -157,7 +178,7 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
           <button
             type="button"
             onClick={() => setMobileOpen(false)}
-            className="lg:hidden p-1.5 rounded-lg text-muted hover:text-text hover:bg-surface focus-visible:outline-none"
+            className="lg:hidden p-1.5 rounded-lg text-muted hover:text-text hover:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
             aria-label="Close sidebar"
           >
             <X className="w-5 h-5" />
@@ -172,7 +193,7 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
           {filteredSections.map((section) => (
             <div key={section.title} className="space-y-1">
               {(!sidebarCollapsed || mobileOpen) && (
-                <div className="px-3 pb-1 text-[11px] font-semibold text-muted/60 uppercase tracking-wider">
+                <div className="px-3 pb-1 text-[11px] font-semibold text-muted uppercase tracking-wider">
                   {section.title}
                 </div>
               )}
@@ -186,7 +207,7 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
                     href={item.href}
                     onClick={() => setMobileOpen(false)}
                     title={sidebarCollapsed && !mobileOpen ? item.name : undefined}
-                    className={`group flex items-center gap-3 px-3 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all ${
+                    className={`group flex items-center gap-3 px-3 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
                       isActive
                         ? "bg-accent/15 text-accent border border-accent/30 font-semibold shadow-sm"
                         : "text-muted hover:text-text hover:bg-surface/70 border border-transparent"
@@ -206,7 +227,7 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
                             className={`text-[9px] uppercase px-1.5 py-0.2 rounded font-mono border ${
                               isAdmin() || isOfficer()
                                 ? "bg-amber/10 text-amber border-amber/20"
-                                : "bg-muted/10 text-muted/60 border-muted/20"
+                                : "bg-muted/10 text-muted border-muted/20"
                             }`}
                             title={
                               isAdmin() || isOfficer()
@@ -255,7 +276,7 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
             <button
               type="button"
               onClick={() => setMobileOpen(true)}
-              className="lg:hidden p-2 rounded-lg text-muted hover:text-text hover:bg-surface focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent"
+              className="lg:hidden p-2 rounded-lg text-muted hover:text-text hover:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
               aria-label="Open sidebar"
             >
               <Menu className="w-5 h-5" />
@@ -271,9 +292,28 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
             </div>
           </div>
 
-          {/* Right items: Connection Status, Environment Badge, User Details, Logout */}
-          <div className="flex items-center gap-3 sm:gap-4">
+          {/* Right items: Connection Status, Notification Bell, Environment Badge, User Details, Logout */}
+          <div className="flex items-center gap-2.5 sm:gap-4">
             <ConnectionStatus />
+
+            {/* Notification Bell with unread-count badge */}
+            <Link
+              href="/notifications"
+              data-testid="desktop-notification-bell"
+              className="relative p-2 rounded-lg text-muted hover:text-text hover:bg-surface transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+              aria-label={`Notifications${unreadCount > 0 ? `, ${unreadCount} unread` : ""}`}
+              title="Notifications"
+            >
+              <Bell className="w-5 h-5" />
+              {unreadCount > 0 && (
+                <span
+                  data-testid="unread-notification-badge"
+                  className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 px-1 items-center justify-center rounded-full bg-accent text-[10px] font-bold text-ink ring-2 ring-ink"
+                >
+                  {unreadCount > 99 ? "99+" : unreadCount}
+                </span>
+              )}
+            </Link>
 
             <Badge variant="teal" dot className="hidden md:inline-flex">
               FastAPI v1
@@ -306,7 +346,7 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
               size="sm"
               onClick={logout}
               title="Sign out of TrafficOS"
-              className="text-muted hover:text-danger hover:bg-danger/10 p-2 sm:px-3 sm:py-1.5"
+              className="text-muted hover:text-danger hover:bg-danger/10 p-2 sm:px-3 sm:py-1.5 focus-visible:ring-2 focus-visible:ring-danger"
             >
               <LogOut className="w-4 h-4 sm:mr-1.5" />
               <span className="hidden sm:inline">Sign out</span>
@@ -315,7 +355,7 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
         </header>
 
         {/* Page view container */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto">
+        <main id="main-content" tabIndex={-1} className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto focus:outline-none">
           {children}
         </main>
       </div>

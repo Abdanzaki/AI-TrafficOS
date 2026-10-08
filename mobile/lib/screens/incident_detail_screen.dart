@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/incident.dart';
+import '../providers/realtime_providers.dart';
 import '../services/api_client.dart';
 import '../services/auth_service.dart';
 import '../services/incident_service.dart';
@@ -10,6 +11,7 @@ import '../widgets/app_badge.dart';
 import '../widgets/app_card.dart';
 import '../widgets/error_state.dart';
 import '../widgets/loading_state.dart';
+import '../widgets/offline_banner.dart';
 
 /// Detailed view for an individual incident featuring a visual status timeline,
 /// metadata chips, and RBAC-governed lifecycle status progression.
@@ -92,10 +94,10 @@ class _IncidentDetailScreenState extends ConsumerState<IncidentDetailScreen> {
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            backgroundColor: AppTokens.surface,
+            backgroundColor: Theme.of(context).colorScheme.surface,
             content: Text(
               'Incident #${updated.id} transitioned to ${updated.status.toUpperCase()}',
-              style: const TextStyle(color: AppTokens.textPrimary),
+              style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
             ),
           ),
         );
@@ -137,7 +139,12 @@ class _IncidentDetailScreenState extends ConsumerState<IncidentDetailScreen> {
         ],
       ),
       body: SafeArea(
-        child: _buildBody(context, canWrite, isAnalyst),
+        child: Column(
+          children: [
+            if (ref.watch(isOfflineProvider)) const OfflineBanner(),
+            Expanded(child: _buildBody(context, canWrite, isAnalyst)),
+          ],
+        ),
       ),
     );
   }
@@ -174,7 +181,7 @@ class _IncidentDetailScreenState extends ConsumerState<IncidentDetailScreen> {
     return RefreshIndicator(
       onRefresh: _loadIncident,
       color: AppTokens.teal,
-      backgroundColor: AppTokens.card,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       child: ListView(
         padding: const EdgeInsets.all(AppTokens.spaceMd),
         children: [
@@ -220,17 +227,17 @@ class _IncidentDetailScreenState extends ConsumerState<IncidentDetailScreen> {
                   children: [
                     Text(
                       inc.displayTitle,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
-                        color: AppTokens.textPrimary,
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       'Reported: ${inc.createdAt.toLocal().toString().split(".")[0]}',
-                      style: const TextStyle(
-                        color: AppTokens.muted,
+                      style: TextStyle(
+                        color: AppTokens.mutedOf(context),
                         fontSize: 11,
                       ),
                     ),
@@ -309,12 +316,12 @@ class _IncidentDetailScreenState extends ConsumerState<IncidentDetailScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Lifecycle Progression',
             style: TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w700,
-              color: AppTokens.textPrimary,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
           const SizedBox(height: AppTokens.spaceMd),
@@ -340,9 +347,9 @@ class _IncidentDetailScreenState extends ConsumerState<IncidentDetailScreen> {
                   shape: BoxShape.circle,
                   color: step.isPassed
                       ? step.color
-                      : AppTokens.surface,
+                      : Theme.of(context).colorScheme.surface,
                   border: Border.all(
-                    color: step.isPassed ? step.color : AppTokens.borderDark,
+                    color: step.isPassed ? step.color : AppTokens.borderOf(context),
                     width: 2,
                   ),
                 ),
@@ -356,7 +363,7 @@ class _IncidentDetailScreenState extends ConsumerState<IncidentDetailScreen> {
                     width: 2,
                     color: step.isPassed
                         ? step.color.withAlpha(120)
-                        : AppTokens.borderDark,
+                        : AppTokens.borderOf(context),
                   ),
                 ),
             ],
@@ -374,15 +381,15 @@ class _IncidentDetailScreenState extends ConsumerState<IncidentDetailScreen> {
                       fontSize: 14,
                       fontWeight:
                           step.isActive ? FontWeight.w800 : FontWeight.w600,
-                      color: step.isActive ? step.color : AppTokens.textPrimary,
+                      color: step.isActive ? step.color : Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
                   const SizedBox(height: 2),
                   Text(
                     step.subtitle,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 12,
-                      color: AppTokens.muted,
+                      color: AppTokens.mutedOf(context),
                     ),
                   ),
                 ],
@@ -429,10 +436,10 @@ class _IncidentDetailScreenState extends ConsumerState<IncidentDetailScreen> {
             const Icon(Icons.check_circle_outline_rounded,
                 color: AppTokens.success, size: 20),
             const SizedBox(width: AppTokens.spaceSm),
-            const Expanded(
+            Expanded(
               child: Text(
                 'This incident has been resolved. Transition back to reported is prohibited by safety policy.',
-                style: TextStyle(color: AppTokens.textPrimary, fontSize: 12),
+                style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 12),
               ),
             ),
           ],
@@ -452,12 +459,12 @@ class _IncidentDetailScreenState extends ConsumerState<IncidentDetailScreen> {
               const Icon(Icons.published_with_changes_rounded,
                   color: AppTokens.teal, size: 18),
               const SizedBox(width: AppTokens.spaceSm),
-              const Text(
+              Text(
                 'Lifecycle Action Transition',
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
-                  color: AppTokens.textPrimary,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
               const Spacer(),
@@ -491,7 +498,7 @@ class _IncidentDetailScreenState extends ConsumerState<IncidentDetailScreen> {
                         ? AppTokens.success
                         : AppTokens.amber,
                     foregroundColor: Colors.white,
-                    disabledBackgroundColor: AppTokens.surface,
+                    disabledBackgroundColor: Theme.of(context).colorScheme.surface,
                   ),
                   onPressed: _isTransitioning
                       ? null
@@ -511,19 +518,19 @@ class _IncidentDetailScreenState extends ConsumerState<IncidentDetailScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Incident Description',
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w700,
-              color: AppTokens.textPrimary,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
           const SizedBox(height: AppTokens.spaceSm),
           Text(
             inc.description ?? 'No narrative description recorded.',
-            style: const TextStyle(
-              color: AppTokens.textPrimary,
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurface,
               fontSize: 14,
               height: 1.5,
             ),
@@ -539,12 +546,12 @@ class _IncidentDetailScreenState extends ConsumerState<IncidentDetailScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Telemetry & Geographic Records',
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w700,
-              color: AppTokens.textPrimary,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
           const SizedBox(height: AppTokens.spaceMd),
@@ -584,12 +591,12 @@ class _IncidentDetailScreenState extends ConsumerState<IncidentDetailScreen> {
         children: [
           Text(
             label,
-            style: const TextStyle(color: AppTokens.muted, fontSize: 12),
+            style: TextStyle(color: AppTokens.mutedOf(context), fontSize: 12),
           ),
           Text(
             value,
-            style: const TextStyle(
-              color: AppTokens.textPrimary,
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurface,
               fontSize: 12,
               fontWeight: FontWeight.w600,
             ),

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/app_user.dart';
 import '../models/user.dart';
+import '../providers/realtime_providers.dart';
 import '../services/api_client.dart';
 import '../services/user_service.dart';
 import '../theme/app_tokens.dart';
@@ -12,6 +13,7 @@ import '../widgets/app_card.dart';
 import '../widgets/empty_state.dart';
 import '../widgets/error_state.dart';
 import '../widgets/loading_state.dart';
+import '../widgets/offline_banner.dart';
 import '../widgets/require_role.dart';
 
 /// Screen managing operator user provisioning, roles, and deactivation (Admin restricted).
@@ -147,10 +149,10 @@ class _UsersScreenContentState extends ConsumerState<_UsersScreenContent> {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: AppTokens.card,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-        side: BorderSide(color: AppTokens.borderDark),
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        side: BorderSide(color: AppTokens.borderOf(context)),
       ),
       builder: (ctx) {
         return StatefulBuilder(
@@ -175,24 +177,24 @@ class _UsersScreenContentState extends ConsumerState<_UsersScreenContent> {
                           width: 36,
                           height: 4,
                           decoration: BoxDecoration(
-                            color: AppTokens.muted.withAlpha(80),
+                            color: AppTokens.mutedOf(context).withAlpha(80),
                             borderRadius: BorderRadius.circular(2),
                           ),
                         ),
                       ),
                       const SizedBox(height: AppTokens.spaceMd),
-                      const Text(
+                      Text(
                         'Provision Operator Account',
                         style: TextStyle(
-                          color: AppTokens.textPrimary,
+                          color: Theme.of(context).colorScheme.onSurface,
                           fontSize: 18,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
                       const SizedBox(height: AppTokens.spaceXs),
-                      const Text(
+                      Text(
                         'Create a new municipal operator account with assigned RBAC permissions.',
-                        style: TextStyle(color: AppTokens.muted, fontSize: 12),
+                        style: TextStyle(color: AppTokens.mutedOf(context), fontSize: 12),
                       ),
                       const SizedBox(height: AppTokens.spaceLg),
                       TextFormField(
@@ -344,10 +346,10 @@ class _UsersScreenContentState extends ConsumerState<_UsersScreenContent> {
         return StatefulBuilder(
           builder: (context, setDialogState) {
             return AlertDialog(
-              backgroundColor: AppTokens.card,
+              backgroundColor: Theme.of(context).colorScheme.surface,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
-                side: const BorderSide(color: AppTokens.borderDark),
+                side: BorderSide(color: AppTokens.borderOf(context)),
               ),
               title: const Text('Edit Operator Role'),
               content: Column(
@@ -356,8 +358,8 @@ class _UsersScreenContentState extends ConsumerState<_UsersScreenContent> {
                 children: [
                   Text(
                     user.email,
-                    style: const TextStyle(
-                      color: AppTokens.muted,
+                    style: TextStyle(
+                      color: AppTokens.mutedOf(context),
                       fontSize: 12,
                     ),
                   ),
@@ -365,7 +367,7 @@ class _UsersScreenContentState extends ConsumerState<_UsersScreenContent> {
                   TextField(
                     controller: nameController,
                     decoration: const InputDecoration(
-                      labelText: 'Full Name',
+                       labelText: 'Full Name',
                       prefixIcon: Icon(Icons.person_outline_rounded),
                     ),
                   ),
@@ -401,12 +403,14 @@ class _UsersScreenContentState extends ConsumerState<_UsersScreenContent> {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.of(ctx).pop(),
-                  child: const Text('Cancel', style: TextStyle(color: AppTokens.muted)),
+                  child: Text('Cancel', style: TextStyle(color: AppTokens.mutedOf(context))),
                 ),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTokens.teal,
-                    foregroundColor: AppTokens.ink,
+                    foregroundColor: Theme.of(context).brightness == Brightness.dark
+                        ? AppTokens.ink
+                        : Colors.white,
                   ),
                   onPressed: isSaving
                       ? null
@@ -483,10 +487,10 @@ class _UsersScreenContentState extends ConsumerState<_UsersScreenContent> {
     showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppTokens.card,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: const BorderSide(color: AppTokens.borderDark),
+          side: BorderSide(color: AppTokens.borderOf(context)),
         ),
         title: const Text('Deactivate Operator Account'),
         content: Text(
@@ -495,7 +499,7 @@ class _UsersScreenContentState extends ConsumerState<_UsersScreenContent> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Cancel', style: TextStyle(color: AppTokens.muted)),
+            child: Text('Cancel', style: TextStyle(color: AppTokens.mutedOf(context))),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
@@ -566,12 +570,21 @@ class _UsersScreenContentState extends ConsumerState<_UsersScreenContent> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         backgroundColor: AppTokens.teal,
-        foregroundColor: AppTokens.ink,
+        foregroundColor: Theme.of(context).brightness == Brightness.dark
+            ? AppTokens.ink
+            : Colors.white,
         icon: const Icon(Icons.person_add_rounded),
         label: const Text('New User'),
         onPressed: _showCreateUserSheet,
       ),
-      body: _buildBody(),
+      body: SafeArea(
+        child: Column(
+          children: [
+            if (ref.watch(isOfflineProvider)) const OfflineBanner(),
+            Expanded(child: _buildBody()),
+          ],
+        ),
+      ),
     );
   }
 
@@ -673,8 +686,8 @@ class _UsersScreenContentState extends ConsumerState<_UsersScreenContent> {
                     Flexible(
                       child: Text(
                         user.fullName,
-                        style: const TextStyle(
-                          color: AppTokens.textPrimary,
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurface,
                           fontWeight: FontWeight.w700,
                           fontSize: 14,
                         ),
@@ -692,8 +705,8 @@ class _UsersScreenContentState extends ConsumerState<_UsersScreenContent> {
                 const SizedBox(height: 2),
                 Text(
                   user.email,
-                  style: const TextStyle(
-                    color: AppTokens.muted,
+                  style: TextStyle(
+                    color: AppTokens.mutedOf(context),
                     fontSize: 12,
                   ),
                   overflow: TextOverflow.ellipsis,
@@ -708,11 +721,11 @@ class _UsersScreenContentState extends ConsumerState<_UsersScreenContent> {
           ),
           PopupMenuButton<String>(
             tooltip: 'Operator Actions',
-            icon: const Icon(Icons.more_vert_rounded, color: AppTokens.muted),
-            color: AppTokens.card,
+            icon: Icon(Icons.more_vert_rounded, color: AppTokens.mutedOf(context)),
+            color: Theme.of(context).colorScheme.surface,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
-              side: const BorderSide(color: AppTokens.borderDark),
+              side: BorderSide(color: AppTokens.borderOf(context)),
             ),
             itemBuilder: (ctx) => [
               const PopupMenuItem(

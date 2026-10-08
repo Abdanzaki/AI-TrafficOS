@@ -12,6 +12,10 @@ import '../widgets/app_card.dart';
 import '../widgets/empty_state.dart';
 import '../widgets/error_state.dart';
 import '../widgets/loading_state.dart';
+import '../widgets/offline_banner.dart';
+import 'emergency_screen.dart';
+import 'incident_detail_screen.dart';
+import 'signal_detail_screen.dart';
 
 /// Notifications screen displaying targeted operational alerts and broadcasts.
 class NotificationsScreen extends ConsumerStatefulWidget {
@@ -153,13 +157,14 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
   }
 
   void _showDetailSheet(AppNotification item) {
+    final theme = Theme.of(context);
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: AppTokens.card,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-        side: BorderSide(color: AppTokens.borderDark),
+      backgroundColor: theme.colorScheme.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        side: BorderSide(color: theme.colorScheme.outline.withAlpha(80)),
       ),
       builder: (ctx) {
         return SafeArea(
@@ -174,7 +179,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                     width: 36,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: AppTokens.muted.withAlpha(80),
+                      color: AppTokens.mutedOf(context).withAlpha(80),
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
@@ -189,8 +194,8 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                     const Spacer(),
                     Text(
                       _formatDate(item.createdAt),
-                      style: const TextStyle(
-                        color: AppTokens.muted,
+                      style: TextStyle(
+                        color: AppTokens.mutedOf(context),
                         fontSize: 12,
                       ),
                     ),
@@ -199,8 +204,8 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                 const SizedBox(height: AppTokens.spaceMd),
                 Text(
                   item.title,
-                  style: const TextStyle(
-                    color: AppTokens.textPrimary,
+                  style: TextStyle(
+                    color: theme.colorScheme.onSurface,
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
                   ),
@@ -208,8 +213,8 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                 const SizedBox(height: AppTokens.spaceSm),
                 Text(
                   item.body.isNotEmpty ? item.body : 'No additional details provided.',
-                  style: const TextStyle(
-                    color: AppTokens.muted,
+                  style: TextStyle(
+                    color: AppTokens.mutedOf(context),
                     fontSize: 14,
                     height: 1.5,
                   ),
@@ -219,9 +224,9 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                   Container(
                     padding: const EdgeInsets.all(AppTokens.spaceSm),
                     decoration: BoxDecoration(
-                      color: AppTokens.surface,
+                      color: theme.colorScheme.surfaceContainerHighest,
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: AppTokens.borderDark),
+                      border: Border.all(color: theme.colorScheme.outline.withAlpha(60)),
                     ),
                     child: Row(
                       children: [
@@ -231,13 +236,27 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                           color: AppTokens.teal,
                         ),
                         const SizedBox(width: AppTokens.spaceXs),
-                        Text(
-                          'Entity: ${item.entityType}${item.entityId != null ? " #${item.entityId}" : ""}',
-                          style: const TextStyle(
-                            color: AppTokens.muted,
-                            fontSize: 12,
+                        Expanded(
+                          child: Text(
+                            'Entity: ${item.entityType}${item.entityId != null ? " #${item.entityId}" : ""}',
+                            style: TextStyle(
+                              color: AppTokens.mutedOf(context),
+                              fontSize: 12,
+                            ),
                           ),
                         ),
+                        if (_canNavigateToEntity(item))
+                          TextButton(
+                            style: TextButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                              minimumSize: const Size(44, 36),
+                            ),
+                            onPressed: () {
+                              Navigator.of(ctx).pop();
+                              _navigateToEntity(context, item);
+                            },
+                            child: const Text('Open →'),
+                          ),
                       ],
                     ),
                   ),
@@ -247,11 +266,11 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                   width: double.infinity,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTokens.surface,
-                      foregroundColor: AppTokens.textPrimary,
+                      backgroundColor: theme.colorScheme.surfaceContainerHighest,
+                      foregroundColor: theme.colorScheme.onSurface,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
-                        side: const BorderSide(color: AppTokens.borderDark),
+                        side: BorderSide(color: theme.colorScheme.outline.withAlpha(60)),
                       ),
                     ),
                     onPressed: () => Navigator.of(ctx).pop(),
@@ -264,6 +283,64 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
         );
       },
     );
+  }
+
+  bool _canNavigateToEntity(AppNotification item) {
+    if (item.entityType == null) return false;
+    final type = item.entityType!.toLowerCase();
+    if (type == 'incident' && item.entityId != null) return true;
+    if (type == 'signal' && item.entityId != null) return true;
+    if (type == 'emergency') return true;
+    return false;
+  }
+
+  void _navigateToEntity(BuildContext context, AppNotification item) {
+    final type = item.entityType?.toLowerCase();
+    if (type == 'incident' && item.entityId != null) {
+      Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => IncidentDetailScreen(incidentId: item.entityId!)),
+      );
+    } else if (type == 'signal' && item.entityId != null) {
+      Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => SignalDetailScreen(signalId: item.entityId!)),
+      );
+    } else if (type == 'emergency') {
+      Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => const EmergencyScreen()),
+      );
+    }
+  }
+
+  bool _isMarkingAllRead = false;
+
+  Future<void> _markAllAsRead() async {
+    final unread = _notifications.where((n) => !n.isRead).map((n) => n.id).toList();
+    if (unread.isEmpty) return;
+    setState(() => _isMarkingAllRead = true);
+    try {
+      final count = await ref.read(notificationServiceProvider).markAllAsRead(unread);
+      if (mounted) {
+        setState(() {
+          for (var i = 0; i < _notifications.length; i++) {
+            _notifications[i] = _notifications[i].copyWith(isRead: true);
+          }
+        });
+        ref.invalidate(unreadNotificationCountProvider);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Marked $count notification${count == 1 ? "" : "s"} as read')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to mark all as read: $e')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isMarkingAllRead = false);
+      }
+    }
   }
 
   String _formatDate(DateTime dt) {
@@ -289,6 +366,19 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
         title: const Text('Notifications'),
         actions: [
           IconButton(
+            icon: _isMarkingAllRead
+                ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.done_all_rounded),
+            tooltip: 'Mark All as Read',
+            onPressed: (_isMarkingAllRead || !_notifications.any((n) => !n.isRead))
+                ? null
+                : _markAllAsRead,
+          ),
+          IconButton(
             icon: const Icon(Icons.refresh_rounded),
             tooltip: 'Refresh Notifications',
             onPressed: _loadInitialNotifications,
@@ -297,6 +387,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
       ),
       body: Column(
         children: [
+          if (ref.watch(isOfflineProvider)) const OfflineBanner(),
           _buildFilterBar(),
           Expanded(child: _buildBody()),
         ],
@@ -418,9 +509,13 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
   }
 
   Widget _buildNotificationCard(AppNotification item) {
-    return AppCard(
-      onTap: () => _onNotificationTapped(item),
-      padding: const EdgeInsets.all(AppTokens.spaceMd),
+    return Semantics(
+      label:
+          '${item.isRead ? "" : "Unread "}notification: ${item.title}. ${item.body}. Type: ${item.type}. ${_formatDate(item.createdAt)}',
+      button: true,
+      child: AppCard(
+        onTap: () => _onNotificationTapped(item),
+        padding: const EdgeInsets.all(AppTokens.spaceMd),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -451,7 +546,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                       child: Text(
                         item.title,
                         style: TextStyle(
-                          color: AppTokens.textPrimary,
+                          color: Theme.of(context).colorScheme.onSurface,
                           fontWeight:
                               item.isRead ? FontWeight.w500 : FontWeight.w700,
                           fontSize: 14,
@@ -476,8 +571,8 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                   item.body,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: AppTokens.muted,
+                  style: TextStyle(
+                    color: AppTokens.mutedOf(context),
                     fontSize: 12,
                     height: 1.3,
                   ),
@@ -492,8 +587,8 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                     const SizedBox(width: AppTokens.spaceSm),
                     Text(
                       _formatDate(item.createdAt),
-                      style: const TextStyle(
-                        color: AppTokens.muted,
+                      style: TextStyle(
+                        color: AppTokens.mutedOf(context),
                         fontSize: 11,
                       ),
                     ),
@@ -503,13 +598,16 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
             ),
           ),
           const SizedBox(width: AppTokens.spaceSm),
-          const Icon(
-            Icons.chevron_right_rounded,
-            color: AppTokens.muted,
-            size: 20,
+          ExcludeSemantics(
+            child: Icon(
+              Icons.chevron_right_rounded,
+              color: AppTokens.mutedOf(context),
+              size: 20,
+            ),
           ),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 }

@@ -13,6 +13,7 @@ import '../widgets/app_card.dart';
 import '../widgets/empty_state.dart';
 import '../widgets/error_state.dart';
 import '../widgets/loading_state.dart';
+import '../widgets/offline_banner.dart';
 
 /// Screen displaying detailed signal controller timings, phase sequence timeline,
 /// and supervisory manual override controls.
@@ -92,7 +93,12 @@ class _SignalDetailScreenState extends ConsumerState<SignalDetailScreen> {
         ],
       ),
       body: SafeArea(
-        child: _buildBody(theme, isAnalyst),
+        child: Column(
+          children: [
+            if (ref.watch(isOfflineProvider)) const OfflineBanner(),
+            Expanded(child: _buildBody(theme, isAnalyst)),
+          ],
+        ),
       ),
     );
   }
@@ -172,15 +178,15 @@ class _SignalDetailScreenState extends ConsumerState<SignalDetailScreen> {
                     Text(
                       signal.name,
                       style: theme.textTheme.titleMedium?.copyWith(
-                        color: AppTokens.textPrimary,
+                        color: theme.colorScheme.onSurface,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       'Hardware Code: ${signal.code}',
-                      style: const TextStyle(
-                        color: AppTokens.muted,
+                      style: TextStyle(
+                        color: AppTokens.mutedOf(context),
                         fontSize: 12,
                       ),
                     ),
@@ -204,7 +210,7 @@ class _SignalDetailScreenState extends ConsumerState<SignalDetailScreen> {
             ],
           ),
           const SizedBox(height: AppTokens.spaceMd),
-          const Divider(color: AppTokens.borderDark),
+          Divider(color: AppTokens.borderOf(context)),
           const SizedBox(height: AppTokens.spaceSm),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -212,9 +218,9 @@ class _SignalDetailScreenState extends ConsumerState<SignalDetailScreen> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'Active Optical State',
-                    style: TextStyle(color: AppTokens.muted, fontSize: 11),
+                    style: TextStyle(color: AppTokens.mutedOf(context), fontSize: 11),
                   ),
                   const SizedBox(height: 2),
                   Row(
@@ -243,15 +249,15 @@ class _SignalDetailScreenState extends ConsumerState<SignalDetailScreen> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  const Text(
+                  Text(
                     'Current Phase',
-                    style: TextStyle(color: AppTokens.muted, fontSize: 11),
+                    style: TextStyle(color: AppTokens.mutedOf(context), fontSize: 11),
                   ),
                   const SizedBox(height: 2),
                   Text(
                     signal.currentPhase ?? 'Default Cycle',
-                    style: const TextStyle(
-                      color: AppTokens.textPrimary,
+                    style: TextStyle(
+                      color: theme.colorScheme.onSurface,
                       fontWeight: FontWeight.w700,
                       fontSize: 13,
                     ),
@@ -282,10 +288,10 @@ class _SignalDetailScreenState extends ConsumerState<SignalDetailScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'CV Optical Ground Truth',
                   style: TextStyle(
-                    color: AppTokens.textPrimary,
+                    color: theme.colorScheme.onSurface,
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
                   ),
@@ -294,8 +300,8 @@ class _SignalDetailScreenState extends ConsumerState<SignalDetailScreen> {
                   hasObs
                       ? 'Observed: ${signal.observedState?.toUpperCase() ?? "N/A"} (${((signal.observedConfidence ?? 1.0) * 100).toInt()}% conf)'
                       : 'No optical camera telemetry ingested yet',
-                  style: const TextStyle(
-                    color: AppTokens.muted,
+                  style: TextStyle(
+                    color: AppTokens.mutedOf(context),
                     fontSize: 11,
                   ),
                 ),
@@ -305,7 +311,7 @@ class _SignalDetailScreenState extends ConsumerState<SignalDetailScreen> {
           if (signal.observedAt != null)
             Text(
               '${signal.observedAt!.hour.toString().padLeft(2, '0')}:${signal.observedAt!.minute.toString().padLeft(2, '0')}',
-              style: const TextStyle(color: AppTokens.muted, fontSize: 11),
+              style: TextStyle(color: AppTokens.mutedOf(context), fontSize: 11),
             ),
         ],
       ),
@@ -323,7 +329,7 @@ class _SignalDetailScreenState extends ConsumerState<SignalDetailScreen> {
             Text(
               'Phase Interval Sequence (${signal.phases.length})',
               style: theme.textTheme.titleSmall?.copyWith(
-                color: AppTokens.textPrimary,
+                color: theme.colorScheme.onSurface,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -331,8 +337,8 @@ class _SignalDetailScreenState extends ConsumerState<SignalDetailScreen> {
         ),
         Text(
           'Total: ${signal.phases.fold<int>(0, (sum, p) => sum + p.durationSeconds)}s cycle',
-          style: const TextStyle(
-            color: AppTokens.muted,
+          style: TextStyle(
+            color: AppTokens.mutedOf(context),
             fontSize: 12,
             fontWeight: FontWeight.w600,
           ),
@@ -373,10 +379,10 @@ class _SignalDetailScreenState extends ConsumerState<SignalDetailScreen> {
                 decoration: BoxDecoration(
                   color: isCurrent
                       ? phase.color.withAlpha(40)
-                      : AppTokens.surface,
+                      : theme.colorScheme.surface,
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: isCurrent ? phase.color : AppTokens.borderDark,
+                    color: isCurrent ? phase.color : AppTokens.borderOf(context),
                     width: isCurrent ? 2 : 1,
                   ),
                 ),
@@ -384,7 +390,7 @@ class _SignalDetailScreenState extends ConsumerState<SignalDetailScreen> {
                   child: Text(
                     '${phase.phaseOrder}',
                     style: TextStyle(
-                      color: isCurrent ? phase.color : AppTokens.muted,
+                      color: isCurrent ? phase.color : AppTokens.mutedOf(context),
                       fontWeight: FontWeight.w700,
                       fontSize: 12,
                     ),
@@ -397,14 +403,14 @@ class _SignalDetailScreenState extends ConsumerState<SignalDetailScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
-                      children: [
+                       children: [
                         Expanded(
                           child: Text(
                             phase.name,
                             style: TextStyle(
                               color: isCurrent
-                                  ? AppTokens.textPrimary
-                                  : AppTokens.muted,
+                                  ? theme.colorScheme.onSurface
+                                  : AppTokens.mutedOf(context),
                               fontWeight: isCurrent
                                   ? FontWeight.w700
                                   : FontWeight.w500,
@@ -442,8 +448,8 @@ class _SignalDetailScreenState extends ConsumerState<SignalDetailScreen> {
                         const SizedBox(width: AppTokens.spaceMd),
                         Text(
                           'Duration: ${phase.durationSeconds}s',
-                          style: const TextStyle(
-                            color: AppTokens.muted,
+                          style: TextStyle(
+                            color: AppTokens.mutedOf(context),
                             fontSize: 11,
                           ),
                         ),
@@ -468,10 +474,10 @@ class _SignalDetailScreenState extends ConsumerState<SignalDetailScreen> {
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: AppTokens.amber.withAlpha(80)),
         ),
-        child: const Row(
+        child: Row(
           children: [
-            Icon(Icons.lock_outline_rounded, color: AppTokens.amber, size: 24),
-            SizedBox(width: AppTokens.spaceMd),
+            const Icon(Icons.lock_outline_rounded, color: AppTokens.amber, size: 24),
+            const SizedBox(width: AppTokens.spaceMd),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -479,15 +485,15 @@ class _SignalDetailScreenState extends ConsumerState<SignalDetailScreen> {
                   Text(
                     'Read-Only Access',
                     style: TextStyle(
-                      color: AppTokens.textPrimary,
+                      color: Theme.of(context).colorScheme.onSurface,
                       fontWeight: FontWeight.w700,
                       fontSize: 13,
                     ),
                   ),
-                  SizedBox(height: 2),
+                  const SizedBox(height: 2),
                   Text(
                     'Operators with Analyst role cannot execute signal phase overrides or modify timings.',
-                    style: TextStyle(color: AppTokens.muted, fontSize: 12),
+                    style: TextStyle(color: AppTokens.mutedOf(context), fontSize: 12),
                   ),
                 ],
               ),
@@ -520,16 +526,16 @@ class _SignalDetailScreenState extends ConsumerState<SignalDetailScreen> {
               Text(
                 'Manual Signal Override',
                 style: theme.textTheme.titleSmall?.copyWith(
-                  color: AppTokens.textPrimary,
+                  color: theme.colorScheme.onSurface,
                   fontWeight: FontWeight.w700,
                 ),
               ),
             ],
           ),
           const SizedBox(height: AppTokens.spaceSm),
-          const Text(
+          Text(
             'Traffic Officers & Admins may manually command a phase extension or emergency state hold. Every manual override action is recorded in the municipal audit log.',
-            style: TextStyle(color: AppTokens.muted, fontSize: 12),
+            style: TextStyle(color: AppTokens.mutedOf(context), fontSize: 12),
           ),
           const SizedBox(height: AppTokens.spaceMd),
           AppButton(
@@ -554,16 +560,18 @@ class _SignalDetailScreenState extends ConsumerState<SignalDetailScreen> {
     String selectedState = 'green';
     final reasonController = TextEditingController(text: 'Congestion relief');
 
+    final theme = Theme.of(context);
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: AppTokens.card,
+      backgroundColor: theme.colorScheme.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (modalCtx) {
         return StatefulBuilder(
           builder: (ctx, setModalState) {
+            final modalTheme = Theme.of(modalCtx);
             return Padding(
               padding: EdgeInsets.only(
                 left: AppTokens.spaceLg,
@@ -578,30 +586,31 @@ class _SignalDetailScreenState extends ConsumerState<SignalDetailScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
+                      Text(
                         'Manual Phase Override',
                         style: TextStyle(
-                          color: AppTokens.textPrimary,
+                          color: modalTheme.colorScheme.onSurface,
                           fontSize: 18,
                           fontWeight: FontWeight.w800,
                         ),
                       ),
                       IconButton(
-                        icon: const Icon(Icons.close_rounded, color: AppTokens.muted),
+                        tooltip: 'Close',
+                        icon: Icon(Icons.close_rounded, color: AppTokens.mutedOf(modalCtx)),
                         onPressed: () => Navigator.of(modalCtx).pop(),
                       ),
                     ],
                   ),
                   const SizedBox(height: AppTokens.spaceSm),
-                  const Text(
+                  Text(
                     'Select target phase and commanded duration:',
-                    style: TextStyle(color: AppTokens.muted, fontSize: 12),
+                    style: TextStyle(color: AppTokens.mutedOf(modalCtx), fontSize: 12),
                   ),
                   const SizedBox(height: AppTokens.spaceMd),
-                  const Text(
+                  Text(
                     'Target Phase Interval',
                     style: TextStyle(
-                      color: AppTokens.textPrimary,
+                      color: modalTheme.colorScheme.onSurface,
                       fontWeight: FontWeight.w600,
                       fontSize: 13,
                     ),
@@ -609,13 +618,13 @@ class _SignalDetailScreenState extends ConsumerState<SignalDetailScreen> {
                   const SizedBox(height: AppTokens.spaceXs),
                   DropdownButtonFormField<String>(
                     initialValue: selectedPhase,
-                    dropdownColor: AppTokens.card,
+                    dropdownColor: modalTheme.colorScheme.surface,
                     decoration: InputDecoration(
                       filled: true,
-                      fillColor: AppTokens.surface,
+                      fillColor: modalTheme.colorScheme.surface,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
-                        borderSide: const BorderSide(color: AppTokens.borderDark),
+                        borderSide: BorderSide(color: AppTokens.borderOf(modalCtx)),
                       ),
                     ),
                     items: [
@@ -630,7 +639,7 @@ class _SignalDetailScreenState extends ConsumerState<SignalDetailScreen> {
                             value: p.name,
                             child: Text(
                               '${p.name} (${p.state.label})',
-                              style: const TextStyle(color: AppTokens.textPrimary),
+                              style: TextStyle(color: modalTheme.colorScheme.onSurface),
                             ),
                           ),
                         ),
@@ -653,10 +662,10 @@ class _SignalDetailScreenState extends ConsumerState<SignalDetailScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
+                      Text(
                         'Override Duration',
                         style: TextStyle(
-                          color: AppTokens.textPrimary,
+                          color: modalTheme.colorScheme.onSurface,
                           fontWeight: FontWeight.w600,
                           fontSize: 13,
                         ),
@@ -677,16 +686,16 @@ class _SignalDetailScreenState extends ConsumerState<SignalDetailScreen> {
                     max: 120,
                     divisions: 11,
                     activeColor: AppTokens.teal,
-                    inactiveColor: AppTokens.surface,
+                    inactiveColor: modalTheme.colorScheme.surfaceContainerHighest,
                     onChanged: (val) {
                       setModalState(() => durationSeconds = val);
                     },
                   ),
                   const SizedBox(height: AppTokens.spaceSm),
-                  const Text(
+                  Text(
                     'Operational Reason / Rationale',
                     style: TextStyle(
-                      color: AppTokens.textPrimary,
+                      color: modalTheme.colorScheme.onSurface,
                       fontWeight: FontWeight.w600,
                       fontSize: 13,
                     ),
@@ -696,12 +705,12 @@ class _SignalDetailScreenState extends ConsumerState<SignalDetailScreen> {
                     controller: reasonController,
                     decoration: InputDecoration(
                       hintText: 'Enter justification (e.g. queue discharge)...',
-                      hintStyle: const TextStyle(color: AppTokens.muted, fontSize: 13),
+                      hintStyle: TextStyle(color: AppTokens.mutedOf(modalCtx), fontSize: 13),
                       filled: true,
-                      fillColor: AppTokens.surface,
+                      fillColor: modalTheme.colorScheme.surface,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
-                        borderSide: const BorderSide(color: AppTokens.borderDark),
+                        borderSide: BorderSide(color: AppTokens.borderOf(modalCtx)),
                       ),
                     ),
                   ),
@@ -741,34 +750,38 @@ class _SignalDetailScreenState extends ConsumerState<SignalDetailScreen> {
   }) {
     showDialog(
       context: context,
-      builder: (dialogCtx) => AlertDialog(
-        backgroundColor: AppTokens.card,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: const BorderSide(color: AppTokens.borderDark),
-        ),
-        title: const Row(
-          children: [
-            Icon(Icons.warning_amber_rounded, color: AppTokens.amber),
-            SizedBox(width: AppTokens.spaceSm),
-            Text('Audit Trail Confirmation'),
-          ],
-        ),
-        content: Text(
-          'This action is an AI supervisory override and will be permanently recorded in the municipal audit trail.\n\nCommand override for "$phase" for $durationSeconds seconds?',
-          style: const TextStyle(color: AppTokens.textPrimary),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogCtx).pop(),
-            child: const Text('Cancel', style: TextStyle(color: AppTokens.muted)),
+      builder: (dialogCtx) {
+        final dialogTheme = Theme.of(dialogCtx);
+        return AlertDialog(
+          backgroundColor: dialogTheme.colorScheme.surface,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: BorderSide(color: AppTokens.borderOf(dialogCtx)),
           ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTokens.teal,
-              foregroundColor: AppTokens.ink,
+          title: const Row(
+            children: [
+              Icon(Icons.warning_amber_rounded, color: AppTokens.amber),
+              SizedBox(width: AppTokens.spaceSm),
+              Text('Audit Trail Confirmation'),
+            ],
+          ),
+          content: Text(
+            'This action is an AI supervisory override and will be permanently recorded in the municipal audit trail.\n\nCommand override for "$phase" for $durationSeconds seconds?',
+            style: TextStyle(color: dialogTheme.colorScheme.onSurface),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogCtx).pop(),
+              child: Text('Cancel', style: TextStyle(color: AppTokens.mutedOf(dialogCtx))),
             ),
-            onPressed: () async {
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTokens.teal,
+                foregroundColor: dialogTheme.brightness == Brightness.dark
+                    ? AppTokens.ink
+                    : Colors.white,
+              ),
+              onPressed: () async {
               Navigator.of(dialogCtx).pop();
               await _executeOverride(
                 signalId: signal.id,
@@ -782,9 +795,10 @@ class _SignalDetailScreenState extends ConsumerState<SignalDetailScreen> {
             child: const Text('Execute Override', style: TextStyle(fontWeight: FontWeight.w700)),
           ),
         ],
-      ),
-    );
-  }
+      );
+    },
+  );
+}
 
   Future<void> _executeOverride({
     required int signalId,

@@ -175,15 +175,41 @@ export const AssistantChat: React.FC<AssistantChatProps> = ({ className = "" }) 
     const controller = new AbortController();
     abortControllerRef.current = controller;
 
-    try {
-      const response = await postChatMessage(
-        content,
-        historyPayload,
-        activeConversationId,
-        {
-          signal: controller.signal,
-        }
+    const abortPromise = new Promise<never>((_, reject) => {
+      if (controller.signal.aborted) {
+        const err = new Error("Request was cancelled.");
+        err.name = "AbortError";
+        reject(err);
+        return;
+      }
+      controller.signal.addEventListener(
+        "abort",
+        () => {
+          const err = new Error("Request was cancelled.");
+          err.name = "AbortError";
+          reject(err);
+        },
+        { once: true }
       );
+    });
+
+    const startTime = performance.now();
+
+    try {
+      const response = await Promise.race([
+        postChatMessage(
+          content,
+          historyPayload,
+          activeConversationId,
+          {
+            signal: controller.signal,
+          }
+        ),
+        abortPromise,
+      ]);
+
+      const elapsedMs = performance.now() - startTime;
+      const elapsedSeconds = Number((elapsedMs / 1000).toFixed(1));
 
       const assistantMessage: ChatMessage = {
         id: `msg-asst-${Date.now()}`,
@@ -195,6 +221,7 @@ export const AssistantChat: React.FC<AssistantChatProps> = ({ className = "" }) 
         provenance: response.provenance,
         insufficientData: response.insufficient_data,
         suggestedFollowups: response.suggested_followups,
+        elapsedSeconds,
       };
 
       const finalMessages = [...newMessages, assistantMessage];
@@ -210,10 +237,16 @@ export const AssistantChat: React.FC<AssistantChatProps> = ({ className = "" }) 
       });
       setConversations(loadStoredConversationsIndex(userId));
     } catch (err: unknown) {
-      let errorType: "auth" | "forbidden" | "server" | "timeout" | "network" = "server";
+      let errorType: "auth" | "forbidden" | "server" | "timeout" | "network" | "cancelled" = "server";
       let errorMessage = "An error occurred while contacting the assistant.";
+      const isCancelled =
+        (err instanceof Error && err.name === "AbortError") ||
+        Boolean(controller.signal.aborted);
 
-      if (err instanceof AssistantAuthError) {
+      if (isCancelled) {
+        errorType = "cancelled";
+        errorMessage = "Cancelled";
+      } else if (err instanceof AssistantAuthError) {
         errorType = "auth";
         errorMessage = err.message || "Session expired. Please sign in again.";
       } else if (err instanceof AssistantForbiddenError) {
@@ -228,9 +261,6 @@ export const AssistantChat: React.FC<AssistantChatProps> = ({ className = "" }) 
       } else if (err instanceof AssistantServerError) {
         errorType = "server";
         errorMessage = err.message || `Service error (${err.status}). Please try again.`;
-      } else if (err instanceof Error && err.name === "AbortError") {
-        errorType = "timeout";
-        errorMessage = "Request was cancelled.";
       }
 
       const errorMessageObj: ChatMessage = {
@@ -239,7 +269,8 @@ export const AssistantChat: React.FC<AssistantChatProps> = ({ className = "" }) 
         content: errorMessage,
         timestamp: new Date().toISOString(),
         conversationId: activeConversationId,
-        isError: true,
+        isError: !isCancelled,
+        isCancelled,
         errorType,
         errorMessage,
       };
@@ -281,7 +312,6 @@ export const AssistantChat: React.FC<AssistantChatProps> = ({ className = "" }) 
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
-    setIsLoading(false);
   };
 
   // Composer keydown (Enter to send, Shift+Enter for newline)
@@ -334,7 +364,7 @@ export const AssistantChat: React.FC<AssistantChatProps> = ({ className = "" }) 
 
         <div className="flex-1 overflow-y-auto px-3 py-2 space-y-1">
           {conversations.length === 0 ? (
-            <p className="text-xs text-muted/60 text-center py-6">No saved chats</p>
+            <p className="text-xs text-muted text-center py-6">No saved chats</p>
           ) : (
             conversations.map((conv) => (
               <div
@@ -356,7 +386,7 @@ export const AssistantChat: React.FC<AssistantChatProps> = ({ className = "" }) 
               >
                 <div className="truncate flex-1 mr-2">
                   <div className="truncate">{conv.title || "Conversation"}</div>
-                  <div className="text-[10px] text-muted/60 font-mono mt-0.5">
+                  <div className="text-[10px] text-muted font-mono mt-0.5">
                     {formatRelativeTime(conv.updatedAt)}
                   </div>
                 </div>
@@ -375,7 +405,7 @@ export const AssistantChat: React.FC<AssistantChatProps> = ({ className = "" }) 
           )}
         </div>
 
-        <div className="p-3 border-t border-white/10 text-[10px] text-muted/60 font-mono text-center">
+        <div className="p-3 border-t border-white/10 text-[10px] text-muted font-mono text-center">
           Persisted locally • Role: {userRole}
         </div>
       </div>
@@ -411,7 +441,7 @@ export const AssistantChat: React.FC<AssistantChatProps> = ({ className = "" }) 
                   AI Traffic Assistant
                 </h1>
                 <p className="text-[10px] text-muted font-mono mt-0.5">
-                  Phase 9 Operational Reasoning
+                  Operational Reasoning
                 </p>
               </div>
             </div>
@@ -476,7 +506,7 @@ export const AssistantChat: React.FC<AssistantChatProps> = ({ className = "" }) 
                   // USER MESSAGE
                   <div className="max-w-[85%] sm:max-w-[75%] rounded-2xl rounded-tr-xs bg-[#00D9A8]/15 border border-[#00D9A8]/30 p-4 text-text shadow-sm">
                     <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.content}</p>
-                    <div className="mt-1.5 text-[10px] text-text/60 font-mono text-right">
+                    <div className="mt-1.5 text-[10px] text-text/80 font-mono text-right">
                       {formatTime(msg.timestamp)}
                     </div>
                   </div>
@@ -490,13 +520,22 @@ export const AssistantChat: React.FC<AssistantChatProps> = ({ className = "" }) 
                         <span className="font-display font-medium text-xs text-text">
                           AI TrafficOS
                         </span>
-                        {/* Amber outline badge on every assistant message */}
-                        <span
-                          data-testid="ai-generated-badge"
-                          className="px-1.5 py-0.5 rounded text-[9px] font-mono font-medium border border-[#FFB800] text-[#FFB800] uppercase tracking-wider"
-                        >
-                          AI-generated
-                        </span>
+                        {/* Amber outline badge on every assistant message unless cancelled */}
+                        {msg.isCancelled || msg.errorType === "cancelled" ? (
+                          <span
+                            data-testid="ai-cancelled-badge"
+                            className="px-1.5 py-0.5 rounded text-[9px] font-mono font-medium border border-white/20 text-muted uppercase tracking-wider"
+                          >
+                            Cancelled
+                          </span>
+                        ) : (
+                          <span
+                            data-testid="ai-generated-badge"
+                            className="px-1.5 py-0.5 rounded text-[9px] font-mono font-medium border border-[#FFB800] text-[#FFB800] uppercase tracking-wider"
+                          >
+                            AI-generated
+                          </span>
+                        )}
                       </div>
                       <span className="text-[10px] text-muted font-mono">
                         {formatTime(msg.timestamp)}
@@ -521,8 +560,21 @@ export const AssistantChat: React.FC<AssistantChatProps> = ({ className = "" }) 
                       </div>
                     )}
 
-                    {/* Error State Displays */}
-                    {msg.isError ? (
+                    {/* Error or Cancelled State Displays */}
+                    {msg.isCancelled || msg.errorType === "cancelled" ? (
+                      <div
+                        data-testid="assistant-cancelled-container"
+                        className="p-3.5 rounded-xl bg-white/5 border border-white/10 text-xs text-muted flex items-center justify-between gap-2"
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="w-1.5 h-1.5 rounded-full bg-muted/80" />
+                          <span className="font-mono text-muted">Cancelled</span>
+                        </div>
+                        <span className="text-[11px] text-muted font-mono">
+                          Request was stopped
+                        </span>
+                      </div>
+                    ) : msg.isError ? (
                       <div
                         data-testid="assistant-error-container"
                         data-error-type={msg.errorType}
@@ -585,7 +637,18 @@ export const AssistantChat: React.FC<AssistantChatProps> = ({ className = "" }) 
                       </div>
                     ) : (
                       // Markdown content
-                      <MarkdownRenderer content={msg.content} />
+                      <div>
+                        <MarkdownRenderer content={msg.content} />
+                        {msg.elapsedSeconds !== undefined && (
+                          <div
+                            data-testid="assistant-elapsed-time"
+                            className="text-[10px] text-muted font-mono flex items-center gap-1.5 mt-2.5 pt-1.5 border-t border-white/5"
+                          >
+                            <Clock className="w-3 h-3 text-muted" />
+                            <span>Answered in {msg.elapsedSeconds.toFixed(1)}s</span>
+                          </div>
+                        )}
+                      </div>
                     )}
 
                     {/* System Data: Tool Calls & Provenance Panel */}
@@ -751,7 +814,7 @@ export const AssistantChat: React.FC<AssistantChatProps> = ({ className = "" }) 
                 onChange={(e) => setInputMessage(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder="Ask about live traffic, signals, congestion, or incident actions…"
-                className="w-full resize-none bg-transparent p-3 text-xs sm:text-sm text-text placeholder:text-muted/60 focus:outline-none disabled:opacity-50 min-h-[44px] max-h-36"
+                className="w-full resize-none bg-transparent p-3 text-xs sm:text-sm text-text placeholder:text-muted focus:outline-none disabled:opacity-50 min-h-[44px] max-h-36"
               />
             </div>
 
@@ -765,7 +828,7 @@ export const AssistantChat: React.FC<AssistantChatProps> = ({ className = "" }) 
               <Send className="w-4 h-4" />
             </button>
           </form>
-          <div className="text-[10px] text-muted/50 text-center mt-2 font-mono">
+          <div className="text-[10px] text-muted text-center mt-2 font-mono">
             Press Enter to send • Shift + Enter for newline
           </div>
         </div>

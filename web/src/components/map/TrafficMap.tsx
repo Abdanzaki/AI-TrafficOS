@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
+import { useRouter } from "next/navigation";
 import "leaflet/dist/leaflet.css";
 import {
   MapContainer,
@@ -10,6 +11,7 @@ import {
   useMap,
 } from "react-leaflet";
 import L from "leaflet";
+import { CheckCircle2, AlertTriangle, AlertOctagon } from "lucide-react";
 import { getCongestionStatus } from "@/lib/format";
 
 export interface MappedJunction {
@@ -32,13 +34,21 @@ export interface TrafficMapProps {
   className?: string;
 }
 
-function createJunctionIcon(congestionLevel: number | null | undefined, isSelected: boolean) {
-  const status = getCongestionStatus(congestionLevel);
+function createJunctionIcon(
+  name: string,
+  status: ReturnType<typeof getCongestionStatus>,
+  isSelected: boolean
+): L.DivIcon {
   const color = status.hex;
   const pulseClass = status.level === "high" ? "animate-ping" : "";
 
   const html = `
-    <div style="position: relative; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+    <div
+      role="button"
+      tabindex="0"
+      aria-label="${name}: ${status.label}"
+      style="position: relative; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer; outline: none;"
+    >
       ${
         isSelected || status.level === "high"
           ? `<div style="position: absolute; width: 32px; height: 32px; border-radius: 9999px; background-color: ${color}; opacity: 0.35; ${
@@ -122,6 +132,9 @@ export const TrafficMap: React.FC<TrafficMapProps> = ({
     return null;
   }, [selectedJunction]);
 
+  const router = useRouter();
+  const iconCacheRef = useRef<Map<string, L.DivIcon>>(new Map());
+
   const initialCenter: [number, number] = validCoordinates.length > 0
     ? validCoordinates[0]
     : [28.6139, 77.2090]; // Fallback coordinates
@@ -135,8 +148,8 @@ export const TrafficMap: React.FC<TrafficMapProps> = ({
         style={{ width: "100%", height: "100%", backgroundColor: "#0B1020" }}
       >
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions" target="_blank" rel="noreferrer">CARTO</a>'
+          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
           className="map-tiles"
         />
 
@@ -151,20 +164,42 @@ export const TrafficMap: React.FC<TrafficMapProps> = ({
           }
 
           const isSelected = j.id === selectedId;
-          const icon = createJunctionIcon(j.congestionLevel, isSelected);
           const congStatus = getCongestionStatus(j.congestionLevel);
+          const cacheKey = `${j.id}_${congStatus.level}_${isSelected ? 1 : 0}`;
+          let icon = iconCacheRef.current.get(cacheKey);
+          if (!icon) {
+            icon = createJunctionIcon(j.name, congStatus, isSelected);
+            iconCacheRef.current.set(cacheKey, icon);
+          }
+
+          const markerA11yLabel = `${j.name} - ${congStatus.label} (${j.status})`;
 
           return (
             <Marker
               key={j.id}
               position={[j.lat, j.lon]}
               icon={icon}
+              keyboard={true}
+              title={markerA11yLabel}
+              alt={markerA11yLabel}
               eventHandlers={{
                 click: () => onSelectJunction(j.id),
+                keydown: (e: any) => {
+                  if (e.originalEvent?.key === "Enter" || e.originalEvent?.key === " ") {
+                    e.target.openPopup();
+                    onSelectJunction(j.id);
+                  }
+                },
+                keypress: (e: any) => {
+                  if (e.originalEvent?.key === "Enter" || e.originalEvent?.key === " ") {
+                    e.target.openPopup();
+                    onSelectJunction(j.id);
+                  }
+                },
               }}
             >
               <Popup className="custom-popup">
-                <div className="p-1 min-w-[180px] text-xs font-sans">
+                <div className="p-1 min-w-[190px] text-xs font-sans">
                   <div className="font-semibold text-sm text-text font-display">
                     {j.name}
                   </div>
@@ -173,7 +208,10 @@ export const TrafficMap: React.FC<TrafficMapProps> = ({
                   </div>
                   <div className="mt-2 pt-2 border-t border-white/10 flex items-center justify-between">
                     <span className="text-muted">Congestion:</span>
-                    <span className="font-mono font-medium" style={{ color: congStatus.hex }}>
+                    <span className="font-mono font-medium flex items-center gap-1" style={{ color: congStatus.hex }}>
+                      {congStatus.level === "low" && <CheckCircle2 className="w-3 h-3 text-accent shrink-0" aria-hidden="true" />}
+                      {congStatus.level === "medium" && <AlertTriangle className="w-3 h-3 text-amber shrink-0" aria-hidden="true" />}
+                      {congStatus.level === "high" && <AlertOctagon className="w-3 h-3 text-danger shrink-0" aria-hidden="true" />}
                       {typeof j.congestionLevel === "number" ? `${Math.round(j.congestionLevel)}%` : "N/A"} ({congStatus.label})
                     </span>
                   </div>
@@ -183,8 +221,11 @@ export const TrafficMap: React.FC<TrafficMapProps> = ({
                   </div>
                   <button
                     type="button"
-                    onClick={() => onSelectJunction(j.id)}
-                    className="w-full mt-2.5 py-1 px-2 rounded-md bg-accent/20 hover:bg-accent/30 text-accent font-medium text-center transition-colors cursor-pointer"
+                    onClick={() => {
+                      onSelectJunction(j.id);
+                      router.push(`/signals?junction=${j.id}`);
+                    }}
+                    className="w-full mt-2.5 py-1 px-2 rounded-md bg-accent/20 hover:bg-accent/30 text-accent font-medium text-center transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                   >
                     View Controller Details →
                   </button>
@@ -202,16 +243,22 @@ export const TrafficMap: React.FC<TrafficMapProps> = ({
         </div>
         <div className="space-y-1.5 font-mono text-[11px]">
           <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-accent" />
-            <span className="text-muted">&lt; 40% Smooth</span>
+            <CheckCircle2 className="w-3.5 h-3.5 text-accent shrink-0" aria-hidden="true" />
+            <span className="w-2 h-2 rounded-full bg-accent shrink-0" />
+            <span className="text-text font-medium">● Smooth</span>
+            <span className="text-muted">&lt; 40%</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-amber" />
-            <span className="text-muted">40 - 69% Moderate</span>
+            <AlertTriangle className="w-3.5 h-3.5 text-amber shrink-0" aria-hidden="true" />
+            <span className="w-2 h-2 rounded-full bg-amber shrink-0" />
+            <span className="text-text font-medium">▲ Moderate</span>
+            <span className="text-muted">40 - 69%</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-danger animate-pulse" />
-            <span className="text-muted">&ge; 70% Congested</span>
+            <AlertOctagon className="w-3.5 h-3.5 text-danger animate-pulse shrink-0" aria-hidden="true" />
+            <span className="w-2 h-2 rounded-full bg-danger animate-pulse shrink-0" />
+            <span className="text-text font-medium">■ Congested</span>
+            <span className="text-muted">&ge; 70%</span>
           </div>
         </div>
       </div>

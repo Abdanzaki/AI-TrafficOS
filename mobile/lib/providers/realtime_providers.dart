@@ -70,3 +70,13 @@ final Provider<void> realtimeLifecycleProvider = Provider<void>((ref) {
     realtimeService.disconnect();
   }
 });
+
+/// Reactive provider indicating whether the backend WebSocket connection is offline.
+final Provider<bool> isOfflineProvider = Provider<bool>((ref) {
+  final statusAsync = ref.watch(realtimeStatusProvider);
+  final service = ref.watch(realtimeServiceProvider);
+  final currentStatus = statusAsync.valueOrNull ?? service.status;
+  return currentStatus == RealtimeConnectionStatus.disconnected ||
+      currentStatus == RealtimeConnectionStatus.error;
+});
+

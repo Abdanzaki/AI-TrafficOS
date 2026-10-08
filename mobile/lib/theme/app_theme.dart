@@ -223,6 +223,17 @@ class AppTheme {
           );
         }),
       ),
+      dialogTheme: DialogThemeData(
+        backgroundColor: AppTokens.card,
+        shape: RoundedRectangleBorder(
+          borderRadius: AppTokens.cardBorderRadius,
+          side: const BorderSide(color: AppTokens.borderDark, width: 1),
+        ),
+      ),
+      bottomSheetTheme: const BottomSheetThemeData(
+        backgroundColor: AppTokens.surface,
+        surfaceTintColor: Colors.transparent,
+      ),
       dividerTheme: const DividerThemeData(
         color: AppTokens.borderDark,
         thickness: 1,
@@ -339,6 +350,17 @@ class AppTheme {
             size: 22,
           );
         }),
+      ),
+      dialogTheme: DialogThemeData(
+        backgroundColor: AppTokens.cardLight,
+        shape: RoundedRectangleBorder(
+          borderRadius: AppTokens.cardBorderRadius,
+          side: const BorderSide(color: AppTokens.borderLight, width: 1),
+        ),
+      ),
+      bottomSheetTheme: const BottomSheetThemeData(
+        backgroundColor: AppTokens.surfaceLight,
+        surfaceTintColor: Colors.transparent,
       ),
       dividerTheme: const DividerThemeData(
         color: AppTokens.borderLight,

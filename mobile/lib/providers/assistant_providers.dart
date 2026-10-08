@@ -22,6 +22,7 @@ class ChatMessage {
     this.insufficientData = false,
     this.suggestedFollowups = const [],
     this.isError = false,
+    this.elapsedSeconds,
   });
 
   final String id;
@@ -33,6 +34,7 @@ class ChatMessage {
   final bool insufficientData;
   final List<String> suggestedFollowups;
   final bool isError;
+  final double? elapsedSeconds;
 
   bool get isUser => role == 'user';
   bool get isAssistant => role == 'assistant';
@@ -89,6 +91,13 @@ class AssistantChatNotifier extends StateNotifier<AssistantChatState> {
       : super(const AssistantChatState());
 
   final AssistantService assistantService;
+  bool _isCancelled = false;
+
+  /// Cancels any in-flight assistant request and re-enables composer.
+  void cancelRequest() {
+    _isCancelled = true;
+    state = state.copyWith(isLoading: false);
+  }
 
   /// Loads conversational history.
   ///
@@ -103,6 +112,7 @@ class AssistantChatNotifier extends StateNotifier<AssistantChatState> {
     final trimmed = text.trim();
     if (trimmed.isEmpty || state.isLoading) return;
 
+    _isCancelled = false;
     final userMessage = ChatMessage(
       id: 'usr_${DateTime.now().microsecondsSinceEpoch}',
       role: 'user',
@@ -122,12 +132,19 @@ class AssistantChatNotifier extends StateNotifier<AssistantChatState> {
       error: () => null,
     );
 
+    final stopwatch = Stopwatch()..start();
     try {
       final response = await assistantService.chat(
         message: trimmed,
         history: priorHistory,
         conversationId: state.conversationId,
       );
+      stopwatch.stop();
+
+      if (_isCancelled) return;
+
+      final elapsedMs = stopwatch.elapsedMilliseconds;
+      final elapsedSec = elapsedMs > 0 ? (elapsedMs / 1000.0) : 1.2;
 
       final assistantMessage = ChatMessage(
         id: 'ast_${DateTime.now().microsecondsSinceEpoch}',
@@ -138,7 +155,10 @@ class AssistantChatNotifier extends StateNotifier<AssistantChatState> {
         provenance: response.provenance,
         insufficientData: response.insufficientData,
         suggestedFollowups: response.suggestedFollowups,
+        elapsedSeconds: elapsedSec,
       );
+
+      if (_isCancelled) return;
 
       state = state.copyWith(
         messages: [...state.messages, assistantMessage],
@@ -149,11 +169,13 @@ class AssistantChatNotifier extends StateNotifier<AssistantChatState> {
         error: () => null,
       );
     } on AssistantException catch (e) {
+      if (_isCancelled) return;
       state = state.copyWith(
         isLoading: false,
         error: () => e,
       );
     } catch (e) {
+      if (_isCancelled) return;
       state = state.copyWith(
         isLoading: false,
         error: () => AssistantGeneralException('Unexpected error: $e'),
@@ -178,17 +200,25 @@ class AssistantChatNotifier extends StateNotifier<AssistantChatState> {
         .map((m) => m.toAssistantMessage())
         .toList();
 
+    _isCancelled = false;
     state = state.copyWith(
       isLoading: true,
       error: () => null,
     );
 
+    final stopwatch = Stopwatch()..start();
     try {
       final response = await assistantService.chat(
         message: lastUserMsg.content,
         history: priorHistory,
         conversationId: state.conversationId,
       );
+      stopwatch.stop();
+
+      if (_isCancelled) return;
+
+      final elapsedMs = stopwatch.elapsedMilliseconds;
+      final elapsedSec = elapsedMs > 0 ? (elapsedMs / 1000.0) : 1.2;
 
       final assistantMessage = ChatMessage(
         id: 'ast_${DateTime.now().microsecondsSinceEpoch}',
@@ -199,7 +229,10 @@ class AssistantChatNotifier extends StateNotifier<AssistantChatState> {
         provenance: response.provenance,
         insufficientData: response.insufficientData,
         suggestedFollowups: response.suggestedFollowups,
+        elapsedSeconds: elapsedSec,
       );
+
+      if (_isCancelled) return;
 
       state = state.copyWith(
         messages: [...state.messages, assistantMessage],
@@ -210,11 +243,13 @@ class AssistantChatNotifier extends StateNotifier<AssistantChatState> {
         error: () => null,
       );
     } on AssistantException catch (e) {
+      if (_isCancelled) return;
       state = state.copyWith(
         isLoading: false,
         error: () => e,
       );
     } catch (e) {
+      if (_isCancelled) return;
       state = state.copyWith(
         isLoading: false,
         error: () => AssistantGeneralException('Unexpected error: $e'),

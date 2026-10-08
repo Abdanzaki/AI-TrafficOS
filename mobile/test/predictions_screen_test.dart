@@ -339,6 +339,10 @@ void main() {
       expect(find.text('54.2%'), findsOneWidget);
       expect(find.text('Forecast Stop-Bar Queue Growth'), findsOneWidget);
       expect(find.text('+4.6 veh'), findsOneWidget);
+
+      await tester.drag(find.byType(ListView), const Offset(0, -600));
+      await tester.pumpAndSettle();
+
       expect(find.text('Historical AI Predictions'), findsOneWidget);
       expect(find.text('CONGESTION'), findsOneWidget);
       expect(find.text('92% CONF'), findsOneWidget);

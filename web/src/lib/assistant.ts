@@ -84,8 +84,10 @@ export interface ChatMessage {
   insufficientData?: boolean;
   suggestedFollowups?: string[];
   isError?: boolean;
-  errorType?: "auth" | "forbidden" | "server" | "timeout" | "network";
+  errorType?: "auth" | "forbidden" | "server" | "timeout" | "network" | "cancelled";
   errorMessage?: string;
+  elapsedSeconds?: number;
+  isCancelled?: boolean;
 }
 
 export interface ConversationSession {

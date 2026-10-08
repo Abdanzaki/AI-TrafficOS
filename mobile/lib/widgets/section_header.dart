@@ -44,7 +44,7 @@ class SectionHeader extends StatelessWidget {
                   Text(
                     subtitle!,
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color: AppTokens.muted,
+                      color: AppTokens.mutedOf(context),
                     ),
                   ),
                 ],

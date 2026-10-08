@@ -79,6 +79,7 @@ class _ShellScreenState extends ConsumerState<ShellScreen> {
       title: 'Control',
       description: 'Adaptive timing configuration & manual signal overrides',
       icon: Icons.tune_rounded,
+      requiresWriteRole: true,
     ),
     SubsystemItem(
       id: 'predictions',
@@ -104,6 +105,12 @@ class _ShellScreenState extends ConsumerState<ShellScreen> {
       title: 'Routing',
       description: 'Multi-criteria dynamic municipal vehicle routing',
       icon: Icons.alt_route_rounded,
+    ),
+    SubsystemItem(
+      id: 'assistant',
+      title: 'AI Assistant',
+      description: 'Conversational LLM operations agent with tool execution',
+      icon: Icons.smart_toy_rounded,
     ),
     SubsystemItem(
       id: 'analytics',
@@ -179,7 +186,6 @@ class _ShellScreenState extends ConsumerState<ShellScreen> {
                 _buildTrafficTab(context),
                 _buildMapTab(context),
                 _buildIncidentsTab(context),
-                _buildAssistantTab(context),
                 _buildMoreTab(context, user),
               ],
             ),
@@ -213,11 +219,6 @@ class _ShellScreenState extends ConsumerState<ShellScreen> {
             icon: Icon(Icons.warning_amber_outlined),
             selectedIcon: Icon(Icons.warning_amber_rounded),
             label: 'Incidents',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.smart_toy_outlined),
-            selectedIcon: Icon(Icons.smart_toy_rounded),
-            label: 'Assistant',
           ),
           NavigationDestination(
             icon: Icon(Icons.more_horiz_outlined),
@@ -262,13 +263,13 @@ class _ShellScreenState extends ConsumerState<ShellScreen> {
                 'AI TrafficOS',
                 style: theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w800,
-                  color: AppTokens.textPrimary,
+                  color: theme.colorScheme.onSurface,
                 ),
               ),
               Text(
                 _getTabTitle(_currentIndex),
                 style: theme.textTheme.bodySmall?.copyWith(
-                  color: AppTokens.muted,
+                  color: AppTokens.mutedOf(context),
                   fontSize: 11,
                 ),
               ),
@@ -280,6 +281,17 @@ class _ShellScreenState extends ConsumerState<ShellScreen> {
         if (user != null) ...[
           const ConnectionStatusChip(),
           const SizedBox(width: AppTokens.spaceXs),
+          IconButton(
+            tooltip: 'AI Assistant',
+            icon: const Icon(Icons.smart_toy_outlined),
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => const AssistantScreen(),
+                ),
+              );
+            },
+          ),
           Consumer(
             builder: (context, ref, _) {
               final unreadAsync = ref.watch(unreadNotificationCountProvider);
@@ -304,10 +316,10 @@ class _ShellScreenState extends ConsumerState<ShellScreen> {
           PopupMenuButton<String>(
             tooltip: 'Operator Profile',
             offset: const Offset(0, 48),
-            color: AppTokens.card,
+            color: theme.colorScheme.surface,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
-              side: const BorderSide(color: AppTokens.borderDark),
+              side: BorderSide(color: theme.colorScheme.outline.withAlpha(80)),
             ),
             child: Padding(
               padding: const EdgeInsets.symmetric(
@@ -323,13 +335,13 @@ class _ShellScreenState extends ConsumerState<ShellScreen> {
                   const SizedBox(width: AppTokens.spaceXs),
                   CircleAvatar(
                     radius: 15,
-                    backgroundColor: AppTokens.surface,
+                    backgroundColor: theme.colorScheme.surfaceContainerHighest,
                     child: Text(
                       user.fullName.isNotEmpty
                           ? user.fullName.substring(0, 1).toUpperCase()
                           : 'U',
-                      style: const TextStyle(
-                        color: AppTokens.textPrimary,
+                      style: TextStyle(
+                        color: theme.colorScheme.onSurface,
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
                       ),
@@ -346,15 +358,15 @@ class _ShellScreenState extends ConsumerState<ShellScreen> {
                   children: [
                     Text(
                       user.fullName,
-                      style: const TextStyle(
-                        color: AppTokens.textPrimary,
+                      style: TextStyle(
+                        color: theme.colorScheme.onSurface,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
                     Text(
                       user.email,
-                      style: const TextStyle(
-                        color: AppTokens.muted,
+                      style: TextStyle(
+                        color: AppTokens.mutedOf(context),
                         fontSize: 11,
                       ),
                     ),
@@ -408,10 +420,10 @@ class _ShellScreenState extends ConsumerState<ShellScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppTokens.card,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: const BorderSide(color: AppTokens.borderDark),
+          side: BorderSide(color: AppTokens.borderOf(context)),
         ),
         title: const Text('Sign Out Confirmation'),
         content: const Text(
@@ -420,7 +432,7 @@ class _ShellScreenState extends ConsumerState<ShellScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Cancel', style: TextStyle(color: AppTokens.muted)),
+            child: Text('Cancel', style: TextStyle(color: AppTokens.mutedOf(context))),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
@@ -449,8 +461,6 @@ class _ShellScreenState extends ConsumerState<ShellScreen> {
       case 3:
         return 'Incidents & Alerts';
       case 4:
-        return 'AI Assistant';
-      case 5:
         return 'System Modules';
       default:
         return '';
@@ -461,18 +471,10 @@ class _ShellScreenState extends ConsumerState<ShellScreen> {
     return DashboardScreen(
       onNavigateTab: (tabIndex) {
         setState(() {
-          _currentIndex = tabIndex.clamp(0, 5);
+          _currentIndex = tabIndex.clamp(0, 4);
         });
       },
     );
-  }
-
-  /// The Assistant destination is available to all authenticated roles in navigation.
-  /// The server enforces role authorization (returning 403 Forbidden for
-  /// restricted roles, e.g. read-only analyst), which AssistantScreen handles
-  /// via its in-screen restriction panel.
-  Widget _buildAssistantTab(BuildContext context) {
-    return const AssistantScreen();
   }
 
   Widget _buildTrafficTab(BuildContext context) {
@@ -523,21 +525,21 @@ class _ShellScreenState extends ConsumerState<ShellScreen> {
                     Text(
                       user?.fullName ?? 'Operator',
                       style: theme.textTheme.titleMedium?.copyWith(
-                        color: AppTokens.textPrimary,
+                        color: theme.colorScheme.onSurface,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
                     Text(
                       user?.roleDisplay ?? 'Operator Session',
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: user?.roleBadgeColor ?? AppTokens.muted,
+                        color: user?.roleBadgeColor ?? AppTokens.mutedOf(context),
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                     Text(
                       user?.email ?? '',
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: AppTokens.muted,
+                        color: AppTokens.mutedOf(context),
                         fontSize: 11,
                       ),
                     ),
@@ -556,7 +558,7 @@ class _ShellScreenState extends ConsumerState<ShellScreen> {
         Text(
           'Operational Subsystems',
           style: theme.textTheme.titleMedium?.copyWith(
-            color: AppTokens.textPrimary,
+            color: theme.colorScheme.onSurface,
             fontWeight: FontWeight.w700,
           ),
         ),
@@ -601,7 +603,7 @@ class _ShellScreenState extends ConsumerState<ShellScreen> {
                     Text(
                       item.title,
                       style: theme.textTheme.titleSmall?.copyWith(
-                        color: AppTokens.textPrimary,
+                        color: theme.colorScheme.onSurface,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -624,13 +626,13 @@ class _ShellScreenState extends ConsumerState<ShellScreen> {
                 subtitle: Text(
                   item.description,
                   style: theme.textTheme.bodySmall?.copyWith(
-                    color: AppTokens.muted,
+                    color: AppTokens.mutedOf(context),
                     fontSize: 12,
                   ),
                 ),
-                trailing: const Icon(
+                trailing: Icon(
                   Icons.chevron_right_rounded,
-                  color: AppTokens.muted,
+                  color: AppTokens.mutedOf(context),
                 ),
                 onTap: () {
                   _openSubsystemDetail(context, item);
@@ -664,6 +666,9 @@ class _ShellScreenState extends ConsumerState<ShellScreen> {
       case 'routing':
         targetScreen = const RoutingScreen();
         break;
+      case 'assistant':
+        targetScreen = const AssistantScreen();
+        break;
       case 'analytics':
         targetScreen = const AnalyticsScreen();
         break;
@@ -684,59 +689,58 @@ class _ShellScreenState extends ConsumerState<ShellScreen> {
         break;
     }
 
+    Widget content;
     if (targetScreen != null) {
-      Navigator.of(context).push(
-        MaterialPageRoute(builder: (_) => targetScreen!),
-      );
-      return;
-    }
-
-    Widget content = Scaffold(
-      appBar: AppBar(
-        title: Text(item.title),
-      ),
-      body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.all(AppTokens.spaceLg),
-          children: [
-            AppCard(
-              padding: const EdgeInsets.all(AppTokens.spaceLg),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Icon(item.icon, color: AppTokens.teal, size: 28),
-                      const SizedBox(width: AppTokens.spaceSm),
-                      Text(
-                        item.title,
-                        style: const TextStyle(
-                          color: AppTokens.textPrimary,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: AppTokens.spaceSm),
-                  Text(
-                    item.description,
-                    style: const TextStyle(color: AppTokens.muted),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: AppTokens.spaceXl),
-            EmptyState(
-              icon: item.icon,
-              title: '${item.title} Module Ready',
-              message:
-                  'Integrated with AI TrafficOS API prefix /api/v1. Live operational controls available.',
-            ),
-          ],
+      content = targetScreen;
+    } else {
+      final theme = Theme.of(context);
+      content = Scaffold(
+        appBar: AppBar(
+          title: Text(item.title),
         ),
-      ),
-    );
+        body: SafeArea(
+          child: ListView(
+            padding: const EdgeInsets.all(AppTokens.spaceLg),
+            children: [
+              AppCard(
+                padding: const EdgeInsets.all(AppTokens.spaceLg),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(item.icon, color: AppTokens.teal, size: 28),
+                        const SizedBox(width: AppTokens.spaceSm),
+                        Text(
+                          item.title,
+                          style: TextStyle(
+                            color: theme.colorScheme.onSurface,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: AppTokens.spaceSm),
+                    Text(
+                      item.description,
+                      style: TextStyle(color: AppTokens.mutedOf(context)),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: AppTokens.spaceXl),
+              EmptyState(
+                icon: item.icon,
+                title: '${item.title} Module Ready',
+                message:
+                    'Integrated with AI TrafficOS API prefix /api/v1. Live operational controls available.',
+              ),
+            ],
+          ),
+        ),
+      );
+    }
 
     // Apply role guard if write action or admin only
     if (item.adminOnly) {

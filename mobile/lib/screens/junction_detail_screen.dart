@@ -5,6 +5,7 @@ import '../models/incident.dart';
 import '../models/junction.dart';
 import '../models/traffic_record.dart';
 import '../models/user.dart';
+import '../providers/realtime_providers.dart';
 import '../services/api_client.dart';
 import '../services/auth_service.dart';
 import '../services/incident_service.dart';
@@ -16,6 +17,7 @@ import '../widgets/app_card.dart';
 import '../widgets/empty_state.dart';
 import '../widgets/error_state.dart';
 import '../widgets/loading_state.dart';
+import '../widgets/offline_banner.dart';
 
 /// Screen detailing junction signals, phases, lanes, telemetry, and linked incidents.
 class JunctionDetailScreen extends ConsumerStatefulWidget {
@@ -111,7 +113,14 @@ class _JunctionDetailScreenState extends ConsumerState<JunctionDetailScreen> {
           ),
         ],
       ),
-      body: _buildBody(context, user, theme),
+      body: SafeArea(
+        child: Column(
+          children: [
+            if (ref.watch(isOfflineProvider)) const OfflineBanner(),
+            Expanded(child: _buildBody(context, user, theme)),
+          ],
+        ),
+      ),
     );
   }
 
@@ -143,20 +152,20 @@ class _JunctionDetailScreenState extends ConsumerState<JunctionDetailScreen> {
     return RefreshIndicator(
       onRefresh: _loadData,
       color: AppTokens.teal,
-      backgroundColor: AppTokens.card,
+      backgroundColor: theme.colorScheme.surface,
       child: ListView(
         padding: const EdgeInsets.all(AppTokens.spaceMd),
         children: [
           _buildRoleNotice(user),
-          _buildHeaderCard(junction, theme),
+          _buildHeaderCard(junction, theme, context),
           const SizedBox(height: AppTokens.spaceMd),
-          _buildTrafficTrendsCard(theme),
+          _buildTrafficTrendsCard(theme, context),
           const SizedBox(height: AppTokens.spaceMd),
-          _buildSignalsSection(junction, theme),
+          _buildSignalsSection(junction, theme, context),
           const SizedBox(height: AppTokens.spaceMd),
-          _buildLanesSection(junction, theme),
+          _buildLanesSection(junction, theme, context),
           const SizedBox(height: AppTokens.spaceMd),
-          _buildIncidentsSection(theme),
+          _buildIncidentsSection(theme, context),
         ],
       ),
     );
@@ -194,7 +203,7 @@ class _JunctionDetailScreenState extends ConsumerState<JunctionDetailScreen> {
     return const SizedBox.shrink();
   }
 
-  Widget _buildHeaderCard(Junction junction, ThemeData theme) {
+  Widget _buildHeaderCard(Junction junction, ThemeData theme, BuildContext context) {
     Color statusColor = AppTokens.teal;
     if (junction.status.toLowerCase() == 'maintenance') {
       statusColor = AppTokens.amber;
@@ -218,14 +227,14 @@ class _JunctionDetailScreenState extends ConsumerState<JunctionDetailScreen> {
                       junction.name,
                       style: theme.textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.w800,
-                        color: AppTokens.textPrimary,
+                        color: theme.colorScheme.onSurface,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       'Operational Code: ${junction.code}',
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: AppTokens.muted,
+                        color: AppTokens.mutedOf(context),
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -244,13 +253,14 @@ class _JunctionDetailScreenState extends ConsumerState<JunctionDetailScreen> {
             runSpacing: AppTokens.spaceSm,
             children: [
               if (junction.city != null)
-                _buildInfoPill(Icons.location_city_rounded, junction.city!),
+                _buildInfoPill(Icons.location_city_rounded, junction.city!, context),
               if (junction.zone != null)
-                _buildInfoPill(Icons.map_rounded, 'Zone: ${junction.zone!}'),
+                _buildInfoPill(Icons.map_rounded, 'Zone: ${junction.zone!}', context),
               if (junction.latitude != null && junction.longitude != null)
                 _buildInfoPill(
                   Icons.gps_fixed_rounded,
                   '${junction.latitude!.toStringAsFixed(4)}, ${junction.longitude!.toStringAsFixed(4)}',
+                  context,
                 ),
             ],
           ),
@@ -259,13 +269,14 @@ class _JunctionDetailScreenState extends ConsumerState<JunctionDetailScreen> {
     );
   }
 
-  Widget _buildInfoPill(IconData icon, String label) {
+  Widget _buildInfoPill(IconData icon, String label, BuildContext context) {
+    final theme = Theme.of(context);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: AppTokens.surface,
+        color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppTokens.borderDark),
+        border: Border.all(color: AppTokens.borderOf(context)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -274,9 +285,9 @@ class _JunctionDetailScreenState extends ConsumerState<JunctionDetailScreen> {
           const SizedBox(width: 6),
           Text(
             label,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 12,
-              color: AppTokens.textPrimary,
+              color: theme.colorScheme.onSurface,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -285,7 +296,7 @@ class _JunctionDetailScreenState extends ConsumerState<JunctionDetailScreen> {
     );
   }
 
-  Widget _buildTrafficTrendsCard(ThemeData theme) {
+  Widget _buildTrafficTrendsCard(ThemeData theme, BuildContext context) {
     return AppCard(
       padding: const EdgeInsets.all(AppTokens.spaceLg),
       child: Column(
@@ -299,24 +310,24 @@ class _JunctionDetailScreenState extends ConsumerState<JunctionDetailScreen> {
                 'Recent Telemetry Observations',
                 style: theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w700,
-                  color: AppTokens.textPrimary,
+                  color: theme.colorScheme.onSurface,
                 ),
               ),
               const Spacer(),
               Text(
                 '${_recentRecords.length} samples',
-                style: const TextStyle(color: AppTokens.muted, fontSize: 12),
+                style: TextStyle(color: AppTokens.mutedOf(context), fontSize: 12),
               ),
             ],
           ),
           const SizedBox(height: AppTokens.spaceMd),
           if (_recentRecords.isEmpty)
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: AppTokens.spaceMd),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: AppTokens.spaceMd),
               child: Center(
                 child: Text(
                   'No sensor records ingested yet for this junction',
-                  style: TextStyle(color: AppTokens.muted, fontSize: 13),
+                  style: TextStyle(color: AppTokens.mutedOf(context), fontSize: 13),
                 ),
               ),
             )
@@ -332,16 +343,20 @@ class _JunctionDetailScreenState extends ConsumerState<JunctionDetailScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                _buildStatLabel('Latest Count', '${_recentRecords.first.vehicleCount} veh'),
+                _buildStatLabel('Latest Count', '${_recentRecords.first.vehicleCount} veh', theme, context),
                 _buildStatLabel(
                   'Avg Speed',
                   _recentRecords.first.avgSpeedKmh != null
                       ? '${_recentRecords.first.avgSpeedKmh!.toStringAsFixed(1)} km/h'
                       : '--',
+                  theme,
+                  context,
                 ),
                 _buildStatLabel(
                   'Congestion',
                   '${_recentRecords.first.congestionLevel}%',
+                  theme,
+                  context,
                 ),
               ],
             ),
@@ -351,15 +366,15 @@ class _JunctionDetailScreenState extends ConsumerState<JunctionDetailScreen> {
     );
   }
 
-  Widget _buildStatLabel(String title, String val) {
+  Widget _buildStatLabel(String title, String val, ThemeData theme, BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(title, style: const TextStyle(color: AppTokens.muted, fontSize: 11)),
+        Text(title, style: TextStyle(color: AppTokens.mutedOf(context), fontSize: 11)),
         Text(
           val,
-          style: const TextStyle(
-            color: AppTokens.textPrimary,
+          style: TextStyle(
+            color: theme.colorScheme.onSurface,
             fontWeight: FontWeight.w700,
             fontSize: 14,
           ),
@@ -368,7 +383,7 @@ class _JunctionDetailScreenState extends ConsumerState<JunctionDetailScreen> {
     );
   }
 
-  Widget _buildSignalsSection(Junction junction, ThemeData theme) {
+  Widget _buildSignalsSection(Junction junction, ThemeData theme, BuildContext context) {
     return AppCard(
       padding: const EdgeInsets.all(AppTokens.spaceLg),
       child: Column(
@@ -382,7 +397,7 @@ class _JunctionDetailScreenState extends ConsumerState<JunctionDetailScreen> {
                 'Hardware Signals & Phases',
                 style: theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w700,
-                  color: AppTokens.textPrimary,
+                  color: theme.colorScheme.onSurface,
                 ),
               ),
               const Spacer(),
@@ -394,24 +409,24 @@ class _JunctionDetailScreenState extends ConsumerState<JunctionDetailScreen> {
           ),
           const SizedBox(height: AppTokens.spaceMd),
           if (junction.signals.isEmpty)
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: AppTokens.spaceMd),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: AppTokens.spaceMd),
               child: Center(
                 child: Text(
                   'No physical signal controllers registered',
-                  style: TextStyle(color: AppTokens.muted, fontSize: 13),
+                  style: TextStyle(color: AppTokens.mutedOf(context), fontSize: 13),
                 ),
               ),
             )
           else
-            ...junction.signals.map((sig) => _buildSignalItem(sig)),
+            ...junction.signals.map((sig) => _buildSignalItem(sig, theme, context)),
         ],
       ),
     );
   }
 
-  Widget _buildSignalItem(SignalSummary sig) {
-    Color stateColor = AppTokens.muted;
+  Widget _buildSignalItem(SignalSummary sig, ThemeData theme, BuildContext context) {
+    Color stateColor = AppTokens.mutedOf(context);
     if (sig.observedState != null) {
       switch (sig.observedState!.toLowerCase()) {
         case 'green':
@@ -430,9 +445,9 @@ class _JunctionDetailScreenState extends ConsumerState<JunctionDetailScreen> {
       margin: const EdgeInsets.only(bottom: AppTokens.spaceSm),
       padding: const EdgeInsets.all(AppTokens.spaceMd),
       decoration: BoxDecoration(
-        color: AppTokens.surface,
+        color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppTokens.borderDark),
+        border: Border.all(color: AppTokens.borderOf(context)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -457,9 +472,9 @@ class _JunctionDetailScreenState extends ConsumerState<JunctionDetailScreen> {
               const SizedBox(width: AppTokens.spaceSm),
               Text(
                 'Signal ${sig.code}',
-                style: const TextStyle(
+                style: TextStyle(
                   fontWeight: FontWeight.w700,
-                  color: AppTokens.textPrimary,
+                  color: theme.colorScheme.onSurface,
                 ),
               ),
               const Spacer(),
@@ -484,13 +499,13 @@ class _JunctionDetailScreenState extends ConsumerState<JunctionDetailScreen> {
           ],
           if (sig.phases.isNotEmpty) ...[
             const SizedBox(height: AppTokens.spaceSm),
-            const Divider(color: AppTokens.borderDark, height: 1),
+            Divider(color: AppTokens.borderOf(context), height: 1),
             const SizedBox(height: AppTokens.spaceSm),
             Wrap(
               spacing: 6,
               runSpacing: 6,
               children: sig.phases.map((p) {
-                Color phaseColor = AppTokens.muted;
+                Color phaseColor = AppTokens.mutedOf(context);
                 if (p.state.toLowerCase() == 'green') phaseColor = AppTokens.success;
                 if (p.state.toLowerCase() == 'yellow') phaseColor = AppTokens.amber;
                 if (p.state.toLowerCase() == 'red') phaseColor = AppTokens.danger;
@@ -533,7 +548,7 @@ class _JunctionDetailScreenState extends ConsumerState<JunctionDetailScreen> {
     );
   }
 
-  Widget _buildLanesSection(Junction junction, ThemeData theme) {
+  Widget _buildLanesSection(Junction junction, ThemeData theme, BuildContext context) {
     return AppCard(
       padding: const EdgeInsets.all(AppTokens.spaceLg),
       child: Column(
@@ -547,24 +562,24 @@ class _JunctionDetailScreenState extends ConsumerState<JunctionDetailScreen> {
                 'Lanes & Directional Geometry',
                 style: theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w700,
-                  color: AppTokens.textPrimary,
+                  color: theme.colorScheme.onSurface,
                 ),
               ),
               const Spacer(),
               Text(
                 '${junction.lanes.length} lanes',
-                style: const TextStyle(color: AppTokens.muted, fontSize: 12),
+                style: TextStyle(color: AppTokens.mutedOf(context), fontSize: 12),
               ),
             ],
           ),
           const SizedBox(height: AppTokens.spaceMd),
           if (junction.lanes.isEmpty)
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: AppTokens.spaceMd),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: AppTokens.spaceMd),
               child: Center(
                 child: Text(
                   'No physical lanes mapped to this intersection',
-                  style: TextStyle(color: AppTokens.muted, fontSize: 13),
+                  style: TextStyle(color: AppTokens.mutedOf(context), fontSize: 13),
                 ),
               ),
             )
@@ -574,9 +589,9 @@ class _JunctionDetailScreenState extends ConsumerState<JunctionDetailScreen> {
                 margin: const EdgeInsets.only(bottom: AppTokens.spaceSm),
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                 decoration: BoxDecoration(
-                  color: AppTokens.surface,
+                  color: theme.colorScheme.surface,
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: AppTokens.borderDark),
+                  border: Border.all(color: AppTokens.borderOf(context)),
                 ),
                 child: Row(
                   children: [
@@ -605,16 +620,16 @@ class _JunctionDetailScreenState extends ConsumerState<JunctionDetailScreen> {
                         children: [
                           Text(
                             lane.direction.toUpperCase(),
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontWeight: FontWeight.w600,
-                              color: AppTokens.textPrimary,
+                              color: theme.colorScheme.onSurface,
                               fontSize: 13,
                             ),
                           ),
                           Text(
                             'Type: ${lane.laneType}',
-                            style: const TextStyle(
-                              color: AppTokens.muted,
+                            style: TextStyle(
+                              color: AppTokens.mutedOf(context),
                               fontSize: 11,
                             ),
                           ),
@@ -630,7 +645,7 @@ class _JunctionDetailScreenState extends ConsumerState<JunctionDetailScreen> {
     );
   }
 
-  Widget _buildIncidentsSection(ThemeData theme) {
+  Widget _buildIncidentsSection(ThemeData theme, BuildContext context) {
     return AppCard(
       padding: const EdgeInsets.all(AppTokens.spaceLg),
       child: Column(
@@ -644,7 +659,7 @@ class _JunctionDetailScreenState extends ConsumerState<JunctionDetailScreen> {
                 'Linked Safety Incidents',
                 style: theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w700,
-                  color: AppTokens.textPrimary,
+                  color: theme.colorScheme.onSurface,
                 ),
               ),
               const Spacer(),
@@ -656,12 +671,12 @@ class _JunctionDetailScreenState extends ConsumerState<JunctionDetailScreen> {
           ),
           const SizedBox(height: AppTokens.spaceMd),
           if (_linkedIncidents.isEmpty)
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: AppTokens.spaceMd),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: AppTokens.spaceMd),
               child: Center(
                 child: Text(
                   'No active incidents linked to this junction node',
-                  style: TextStyle(color: AppTokens.muted, fontSize: 13),
+                  style: TextStyle(color: AppTokens.mutedOf(context), fontSize: 13),
                 ),
               ),
             )
@@ -671,9 +686,9 @@ class _JunctionDetailScreenState extends ConsumerState<JunctionDetailScreen> {
                 margin: const EdgeInsets.only(bottom: AppTokens.spaceSm),
                 padding: const EdgeInsets.all(AppTokens.spaceMd),
                 decoration: BoxDecoration(
-                  color: AppTokens.surface,
+                  color: theme.colorScheme.surface,
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: AppTokens.borderDark),
+                  border: Border.all(color: AppTokens.borderOf(context)),
                 ),
                 child: Row(
                   children: [
@@ -689,9 +704,9 @@ class _JunctionDetailScreenState extends ConsumerState<JunctionDetailScreen> {
                         children: [
                           Text(
                             inc.description ?? 'Unspecified traffic incident',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontWeight: FontWeight.w600,
-                              color: AppTokens.textPrimary,
+                              color: theme.colorScheme.onSurface,
                               fontSize: 13,
                             ),
                           ),

@@ -31,6 +31,7 @@ import { Button } from "@/components/ui/Button";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { Pagination } from "@/components/ui/Pagination";
 import {
   formatDateTime,
   formatRelativeTime,
@@ -462,7 +463,7 @@ export default function DecisionsPage() {
       ) : (
         <Card className="border-white/10 bg-surface/70 overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
+            <table className="w-full min-w-[800px] text-left text-xs">
               <thead>
                 <tr className="border-b border-white/10 bg-ink/40 text-muted uppercase tracking-wider text-[11px]">
                   <th className="py-3 px-3.5">ID / Timestamp</th>
@@ -618,47 +619,14 @@ export default function DecisionsPage() {
           </div>
 
           {/* Pagination Footer */}
-          <div className="p-4 border-t border-white/5 bg-ink/30 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
-            <div className="text-muted">
-              Showing{" "}
-              <span className="font-mono text-text font-medium">
-                {(page - 1) * perPage + 1}
-              </span>{" "}
-              to{" "}
-              <span className="font-mono text-text font-medium">
-                {Math.min(page * perPage, totalItems)}
-              </span>{" "}
-              of <span className="font-mono text-text font-medium">{totalItems}</span> decisions
-            </div>
-
-            <div className="flex items-center gap-1.5">
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                disabled={page <= 1}
-                className="gap-1 px-2.5 py-1"
-              >
-                <ChevronLeft className="w-3.5 h-3.5" />
-                <span>Prev</span>
-              </Button>
-
-              <span className="px-3 py-1 font-mono text-text text-xs bg-ink/60 rounded-md border border-white/5">
-                Page {page} of {totalPages}
-              </span>
-
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                disabled={page >= totalPages}
-                className="gap-1 px-2.5 py-1"
-              >
-                <span>Next</span>
-                <ChevronRight className="w-3.5 h-3.5" />
-              </Button>
-            </div>
-          </div>
+          <Pagination
+            page={page}
+            totalPages={totalPages}
+            totalRecords={totalItems}
+            perPage={perPage}
+            onPageChange={setPage}
+            recordLabel="decisions"
+          />
         </Card>
       )}
 

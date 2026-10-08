@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/app_config.dart';
+import '../providers/realtime_providers.dart';
 import '../services/api_client.dart';
 import '../services/auth_service.dart';
 import '../theme/app_tokens.dart';
@@ -10,6 +11,7 @@ import '../widgets/app_card.dart';
 import '../widgets/empty_state.dart';
 import '../widgets/error_state.dart';
 import '../widgets/loading_state.dart';
+import '../widgets/offline_banner.dart';
 
 /// Live diagnostic representation of system connectivity and operational components.
 class HealthReport {
@@ -186,7 +188,7 @@ class _HealthScreenState extends ConsumerState<HealthScreen> {
         return const Color(0xFFA855F7);
       case 'unknown':
       default:
-        return AppTokens.muted;
+        return AppTokens.mutedOf(context);
     }
   }
 
@@ -203,7 +205,14 @@ class _HealthScreenState extends ConsumerState<HealthScreen> {
           ),
         ],
       ),
-      body: _buildBody(),
+      body: SafeArea(
+        child: Column(
+          children: [
+            if (ref.watch(isOfflineProvider)) const OfflineBanner(),
+            Expanded(child: _buildBody()),
+          ],
+        ),
+      ),
     );
   }
 
@@ -280,10 +289,10 @@ class _HealthScreenState extends ConsumerState<HealthScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'FastAPI Core Backend',
                       style: TextStyle(
-                        color: AppTokens.textPrimary,
+                        color: Theme.of(context).colorScheme.onSurface,
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
                       ),
@@ -291,7 +300,7 @@ class _HealthScreenState extends ConsumerState<HealthScreen> {
                     Text(
                       'Endpoint: /health',
                       style: TextStyle(
-                        color: AppTokens.muted,
+                        color: AppTokens.mutedOf(context),
                         fontSize: 12,
                       ),
                     ),
@@ -304,7 +313,7 @@ class _HealthScreenState extends ConsumerState<HealthScreen> {
               ),
             ],
           ),
-          const Divider(height: 24, color: AppTokens.borderDark),
+          Divider(height: 24, color: AppTokens.borderOf(context)),
           Row(
             children: [
               Expanded(
@@ -392,10 +401,10 @@ class _HealthScreenState extends ConsumerState<HealthScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'API Network Connectivity',
                   style: TextStyle(
-                    color: AppTokens.textPrimary,
+                    color: Theme.of(context).colorScheme.onSurface,
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
                   ),
@@ -404,8 +413,8 @@ class _HealthScreenState extends ConsumerState<HealthScreen> {
                   report.isReachable
                       ? 'Connected to municipal control network'
                       : 'Network unreachable or service offline',
-                  style: const TextStyle(
-                    color: AppTokens.muted,
+                  style: TextStyle(
+                    color: AppTokens.mutedOf(context),
                     fontSize: 12,
                   ),
                 ),
@@ -430,14 +439,14 @@ class _HealthScreenState extends ConsumerState<HealthScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             children: [
-              Icon(Icons.psychology_rounded, color: AppTokens.teal, size: 20),
-              SizedBox(width: AppTokens.spaceSm),
+              const Icon(Icons.psychology_rounded, color: AppTokens.teal, size: 20),
+              const SizedBox(width: AppTokens.spaceSm),
               Text(
                 'AI Subsystems Diagnostics',
                 style: TextStyle(
-                  color: AppTokens.textPrimary,
+                  color: Theme.of(context).colorScheme.onSurface,
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
                 ),
@@ -445,11 +454,11 @@ class _HealthScreenState extends ConsumerState<HealthScreen> {
             ],
           ),
           const SizedBox(height: AppTokens.spaceSm),
-          const Text(
+          Text(
             'Derived from registered models and live control decision logs.',
-            style: TextStyle(color: AppTokens.muted, fontSize: 12),
+            style: TextStyle(color: AppTokens.mutedOf(context), fontSize: 12),
           ),
-          const Divider(height: 24, color: AppTokens.borderDark),
+          Divider(height: 24, color: AppTokens.borderOf(context)),
           ListTile(
             contentPadding: EdgeInsets.zero,
             leading: CircleAvatar(
@@ -457,24 +466,24 @@ class _HealthScreenState extends ConsumerState<HealthScreen> {
               backgroundColor: forecastingColor.withAlpha(25),
               child: Icon(Icons.timeline_rounded, color: forecastingColor, size: 18),
             ),
-            title: const Text(
+            title: Text(
               'Traffic Forecasting ML',
               style: TextStyle(
-                color: AppTokens.textPrimary,
+                color: Theme.of(context).colorScheme.onSurface,
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
               ),
             ),
             subtitle: Text(
               report.aiForecastingDetails ?? 'Endpoint: /forecasting/models/latest',
-              style: const TextStyle(color: AppTokens.muted, fontSize: 11),
+              style: TextStyle(color: AppTokens.mutedOf(context), fontSize: 11),
             ),
             trailing: AppBadge(
               label: report.aiForecastingStatus.toUpperCase(),
               color: forecastingColor,
             ),
           ),
-          const Divider(height: 16, color: AppTokens.borderDark),
+          Divider(height: 16, color: AppTokens.borderOf(context)),
           ListTile(
             contentPadding: EdgeInsets.zero,
             leading: CircleAvatar(
@@ -482,17 +491,17 @@ class _HealthScreenState extends ConsumerState<HealthScreen> {
               backgroundColor: controlColor.withAlpha(25),
               child: Icon(Icons.tune_rounded, color: controlColor, size: 18),
             ),
-            title: const Text(
+            title: Text(
               'Supervisory Control Engine',
               style: TextStyle(
-                color: AppTokens.textPrimary,
+                color: Theme.of(context).colorScheme.onSurface,
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
               ),
             ),
             subtitle: Text(
               report.aiControlDetails ?? 'Endpoint: /control/decisions',
-              style: const TextStyle(color: AppTokens.muted, fontSize: 11),
+              style: TextStyle(color: AppTokens.mutedOf(context), fontSize: 11),
             ),
             trailing: AppBadge(
               label: report.aiControlStatus.toUpperCase(),
@@ -510,21 +519,21 @@ class _HealthScreenState extends ConsumerState<HealthScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             children: [
-              Icon(Icons.info_outline_rounded, color: AppTokens.muted, size: 20),
-              SizedBox(width: AppTokens.spaceSm),
+              Icon(Icons.info_outline_rounded, color: AppTokens.mutedOf(context), size: 20),
+              const SizedBox(width: AppTokens.spaceSm),
               Text(
                 'Application Metadata',
                 style: TextStyle(
-                  color: AppTokens.textPrimary,
+                  color: Theme.of(context).colorScheme.onSurface,
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
                 ),
               ),
             ],
           ),
-          const Divider(height: 20, color: AppTokens.borderDark),
+          Divider(height: 20, color: AppTokens.borderOf(context)),
           _buildInfoRow('Application', 'AI TrafficOS Mobile'),
           _buildInfoRow('Client Version', '1.0.0 (build 1)'),
           _buildInfoRow('API Target', AppConfig.apiBaseUrl),
@@ -545,26 +554,27 @@ class _HealthScreenState extends ConsumerState<HealthScreen> {
     required String label,
     required String value,
     required IconData icon,
-    Color color = AppTokens.textPrimary,
+    Color? color,
   }) {
+    final effectiveColor = color ?? Theme.of(context).colorScheme.onSurface;
     return Row(
       children: [
-        Icon(icon, size: 16, color: AppTokens.muted),
+        Icon(icon, size: 16, color: AppTokens.mutedOf(context)),
         const SizedBox(width: AppTokens.spaceXs),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               label,
-              style: const TextStyle(
-                color: AppTokens.muted,
+              style: TextStyle(
+                color: AppTokens.mutedOf(context),
                 fontSize: 11,
               ),
             ),
             Text(
               value,
               style: TextStyle(
-                color: color,
+                color: effectiveColor,
                 fontSize: 13,
                 fontWeight: FontWeight.w700,
               ),
@@ -585,8 +595,8 @@ class _HealthScreenState extends ConsumerState<HealthScreen> {
             width: 110,
             child: Text(
               label,
-              style: const TextStyle(
-                color: AppTokens.muted,
+              style: TextStyle(
+                color: AppTokens.mutedOf(context),
                 fontSize: 12,
               ),
             ),
@@ -594,8 +604,8 @@ class _HealthScreenState extends ConsumerState<HealthScreen> {
           Expanded(
             child: Text(
               value,
-              style: const TextStyle(
-                color: AppTokens.textPrimary,
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurface,
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
               ),

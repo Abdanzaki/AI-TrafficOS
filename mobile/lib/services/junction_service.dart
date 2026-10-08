@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/junction.dart';
+import '../models/road_segment.dart';
 import 'api_client.dart';
 import 'auth_service.dart';
 
@@ -62,6 +63,28 @@ class JunctionService {
       message: 'Junction $id was not returned or could not be decoded',
       statusCode: 404,
     );
+  }
+
+  /// Retrieves road network segments from GET `/roads`.
+  Future<List<RoadSegment>> getRoads({int perPage = 100}) async {
+    try {
+      final dynamic res = await apiClient.get(
+        '/roads',
+        page: 1,
+        perPage: perPage,
+      );
+
+      if (res is Map<String, dynamic> && res['items'] is List) {
+        final items = res['items'] as List;
+        return items
+            .whereType<Map<String, dynamic>>()
+            .map((m) => RoadSegment.fromJson(m))
+            .toList();
+      }
+    } catch (_) {
+      // Fallback to empty road list on network error
+    }
+    return const [];
   }
 }
 

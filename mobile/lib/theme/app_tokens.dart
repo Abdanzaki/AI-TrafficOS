@@ -46,4 +46,60 @@ abstract final class AppTokens {
   static const double spaceXl = 32.0;
   static const double space2xl = 48.0;
   static const double space3xl = 64.0;
+
+  // --- Contextual Semantic Helpers (Theme-Adaptive) ---
+  static Color textPrimaryOf(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark
+        ? textPrimary
+        : textPrimaryLight;
+  }
+
+  static Color mutedOf(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark
+        ? muted
+        : mutedLight;
+  }
+
+  static Color surfaceOf(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark
+        ? surface
+        : surfaceLight;
+  }
+
+  static Color cardOf(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark
+        ? card
+        : cardLight;
+  }
+
+  static Color inkOf(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark
+        ? ink
+        : inkLight;
+  }
+
+  static Color borderOf(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark
+        ? borderDark
+        : borderLight;
+  }
 }
+
+/// Extension on [BuildContext] providing convenient theme-aware color tokens.
+extension AppThemeContext on BuildContext {
+  ThemeData get theme => Theme.of(this);
+  bool get isDarkMode => Theme.of(this).brightness == Brightness.dark;
+  Color get textPrimaryColor =>
+      isDarkMode ? AppTokens.textPrimary : AppTokens.textPrimaryLight;
+  Color get textMutedColor =>
+      isDarkMode ? AppTokens.muted : AppTokens.mutedLight;
+  Color get surfaceColor =>
+      isDarkMode ? AppTokens.surface : AppTokens.surfaceLight;
+  Color get cardColor =>
+      isDarkMode ? AppTokens.card : AppTokens.cardLight;
+  Color get scaffoldBgColor =>
+      isDarkMode ? AppTokens.ink : AppTokens.inkLight;
+  Color get borderColor =>
+      isDarkMode ? AppTokens.borderDark : AppTokens.borderLight;
+}
+

@@ -40,6 +40,7 @@ import { Button } from "@/components/ui/Button";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { Pagination } from "@/components/ui/Pagination";
 import {
   formatNumber,
   formatPercent,
@@ -167,6 +168,7 @@ export default function PredictionsPage() {
 
   const [selectedJunctionId, setSelectedJunctionId] = useState<string>("all");
   const [activeTab, setActiveTab] = useState<ForecastTargetTab>("all");
+  const [predictionsPage, setPredictionsPage] = useState<number>(1);
   const [actionFeedback, setActionFeedback] = useState<{
     type: "success" | "error" | "info";
     message: string;
@@ -204,13 +206,14 @@ export default function PredictionsPage() {
   // 3. Fetch recent AI Predictions from the database
   const predictionsParams = useMemo(() => {
     const params: Record<string, string | number> = {
-      per_page: 50,
+      page: predictionsPage,
+      per_page: 15,
     };
     if (selectedJunctionId !== "all") {
       params.intersection_id = Number(selectedJunctionId);
     }
     return params;
-  }, [selectedJunctionId]);
+  }, [selectedJunctionId, predictionsPage]);
 
   const {
     data: predictionsData,
@@ -219,7 +222,7 @@ export default function PredictionsPage() {
     error: predictionsError,
     refetch: refetchPredictions,
   } = useApiQuery<PaginatedAIPredictions>({
-    queryKey: ["ai-predictions-list", selectedJunctionId],
+    queryKey: ["ai-predictions-list", selectedJunctionId, predictionsPage],
     endpoint: "/ai-predictions",
     params: predictionsParams,
     queryOptions: {
@@ -1330,8 +1333,9 @@ export default function PredictionsPage() {
         </div>
 
         {predictionsData?.items && predictionsData.items.length > 0 ? (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
+          <>
+            <div className="overflow-x-auto">
+            <table className="w-full min-w-[750px] text-left text-xs">
               <thead>
                 <tr className="border-b border-white/10 text-muted uppercase tracking-wider text-[11px]">
                   <th className="py-2.5 px-3">Prediction ID</th>
@@ -1344,7 +1348,7 @@ export default function PredictionsPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5 font-mono">
-                {predictionsData.items.slice(0, 10).map((p) => {
+                {predictionsData.items.map((p) => {
                   const junc = p.intersection_id ? junctionMap.get(p.intersection_id) : null;
                   const isFlow = p.prediction_type === "flow";
                   const val =
@@ -1403,6 +1407,18 @@ export default function PredictionsPage() {
               </tbody>
             </table>
           </div>
+
+          {predictionsData.pages > 1 && (
+            <Pagination
+              page={predictionsPage}
+              totalPages={predictionsData.pages}
+              totalRecords={predictionsData.total}
+              perPage={15}
+              onPageChange={setPredictionsPage}
+              recordLabel="inferences"
+            />
+          )}
+        </>
         ) : (
           <div className="py-6 text-center text-xs text-muted">
             No inference records stored in AIPrediction table yet.

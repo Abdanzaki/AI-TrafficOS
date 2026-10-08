@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../models/junction.dart';
+import '../models/road_segment.dart';
 import '../screens/junction_detail_screen.dart';
 import '../services/map_provider.dart';
 import '../theme/app_tokens.dart';
@@ -82,12 +83,14 @@ class SchematicJunctionMapProvider extends MapProvider {
   Widget buildJunctionMap({
     required BuildContext context,
     required List<Junction> junctions,
+    List<RoadSegment>? roads,
     Junction? selectedJunction,
     ValueChanged<Junction>? onJunctionTapped,
     MapFilter filter = MapFilter.all,
   }) {
     return JunctionMapWidget(
       junctions: junctions,
+      roads: roads,
       selectedJunction: selectedJunction,
       onJunctionTapped: onJunctionTapped,
       filter: filter,
@@ -100,6 +103,7 @@ class JunctionMapWidget extends StatefulWidget {
   const JunctionMapWidget({
     super.key,
     required this.junctions,
+    this.roads,
     this.selectedJunction,
     this.onJunctionTapped,
     this.filter = MapFilter.all,
@@ -107,6 +111,7 @@ class JunctionMapWidget extends StatefulWidget {
   });
 
   final List<Junction> junctions;
+  final List<RoadSegment>? roads;
   final Junction? selectedJunction;
   final ValueChanged<Junction>? onJunctionTapped;
   final MapFilter filter;
@@ -118,11 +123,35 @@ class JunctionMapWidget extends StatefulWidget {
 
 class _JunctionMapWidgetState extends State<JunctionMapWidget> {
   Junction? _selected;
+  late final TransformationController _transformationController;
 
   @override
   void initState() {
     super.initState();
+    _transformationController = TransformationController();
     _selected = widget.selectedJunction;
+  }
+
+  @override
+  void dispose() {
+    _transformationController.dispose();
+    super.dispose();
+  }
+
+  void _zoomIn() {
+    final matrix = _transformationController.value.clone();
+    matrix.scaleByDouble(1.25, 1.25, 1.0, 1.0);
+    _transformationController.value = matrix;
+  }
+
+  void _zoomOut() {
+    final matrix = _transformationController.value.clone();
+    matrix.scaleByDouble(0.8, 0.8, 1.0, 1.0);
+    _transformationController.value = matrix;
+  }
+
+  void _resetZoom() {
+    _transformationController.value = Matrix4.identity();
   }
 
   @override
@@ -150,13 +179,16 @@ class _JunctionMapWidgetState extends State<JunctionMapWidget> {
   }
 
   void _handleTapUp(TapUpDetails details, Size size, MapCoordinateBounds bounds) {
-    const hitRadius = 24.0;
+    const hitRadius = 26.0;
     Junction? nearest;
     double nearestDist = double.infinity;
 
+    // Convert local tap coordinate to scene coordinate
+    final scenePoint = _transformationController.toScene(details.localPosition);
+
     for (final j in _filteredJunctions) {
       final pos = bounds.project(j.latitude!, j.longitude!, size);
-      final dist = (details.localPosition - pos).distance;
+      final dist = (scenePoint - pos).distance;
       if (dist <= hitRadius && dist < nearestDist) {
         nearest = j;
         nearestDist = dist;
@@ -178,10 +210,10 @@ class _JunctionMapWidgetState extends State<JunctionMapWidget> {
 
     showModalBottomSheet<void>(
       context: context,
-      backgroundColor: AppTokens.card,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-        side: BorderSide(color: AppTokens.borderDark),
+      backgroundColor: theme.colorScheme.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        side: BorderSide(color: AppTokens.borderOf(context)),
       ),
       builder: (ctx) {
         return SafeArea(
@@ -196,7 +228,7 @@ class _JunctionMapWidgetState extends State<JunctionMapWidget> {
                     width: 36,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: AppTokens.muted.withAlpha(80),
+                      color: AppTokens.mutedOf(context).withAlpha(80),
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
@@ -222,13 +254,13 @@ class _JunctionMapWidgetState extends State<JunctionMapWidget> {
                             junction.name,
                             style: theme.textTheme.titleMedium?.copyWith(
                               fontWeight: FontWeight.w700,
-                              color: AppTokens.textPrimary,
+                              color: theme.colorScheme.onSurface,
                             ),
                           ),
                           Text(
                             'Code: ${junction.code} • ${junction.city ?? "Municipal"}',
                             style: theme.textTheme.bodySmall?.copyWith(
-                              color: AppTokens.muted,
+                              color: AppTokens.mutedOf(context),
                             ),
                           ),
                         ],
@@ -301,30 +333,30 @@ class _JunctionMapWidgetState extends State<JunctionMapWidget> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       decoration: BoxDecoration(
-        color: AppTokens.surface,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: AppTokens.borderDark),
+        border: Border.all(color: AppTokens.borderOf(context)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(icon, size: 13, color: AppTokens.muted),
+              Icon(icon, size: 13, color: AppTokens.mutedOf(context)),
               const SizedBox(width: 4),
               Text(
                 label,
-                style: const TextStyle(fontSize: 10, color: AppTokens.muted),
+                style: TextStyle(fontSize: 10, color: AppTokens.mutedOf(context)),
               ),
             ],
           ),
           const SizedBox(height: 2),
           Text(
             value,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w600,
-              color: AppTokens.textPrimary,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -364,26 +396,102 @@ class _JunctionMapWidgetState extends State<JunctionMapWidget> {
       );
     }
 
+    final theme = Theme.of(context);
     return LayoutBuilder(
       builder: (context, constraints) {
         final canvasSize = Size(constraints.maxWidth, constraints.maxHeight);
 
         return ClipRRect(
           borderRadius: BorderRadius.circular(16),
-          child: Container(
-            color: AppTokens.ink,
-            child: GestureDetector(
-              onTapUp: (details) => _handleTapUp(details, canvasSize, bounds),
-              child: CustomPaint(
-                size: canvasSize,
-                painter: SchematicMapPainter(
-                  junctions: validJunctions,
-                  bounds: bounds,
-                  selectedId: _selected?.id,
-                  highlightedPath: widget.highlightedPath,
+          child: Stack(
+            children: [
+              Container(
+                color: theme.brightness == Brightness.dark
+                    ? AppTokens.ink
+                    : const Color(0xFF13192B),
+                child: InteractiveViewer(
+                  transformationController: _transformationController,
+                  minScale: 0.5,
+                  maxScale: 5.0,
+                  boundaryMargin: const EdgeInsets.all(120),
+                  child: GestureDetector(
+                    onTapUp: (details) => _handleTapUp(details, canvasSize, bounds),
+                    child: Semantics(
+                      label:
+                          'Schematic junction network map displaying ${validJunctions.length} junctions and road corridors',
+                      button: false,
+                      child: CustomPaint(
+                        size: canvasSize,
+                        painter: SchematicMapPainter(
+                          junctions: validJunctions,
+                          roads: widget.roads,
+                          bounds: bounds,
+                          selectedId: _selected?.id,
+                          highlightedPath: widget.highlightedPath,
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
               ),
-            ),
+              Positioned(
+                top: 12,
+                right: 12,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: (theme.brightness == Brightness.dark
+                            ? AppTokens.cardOf(context)
+                            : Colors.white)
+                        .withAlpha(225),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: theme.colorScheme.outline.withAlpha(70),
+                    ),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Colors.black26,
+                        blurRadius: 6,
+                        offset: Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.add_rounded, size: 20),
+                        tooltip: 'Zoom In',
+                        onPressed: _zoomIn,
+                        constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
+                        padding: EdgeInsets.zero,
+                      ),
+                      Divider(
+                        height: 1,
+                        color: theme.colorScheme.outline.withAlpha(70),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.remove_rounded, size: 20),
+                        tooltip: 'Zoom Out',
+                        onPressed: _zoomOut,
+                        constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
+                        padding: EdgeInsets.zero,
+                      ),
+                      Divider(
+                        height: 1,
+                        color: theme.colorScheme.outline.withAlpha(70),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.center_focus_strong_rounded, size: 18),
+                        tooltip: 'Reset View',
+                        onPressed: _resetZoom,
+                        constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
+                        padding: EdgeInsets.zero,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
         );
       },
@@ -395,12 +503,14 @@ class _JunctionMapWidgetState extends State<JunctionMapWidget> {
 class SchematicMapPainter extends CustomPainter {
   SchematicMapPainter({
     required this.junctions,
+    this.roads,
     required this.bounds,
     this.selectedId,
     this.highlightedPath,
   });
 
   final List<Junction> junctions;
+  final List<RoadSegment>? roads;
   final MapCoordinateBounds bounds;
   final int? selectedId;
   final List<int>? highlightedPath;
@@ -408,7 +518,7 @@ class SchematicMapPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final gridPaint = Paint()
-      ..color = AppTokens.borderDark.withAlpha(60)
+      ..color = AppTokens.borderDark.withAlpha(45)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.0;
 
@@ -427,20 +537,34 @@ class SchematicMapPainter extends CustomPainter {
       points[j.id] = bounds.project(j.latitude!, j.longitude!, size);
     }
 
-    // Draw network connection lines between adjacent/nearby nodes
+    // Draw real road network links connecting intersections (F-06)
     final linkPaint = Paint()
-      ..color = AppTokens.teal.withAlpha(40)
+      ..color = AppTokens.teal.withAlpha(55)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.5;
+      ..strokeWidth = 2.0;
 
-    final sorted = junctions.toList()
-      ..sort((a, b) => (a.longitude ?? 0).compareTo(b.longitude ?? 0));
-
-    for (int i = 0; i < sorted.length - 1; i++) {
-      final p1 = points[sorted[i].id];
-      final p2 = points[sorted[i + 1].id];
-      if (p1 != null && p2 != null) {
-        canvas.drawLine(p1, p2, linkPaint);
+    if (roads != null && roads!.isNotEmpty) {
+      for (final road in roads!) {
+        if (road.fromIntersectionId != null && road.toIntersectionId != null) {
+          final p1 = points[road.fromIntersectionId];
+          final p2 = points[road.toIntersectionId];
+          if (p1 != null && p2 != null) {
+            canvas.drawLine(p1, p2, linkPaint);
+          }
+        }
+      }
+    } else {
+      // Topologically nearby proximity links (avoiding cross-city zigzags)
+      for (int i = 0; i < junctions.length; i++) {
+        final p1 = points[junctions[i].id];
+        if (p1 == null) continue;
+        for (int k = i + 1; k < junctions.length; k++) {
+          final p2 = points[junctions[k].id];
+          if (p2 == null) continue;
+          if ((p1 - p2).distance < 110) {
+            canvas.drawLine(p1, p2, linkPaint);
+          }
+        }
       }
     }
 
@@ -479,63 +603,113 @@ class SchematicMapPainter extends CustomPainter {
       }
     }
 
-    // Draw junction markers
+    // Draw junction markers with distinct glyphs (F-14)
     for (final j in junctions) {
       final pos = points[j.id];
       if (pos == null) continue;
 
       final isSelected = j.id == selectedId;
       final isPathNode = highlightedPath?.contains(j.id) ?? false;
+      final status = j.status.toLowerCase();
+
       Color nodeColor = isPathNode ? AppTokens.amber : AppTokens.teal;
-      if (j.status.toLowerCase() == 'maintenance') {
+      if (status == 'maintenance') {
         nodeColor = AppTokens.amber;
-      } else if (j.status.toLowerCase() == 'inactive') {
+      } else if (status == 'inactive') {
         nodeColor = AppTokens.danger;
       }
 
-      // Outer glow circle
       final glowPaint = Paint()
         ..color = nodeColor.withAlpha(isSelected ? 90 : 35)
         ..style = PaintingStyle.fill;
-      canvas.drawCircle(pos, isSelected ? 22 : 14, glowPaint);
 
-      // Inner border
       final borderPaint = Paint()
         ..color = isSelected ? Colors.white : nodeColor
         ..style = PaintingStyle.stroke
         ..strokeWidth = isSelected ? 2.5 : 1.8;
-      canvas.drawCircle(pos, isSelected ? 12 : 8, borderPaint);
 
-      // Center solid core
       final corePaint = Paint()
         ..color = nodeColor
         ..style = PaintingStyle.fill;
-      canvas.drawCircle(pos, isSelected ? 7 : 4, corePaint);
 
-      // Label
-      final textSpan = TextSpan(
-        text: j.name,
-        style: TextStyle(
-          color: isSelected ? Colors.white : AppTokens.textPrimary,
-          fontSize: 10,
-          fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-        ),
-      );
-      final textPainter = TextPainter(
-        text: textSpan,
-        textDirection: TextDirection.ltr,
-      )..layout(maxWidth: 120);
+      final outerRadius = isSelected ? 22.0 : 14.0;
+      final innerRadius = isSelected ? 12.0 : 8.0;
+      final coreRadius = isSelected ? 7.0 : 4.0;
 
-      textPainter.paint(
-        canvas,
-        Offset(pos.dx - (textPainter.width / 2), pos.dy + (isSelected ? 16 : 12)),
-      );
+      if (status == 'maintenance') {
+        // Glyph: Diamond shape for caution / warning (F-14)
+        _drawDiamond(canvas, pos, outerRadius, glowPaint);
+        _drawDiamond(canvas, pos, innerRadius, borderPaint);
+        _drawDiamond(canvas, pos, coreRadius, corePaint);
+      } else if (status == 'inactive') {
+        // Glyph: Square shape with cross for critical / inactive (F-14)
+        final outerRect = Rect.fromCenter(center: pos, width: outerRadius * 2, height: outerRadius * 2);
+        final innerRect = Rect.fromCenter(center: pos, width: innerRadius * 2, height: innerRadius * 2);
+        canvas.drawRRect(RRect.fromRectAndRadius(outerRect, const Radius.circular(4)), glowPaint);
+        canvas.drawRRect(RRect.fromRectAndRadius(innerRect, const Radius.circular(3)), borderPaint);
+        final crossPaint = Paint()
+          ..color = Colors.white
+          ..strokeWidth = 2.0;
+        canvas.drawLine(Offset(pos.dx - 3, pos.dy), Offset(pos.dx + 3, pos.dy), crossPaint);
+        canvas.drawLine(Offset(pos.dx, pos.dy - 3), Offset(pos.dx, pos.dy + 3), crossPaint);
+      } else {
+        // Glyph: Circle shape for active / nominal (F-14)
+        canvas.drawCircle(pos, outerRadius, glowPaint);
+        canvas.drawCircle(pos, innerRadius, borderPaint);
+        canvas.drawCircle(pos, coreRadius, corePaint);
+      }
+
+      // Decluttered labels (F-201): Draw label if selected, or if small network <= 8 nodes
+      if (isSelected || junctions.length <= 8) {
+        final textSpan = TextSpan(
+          text: j.name,
+          style: TextStyle(
+            color: isSelected ? Colors.white : const Color(0xFFEAF0FF),
+            fontSize: 10,
+            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+          ),
+        );
+        final textPainter = TextPainter(
+          text: textSpan,
+          textDirection: TextDirection.ltr,
+        )..layout(maxWidth: 120);
+
+        final labelOffset = Offset(
+          pos.dx - (textPainter.width / 2),
+          pos.dy + (isSelected ? 16 : 12),
+        );
+
+        // Draw pill background behind text for readability
+        final bgRect = Rect.fromLTWH(
+          labelOffset.dx - 4,
+          labelOffset.dy - 2,
+          textPainter.width + 8,
+          textPainter.height + 4,
+        );
+        final bgPaint = Paint()
+          ..color = Colors.black.withAlpha(isSelected ? 180 : 130)
+          ..style = PaintingStyle.fill;
+        canvas.drawRRect(RRect.fromRectAndRadius(bgRect, const Radius.circular(4)), bgPaint);
+
+        textPainter.paint(canvas, labelOffset);
+      }
     }
+  }
+
+  void _drawDiamond(Canvas canvas, Offset center, double radius, Paint paint) {
+    final path = Path()
+      ..moveTo(center.dx, center.dy - radius)
+      ..lineTo(center.dx + radius, center.dy)
+      ..lineTo(center.dx, center.dy + radius)
+      ..lineTo(center.dx - radius, center.dy)
+      ..close();
+    canvas.drawPath(path, paint);
   }
 
   @override
   bool shouldRepaint(covariant SchematicMapPainter oldDelegate) {
     return oldDelegate.junctions != junctions ||
+        oldDelegate.roads != roads ||
         oldDelegate.selectedId != selectedId ||
         oldDelegate.bounds != bounds ||
         oldDelegate.highlightedPath != highlightedPath;

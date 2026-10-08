@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -45,13 +47,34 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   List<CongestionHotspot> _hotspots = [];
   List<Incident> _recentIncidents = [];
 
+  Timer? _wsDebounceTimer;
+  bool _isSyncing = false;
+
   @override
   void initState() {
     super.initState();
     _loadAllDashboardData();
   }
 
+  @override
+  void dispose() {
+    _wsDebounceTimer?.cancel();
+    super.dispose();
+  }
+
+  void _scheduleDebouncedRefresh() {
+    _wsDebounceTimer?.cancel();
+    _wsDebounceTimer = Timer(const Duration(milliseconds: 1500), () {
+      if (mounted && !_isSyncing) {
+        _loadAllDashboardData(isBackgroundRefresh: true);
+      }
+    });
+  }
+
   Future<void> _loadAllDashboardData({bool isBackgroundRefresh = false}) async {
+    if (_isSyncing) return;
+    _isSyncing = true;
+
     if (!isBackgroundRefresh) {
       setState(() {
         _isLoading = true;
@@ -117,13 +140,14 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           _errorMessage = e is ApiException ? e.message : 'Unable to synchronize dashboard: $e';
         });
       }
+    } finally {
+      _isSyncing = false;
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    // Real-time WebSocket invalidation: on traffic, congestion, signal, or incident events,
-    // seamlessly refresh telemetry and operational metrics
+    // Real-time WebSocket invalidation: debounced on burst events
     for (final topic in const [
       RealtimeTopics.trafficUpdate,
       RealtimeTopics.congestionChange,
@@ -133,7 +157,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     ]) {
       ref.listen(realtimeTopicEventProvider(topic), (_, next) {
         if (next.hasValue) {
-          _loadAllDashboardData(isBackgroundRefresh: true);
+          _scheduleDebouncedRefresh();
         }
       });
     }
@@ -144,7 +168,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     return RefreshIndicator(
       onRefresh: _loadAllDashboardData,
       color: AppTokens.teal,
-      backgroundColor: AppTokens.card,
+      backgroundColor: theme.cardTheme.color ?? AppTokens.cardOf(context),
       child: ListView(
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.all(AppTokens.spaceMd),
@@ -184,7 +208,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     Text(
                       'Operational Control Center',
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: AppTokens.muted,
+                        color: AppTokens.mutedOf(context),
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -200,14 +224,14 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                   'Welcome, ${user?.fullName ?? roleName}',
                   style: theme.textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.w800,
-                    color: AppTokens.textPrimary,
+                    color: theme.colorScheme.onSurface,
                   ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   'Autonomous municipal traffic orchestration network active',
                   style: theme.textTheme.bodySmall?.copyWith(
-                    color: AppTokens.muted,
+                    color: AppTokens.mutedOf(context),
                   ),
                 ),
               ],
@@ -310,57 +334,64 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     required Color accentColor,
     VoidCallback? onTap,
   }) {
-    return AppCard(
-      padding: const EdgeInsets.all(AppTokens.spaceMd),
-      onTap: onTap,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: accentColor.withAlpha(25),
-                  borderRadius: BorderRadius.circular(8),
+    return Semantics(
+      label: '$title KPI: $value. $subtitle',
+      button: onTap != null,
+      child: AppCard(
+        padding: const EdgeInsets.all(AppTokens.spaceMd),
+        onTap: onTap,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: accentColor.withAlpha(25),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(icon, color: accentColor, size: 18),
                 ),
-                child: Icon(icon, color: accentColor, size: 18),
-              ),
-              const Spacer(),
-              const Icon(Icons.arrow_forward_ios_rounded, size: 12, color: AppTokens.muted),
-            ],
-          ),
+                const Spacer(),
+                ExcludeSemantics(
+                  child: Icon(Icons.arrow_forward_ios_rounded,
+                      size: 12, color: AppTokens.mutedOf(context)),
+                ),
+              ],
+            ),
           const SizedBox(height: AppTokens.spaceSm),
           Text(
             value,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.w800,
-              color: AppTokens.textPrimary,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
           const SizedBox(height: 2),
           Text(
             title,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w600,
-              color: AppTokens.textPrimary,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
           Text(
             subtitle,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 10,
-              color: AppTokens.muted,
+              color: AppTokens.mutedOf(context),
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildHotspotsSection(ThemeData theme) {
     return Column(
@@ -374,7 +405,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               'Congestion Hotspots',
               style: theme.textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.w700,
-                color: AppTokens.textPrimary,
+                color: theme.colorScheme.onSurface,
               ),
             ),
             const Spacer(),
@@ -386,12 +417,12 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         ),
         const SizedBox(height: AppTokens.spaceSm),
         if (_hotspots.isEmpty)
-          const AppCard(
-            padding: EdgeInsets.all(AppTokens.spaceMd),
+          AppCard(
+            padding: const EdgeInsets.all(AppTokens.spaceMd),
             child: Center(
               child: Text(
                 'No congestion hotspots detected in current time window',
-                style: TextStyle(color: AppTokens.muted, fontSize: 13),
+                style: TextStyle(color: AppTokens.mutedOf(context), fontSize: 13),
               ),
             ),
           )
@@ -409,20 +440,24 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       levelColor = AppTokens.amber;
     }
 
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppTokens.spaceSm),
-      child: AppCard(
-        padding: const EdgeInsets.all(AppTokens.spaceMd),
-        onTap: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (_) => JunctionDetailScreen(
-                junctionId: hotspot.intersectionId,
+    return Semantics(
+      label:
+          'Congestion hotspot: ${hotspot.name}, ${hotspot.avgCongestionLevel.toStringAsFixed(1)}% congestion',
+      button: true,
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: AppTokens.spaceSm),
+        child: AppCard(
+          padding: const EdgeInsets.all(AppTokens.spaceMd),
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => JunctionDetailScreen(
+                  junctionId: hotspot.intersectionId,
+                ),
               ),
-            ),
-          );
-        },
-        child: Row(
+            );
+          },
+          child: Row(
           children: [
             Container(
               width: 38,
@@ -450,28 +485,29 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 children: [
                   Text(
                     hotspot.name,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontWeight: FontWeight.w700,
-                      color: AppTokens.textPrimary,
+                      color: Theme.of(context).colorScheme.onSurface,
                       fontSize: 14,
                     ),
                   ),
                   Text(
                     'Code: ${hotspot.code} • ${hotspot.recordCount} observations',
-                    style: const TextStyle(
-                      color: AppTokens.muted,
+                    style: TextStyle(
+                      color: AppTokens.mutedOf(context),
                       fontSize: 11,
                     ),
                   ),
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right_rounded, color: AppTokens.muted),
+            Icon(Icons.chevron_right_rounded, color: AppTokens.mutedOf(context)),
           ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildRecentIncidentsSection(ThemeData theme) {
     return Column(
@@ -485,7 +521,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               'Recent Incidents Queue',
               style: theme.textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.w700,
-                color: AppTokens.textPrimary,
+                color: theme.colorScheme.onSurface,
               ),
             ),
             const Spacer(),
@@ -497,12 +533,12 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         ),
         const SizedBox(height: AppTokens.spaceSm),
         if (_recentIncidents.isEmpty)
-          const AppCard(
-            padding: EdgeInsets.all(AppTokens.spaceMd),
+          AppCard(
+            padding: const EdgeInsets.all(AppTokens.spaceMd),
             child: Center(
               child: Text(
                 'No active safety anomalies or traffic incidents reported',
-                style: TextStyle(color: AppTokens.muted, fontSize: 13),
+                style: TextStyle(color: AppTokens.mutedOf(context), fontSize: 13),
               ),
             ),
           )
@@ -513,14 +549,18 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   }
 
   Widget _buildIncidentCard(Incident incident) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppTokens.spaceSm),
-      child: AppCard(
-        padding: const EdgeInsets.all(AppTokens.spaceMd),
-        onTap: () {
-          widget.onNavigateTab?.call(3);
-        },
-        child: Row(
+    return Semantics(
+      label:
+          'Incident: ${incident.title}, severity ${incident.severity}, status ${incident.status}',
+      button: true,
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: AppTokens.spaceSm),
+        child: AppCard(
+          padding: const EdgeInsets.all(AppTokens.spaceMd),
+          onTap: () {
+            widget.onNavigateTab?.call(3);
+          },
+          child: Row(
           children: [
             Container(
               padding: const EdgeInsets.all(8),
@@ -541,9 +581,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 children: [
                   Text(
                     incident.description ?? 'Traffic incident reported',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontWeight: FontWeight.w600,
-                      color: AppTokens.textPrimary,
+                      color: Theme.of(context).colorScheme.onSurface,
                       fontSize: 13,
                     ),
                     maxLines: 1,
@@ -568,6 +608,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }

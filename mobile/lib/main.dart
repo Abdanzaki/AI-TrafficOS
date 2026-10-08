@@ -77,7 +77,7 @@ class _SplashScreen extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: AppTokens.ink,
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -112,7 +112,7 @@ class _SplashScreen extends StatelessWidget {
             Text(
               'AI TrafficOS',
               style: theme.textTheme.headlineMedium?.copyWith(
-                color: AppTokens.textPrimary,
+                color: theme.colorScheme.onSurface,
                 fontWeight: FontWeight.w800,
                 letterSpacing: -0.5,
               ),
@@ -121,7 +121,7 @@ class _SplashScreen extends StatelessWidget {
             Text(
               'Municipal Autonomous Traffic Platform',
               style: theme.textTheme.bodyMedium?.copyWith(
-                color: AppTokens.muted,
+                color: AppTokens.mutedOf(context),
               ),
             ),
             const SizedBox(height: AppTokens.space2xl),
@@ -137,7 +137,7 @@ class _SplashScreen extends StatelessWidget {
             Text(
               statusMessage,
               style: theme.textTheme.bodySmall?.copyWith(
-                color: AppTokens.muted,
+                color: AppTokens.mutedOf(context),
               ),
             ),
           ],

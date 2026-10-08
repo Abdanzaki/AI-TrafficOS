@@ -114,7 +114,7 @@ class RequireRole extends ConsumerWidget {
                   isAnalyst ? 'Read-Only Role Restricted' : 'Access Restricted',
                   textAlign: TextAlign.center,
                   style: theme.textTheme.headlineSmall?.copyWith(
-                    color: AppTokens.textPrimary,
+                    color: theme.colorScheme.onSurface,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -134,12 +134,12 @@ class RequireRole extends ConsumerWidget {
                   readOnlyMessage ?? defaultMessage,
                   textAlign: TextAlign.center,
                   style: theme.textTheme.bodyMedium?.copyWith(
-                    color: AppTokens.muted,
+                    color: AppTokens.mutedOf(context),
                     height: 1.5,
                   ),
                 ),
                 const SizedBox(height: AppTokens.spaceLg),
-                const Divider(color: AppTokens.borderDark),
+                Divider(color: theme.colorScheme.outline),
                 const SizedBox(height: AppTokens.spaceMd),
                 Wrap(
                   spacing: AppTokens.spaceSm,
@@ -149,7 +149,7 @@ class RequireRole extends ConsumerWidget {
                   children: [
                     AppBadge(
                       label: 'Your Role: ${user?.roleDisplay ?? "Unknown"}',
-                      color: user?.roleBadgeColor ?? AppTokens.muted,
+                      color: user?.roleBadgeColor ?? AppTokens.mutedOf(context),
                     ),
                     AppBadge(
                       label: 'Required: ${allowedRoles.join(" or ")}',
@@ -164,8 +164,8 @@ class RequireRole extends ConsumerWidget {
                     icon: const Icon(Icons.arrow_back_rounded, size: 18),
                     label: const Text('Go Back'),
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: AppTokens.textPrimary,
-                      side: const BorderSide(color: AppTokens.borderDark),
+                      foregroundColor: theme.colorScheme.onSurface,
+                      side: BorderSide(color: theme.colorScheme.outline),
                     ),
                   ),
               ],

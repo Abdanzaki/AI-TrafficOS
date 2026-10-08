@@ -3,7 +3,7 @@
 import React, { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Cpu, Lock, Mail, AlertCircle, ArrowRight } from "lucide-react";
+import { Cpu, Lock, Mail, AlertCircle, ArrowRight, Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { ApiError } from "@/lib/api-client";
 import { Button } from "@/components/ui/Button";
@@ -16,6 +16,7 @@ function LoginForm() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -101,7 +102,7 @@ function LoginForm() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="officer@trafficos.internal"
-              className="w-full pl-10 pr-4 py-2.5 bg-ink/70 border border-white/10 rounded-xl text-sm text-text placeholder:text-muted/50 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all"
+              className="w-full pl-10 pr-4 py-2.5 bg-ink/70 border border-white/10 rounded-xl text-sm text-text placeholder:text-muted/80 focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent transition-all"
             />
           </div>
         </div>
@@ -121,14 +122,26 @@ function LoginForm() {
             </div>
             <input
               id="password"
-              type="password"
+              type={showPassword ? "text" : "password"}
               required
               autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••••••"
-              className="w-full pl-10 pr-4 py-2.5 bg-ink/70 border border-white/10 rounded-xl text-sm text-text placeholder:text-muted/50 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all"
+              className="w-full pl-10 pr-10 py-2.5 bg-ink/70 border border-white/10 rounded-xl text-sm text-text placeholder:text-muted/80 focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent transition-all"
             />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-muted hover:text-text focus-visible:outline-none focus-visible:text-accent cursor-pointer"
+              aria-label={showPassword ? "Hide password" : "Show password"}
+            >
+              {showPassword ? (
+                <EyeOff className="w-4 h-4" />
+              ) : (
+                <Eye className="w-4 h-4" />
+              )}
+            </button>
           </div>
         </div>
 
@@ -159,16 +172,16 @@ function LoginForm() {
           Need an analyst account?{" "}
           <Link
             href="/register"
-            className="text-accent hover:underline font-semibold transition-colors focus-visible:outline-none"
+            className="text-accent hover:underline font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded"
           >
             Register new account
           </Link>
         </p>
 
-        <p className="text-xs text-muted/70">
+        <p className="text-xs text-muted">
           <Link
             href="/"
-            className="hover:text-text transition-colors focus-visible:outline-none"
+            className="hover:text-text transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded"
           >
             ← Back to public homepage
           </Link>
@@ -180,11 +193,7 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen bg-ink text-text flex items-center justify-center p-4 sm:p-6 relative overflow-hidden">
-      {/* Background glow effects */}
-      <div className="pointer-events-none absolute -top-40 left-1/2 -translate-x-1/2 w-[600px] h-[350px] bg-accent/10 blur-[140px] rounded-full" />
-      <div className="pointer-events-none absolute bottom-0 right-0 w-[400px] h-[400px] bg-surface blur-[160px] rounded-full" />
-
+    <div className="min-h-screen bg-ink text-text flex items-center justify-center p-4 sm:p-6 relative">
       <Suspense fallback={<LoadingSpinner size="lg" fullPage label="Loading login interface..." />}>
         <LoginForm />
       </Suspense>

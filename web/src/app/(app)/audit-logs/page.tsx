@@ -22,6 +22,7 @@ import { Button } from "@/components/ui/Button";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { Pagination } from "@/components/ui/Pagination";
 import { formatDateTime } from "@/lib/format";
 
 interface AuditLogEntry {
@@ -217,7 +218,7 @@ function AuditLogsContent() {
       ) : (
         <Card className="overflow-hidden border-white/10">
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse text-xs sm:text-sm">
+            <table className="w-full min-w-[700px] text-left border-collapse text-xs sm:text-sm">
               <thead>
                 <tr className="border-b border-white/10 bg-surface/60 text-muted uppercase text-[11px] font-semibold tracking-wider font-mono">
                   <th className="py-3 px-4 w-8"></th>
@@ -295,29 +296,14 @@ function AuditLogsContent() {
           </div>
 
           {data.pages > 1 && (
-            <div className="p-4 border-t border-white/10 flex items-center justify-between text-xs text-muted">
-              <span>
-                Page {data.page} of {data.pages}
-              </span>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  disabled={page <= 1}
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  className="px-3 py-1 rounded bg-surface border border-white/10 disabled:opacity-40 hover:text-text cursor-pointer disabled:cursor-not-allowed"
-                >
-                  Previous
-                </button>
-                <button
-                  type="button"
-                  disabled={page >= data.pages}
-                  onClick={() => setPage((p) => Math.min(data.pages, p + 1))}
-                  className="px-3 py-1 rounded bg-surface border border-white/10 disabled:opacity-40 hover:text-text cursor-pointer disabled:cursor-not-allowed"
-                >
-                  Next
-                </button>
-              </div>
-            </div>
+            <Pagination
+              page={page}
+              totalPages={data.pages}
+              totalRecords={data.total}
+              perPage={20}
+              onPageChange={setPage}
+              recordLabel="audit entries"
+            />
           )}
         </Card>
       )}
