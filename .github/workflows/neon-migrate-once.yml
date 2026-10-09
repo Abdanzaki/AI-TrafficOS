@@ -29,7 +29,13 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.NEON_DIRECT_URL }}
       - name: Apply migrations
-        run: alembic -c database/alembic.ini upgrade head
+        run: |
+          set +e
+          alembic -c database/alembic.ini upgrade head > /tmp/migrate.log 2>&1
+          code=$?
+          # redact any user:password in URLs before printing (never leak the secret)
+          sed -E 's|://[^:/@ ]+:[^/@ ]+@|://***:***@|g' /tmp/migrate.log
+          exit $code
         env:
           DATABASE_URL: ${{ secrets.NEON_DIRECT_URL }}
       - name: Show current revision
