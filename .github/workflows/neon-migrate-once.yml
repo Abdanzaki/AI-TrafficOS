@@ -1,0 +1,27 @@
+# One-time Neon DB migration job. Added 2026-10-09, removed after the run.
+# Runs alembic migrations 0001-0006 against the Neon production database
+# using the NEON_DIRECT_URL repo secret (direct, non-pooled URL).
+name: Neon DB migrate (one-time)
+
+on:
+  push:
+    paths:
+      - .github/workflows/neon-migrate-once.yml
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install alembic sqlalchemy asyncpg
+      - name: Apply migrations
+        run: alembic -c database/alembic.ini upgrade head
+        env:
+          DATABASE_URL: ${{ secrets.NEON_DIRECT_URL }}
+      - name: Show current revision
+        run: alembic -c database/alembic.ini current
+        env:
+          DATABASE_URL: ${{ secrets.NEON_DIRECT_URL }}
