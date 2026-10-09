@@ -18,14 +18,14 @@ jobs:
           python-version: "3.12"
       - run: pip install alembic sqlalchemy asyncpg pydantic pydantic-settings
       - name: Sanity-check DB URL shape (host only, never the secret)
-        run: >
-          python -c "
+        run: |
+          python - <<'EOF'
           import os
           from urllib.parse import urlparse
           host = urlparse(os.environ['DATABASE_URL']).hostname or ''
           print('DB host:', host)
           assert '-pooler' not in host, 'Pooled URL detected - migrations need the DIRECT Neon URL (pooling OFF)'
-          "
+          EOF
         env:
           DATABASE_URL: ${{ secrets.NEON_DIRECT_URL }}
       - name: Apply migrations
