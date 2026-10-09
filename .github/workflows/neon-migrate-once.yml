@@ -21,7 +21,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install alembic sqlalchemy asyncpg pydantic pydantic-settings
+      - run: pip install alembic "sqlalchemy[asyncio]" asyncpg pydantic pydantic-settings
       - name: Sanity-check DB URL shape (host only, never the secret)
         run: |
           python - <<'EOF'
