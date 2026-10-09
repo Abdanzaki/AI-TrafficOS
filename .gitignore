@@ -65,3 +65,4 @@ out/
 .vscode/
 *.swp
 *.swo
+dump.rdb
