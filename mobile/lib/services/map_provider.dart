@@ -22,6 +22,7 @@ abstract class MapProvider {
     required BuildContext context,
     required List<Junction> junctions,
     List<RoadSegment>? roads,
+    Map<int, double>? congestionLevels,
     Junction? selectedJunction,
     ValueChanged<Junction>? onJunctionTapped,
     MapFilter filter = MapFilter.all,

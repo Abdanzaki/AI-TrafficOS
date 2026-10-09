@@ -84,6 +84,7 @@ class SchematicJunctionMapProvider extends MapProvider {
     required BuildContext context,
     required List<Junction> junctions,
     List<RoadSegment>? roads,
+    Map<int, double>? congestionLevels,
     Junction? selectedJunction,
     ValueChanged<Junction>? onJunctionTapped,
     MapFilter filter = MapFilter.all,
@@ -91,6 +92,7 @@ class SchematicJunctionMapProvider extends MapProvider {
     return JunctionMapWidget(
       junctions: junctions,
       roads: roads,
+      congestionLevels: congestionLevels,
       selectedJunction: selectedJunction,
       onJunctionTapped: onJunctionTapped,
       filter: filter,
@@ -104,6 +106,7 @@ class JunctionMapWidget extends StatefulWidget {
     super.key,
     required this.junctions,
     this.roads,
+    this.congestionLevels,
     this.selectedJunction,
     this.onJunctionTapped,
     this.filter = MapFilter.all,
@@ -112,6 +115,7 @@ class JunctionMapWidget extends StatefulWidget {
 
   final List<Junction> junctions;
   final List<RoadSegment>? roads;
+  final Map<int, double>? congestionLevels;
   final Junction? selectedJunction;
   final ValueChanged<Junction>? onJunctionTapped;
   final MapFilter filter;

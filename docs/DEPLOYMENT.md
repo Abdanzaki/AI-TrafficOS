@@ -138,7 +138,7 @@ redis://default:YOUR_REDIS_PASSWORD@trafficos-cache.upstash.io:6379
      SECRET_KEY="$SECRET_KEY" \
      CORS_ORIGINS="https://ai-trafficos.vercel.app,https://trafficos.yourdomain.com" \
      ASSISTANT_LLM_PROVIDER="gemini" \
-     ASSISTANT_LLM_API_KEY="YOUR_GEMINI_API_KEY"
+     GEMINI_API_KEY="YOUR_GEMINI_API_KEY"
    ```
 
    > [!NOTE]
@@ -265,7 +265,8 @@ The Android release build uses environment-driven keystore signing with zero har
 | `RATE_LIMIT_EXPENSIVE_PER_MINUTE` | No | `60` | `60` | Max calls to heavy analytics/CV per minute. |
 | `SIGNAL_HARDWARE_ENABLED` | No | `false` | `false` | Physical controller relay interface (keep `false` for simulated/cloud). |
 | `ASSISTANT_LLM_PROVIDER` | No | `deterministic` | `gemini` or `openai` | AI Assistant backend engine (`deterministic`, `gemini`, `openai`, `anthropic`). |
-| `ASSISTANT_LLM_API_KEY` | Conditional | None | `AIzaSy...` | API key required if using commercial LLM providers. |
+| `ASSISTANT_LLM_API_KEY` | Conditional | None | `AIzaSy...` | API key required if using commercial HTTP LLM providers. |
+| `GEMINI_API_KEY` | Conditional | None | `AIzaSy...` | Google Gemini API key for conversational assistant rendering (create in Google AI Studio; never commit a real key). |
 
 ### Web Frontend (`web/`)
 

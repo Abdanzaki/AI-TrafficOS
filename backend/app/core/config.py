@@ -44,9 +44,17 @@ class Settings(BaseSettings):
     RATE_LIMIT_AUTH_PER_MINUTE: int = 60
     RATE_LIMIT_EXPENSIVE_PER_MINUTE: int = 60
 
-    # AI Assistant Configuration (Phase 9 Stage 4)
+    # AI Assistant Configuration (Phase 9 Stage 4 & Batch 1)
     ASSISTANT_LLM_PROVIDER: str = "deterministic"
     ASSISTANT_LLM_API_KEY: Optional[str] = None
+    GEMINI_API_KEY: Optional[str] = None
+    # Google Gemini model ID for generateContent v1beta REST API.
+    # As of late 2026 (per Google AI for Developers documentation at https://ai.google.dev/gemini-api/docs/models):
+    # - "gemini-3.8-flash" is the verified stable Flash model for new projects and newly created API keys.
+    # - "gemini-3.5-flash-lite" is the verified ultra-fast, budget-friendly high-throughput Flash model.
+    # - Note on legacy models: "gemini-2.0-flash" is shut down; "gemini-2.5-flash" is restricted to legacy accounts.
+    # Note: If testing against mock environments or older deployments, override via GEMINI_MODEL="gemini-2.0-flash".
+    GEMINI_MODEL: str = "gemini-3.8-flash"
 
     @field_validator("CORS_ORIGINS", mode="before")
     @classmethod

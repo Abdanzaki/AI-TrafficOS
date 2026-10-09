@@ -62,6 +62,7 @@ from app.assistant.nlu import (
 )
 from app.assistant.providers import (
     DeterministicProvider,
+    GeminiProvider,
     HttpLLMProvider,
     LLMProvider,
     get_llm_provider,
@@ -110,6 +111,7 @@ __all__ = [
     # Providers
     "LLMProvider",
     "DeterministicProvider",
+    "GeminiProvider",
     "HttpLLMProvider",
     "get_llm_provider",
 ]
