@@ -1,8 +1,39 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
+
+// Load release keystore credentials dynamically from environment variables, gradle.properties, or key.properties
+val keystoreProperties = Properties()
+val keystorePropertiesFile = rootProject.file("key.properties")
+if (keystorePropertiesFile.exists()) {
+    keystorePropertiesFile.inputStream().use { keystoreProperties.load(it) }
+}
+
+val releaseKeystorePath = System.getenv("ANDROID_KEYSTORE_PATH")
+    ?: (project.findProperty("keyStorePath") as? String)
+    ?: keystoreProperties.getProperty("storeFile")
+
+val releaseKeystorePassword = System.getenv("ANDROID_KEYSTORE_PASSWORD")
+    ?: (project.findProperty("keyStorePassword") as? String)
+    ?: keystoreProperties.getProperty("storePassword")
+
+val releaseKeyAlias = System.getenv("ANDROID_KEY_ALIAS")
+    ?: (project.findProperty("keyAlias") as? String)
+    ?: keystoreProperties.getProperty("keyAlias")
+
+val releaseKeyPassword = System.getenv("ANDROID_KEY_PASSWORD")
+    ?: (project.findProperty("keyPassword") as? String)
+    ?: keystoreProperties.getProperty("keyPassword")
+
+val hasReleaseSigning = !releaseKeystorePath.isNullOrBlank()
+    && !releaseKeystorePassword.isNullOrBlank()
+    && !releaseKeyAlias.isNullOrBlank()
+    && !releaseKeyPassword.isNullOrBlank()
 
 android {
     namespace = "com.aitrafficos.ai_trafficos"
@@ -29,11 +60,27 @@ android {
         versionName = flutter.versionName
     }
 
+    signingConfigs {
+        create("release") {
+            if (hasReleaseSigning) {
+                storeFile = file(releaseKeystorePath!!)
+                storePassword = releaseKeystorePassword
+                keyAlias = releaseKeyAlias
+                keyPassword = releaseKeyPassword
+            } else {
+                // Fall back to debug keystore if release signing env vars are not configured
+                val debugConfig = signingConfigs.getByName("debug")
+                storeFile = debugConfig.storeFile
+                storePassword = debugConfig.storePassword
+                keyAlias = debugConfig.keyAlias
+                keyPassword = debugConfig.keyPassword
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.getByName("release")
         }
     }
 }

@@ -1,0 +1,55 @@
+# Fly.io application configuration for AI TrafficOS Backend API
+#
+# Production hosting configuration for FastAPI + WebSockets
+# Run deployments from repository root: `fly deploy`
+
+app = "ai-trafficos-api"
+primary_region = "bom"
+
+[build]
+  dockerfile = "backend/Dockerfile"
+
+# Release command runs database schema migrations automatically before deploying new code
+# NOTE ON DATABASE_URL:
+# For migrations, use the DIRECT Neon database URL (without -pooler) or ensure statement_cache_size=0.
+# Neon direct URL avoids PgBouncer transaction-pooler limitations on DDL and migration locks.
+[deploy]
+  release_command = "sh -c 'cd /app/database && alembic upgrade head'"
+
+# Non-secret environment variable defaults
+[env]
+  ENV = "production"
+  PORT = "8000"
+
+# Production secrets MUST be configured using `fly secrets set` (DO NOT hardcode secrets here):
+#
+# fly secrets set DATABASE_URL="postgresql://neondb_owner:password@ep-xyz-pooler.region.aws.neon.tech/neondb?sslmode=require"
+# fly secrets set REDIS_URL="redis://default:password@managed-redis.upstash.io:6379"
+# fly secrets set SECRET_KEY="<cryptographically-secure-random-32-char-key>"
+# fly secrets set CORS_ORIGINS="https://ai-trafficos.vercel.app"
+# fly secrets set ASSISTANT_LLM_PROVIDER="gemini"
+# fly secrets set ASSISTANT_LLM_API_KEY="<api-key>"
+
+[http_service]
+  internal_port = 8000
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  # NOTE ON WEBSOCKETS & AUTO-STOPPING:
+  # With auto_stop_machines = 'stop', Fly will stop machines when idle.
+  # When mobile/web clients attempt to connect to WebSocket channels (/api/v1/ws/...),
+  # an idle stopped machine will take 1-3 seconds to wake up, introducing reconnect latency.
+  # To keep at least 1 machine continuously hot for uninterrupted real-time WebSocket telemetry,
+  # change min_machines_running = 1:
+  min_machines_running = 0
+  processes = ["app"]
+
+  [http_service.concurrency]
+    type = "connections"
+    hard_limit = 250
+    soft_limit = 200
+
+[[vm]]
+  cpu_kind = "shared"
+  cpus = 1
+  memory_mb = 512

@@ -13,11 +13,49 @@ from sqlalchemy.ext.asyncio import (
 )
 from sqlalchemy.orm import DeclarativeBase
 
+from sqlalchemy.engine import make_url
+
 from app.core.config import settings
 
-# Create asynchronous engine using asyncpg driver
+
+def translate_database_url(url: str) -> str:
+    """Translate standard PostgreSQL URL to an asyncpg-compatible URL.
+
+    - Rewrites driver from 'postgres' or 'postgresql' to 'postgresql+asyncpg'.
+    - Translates libpq-style 'sslmode' query parameters to asyncpg's 'ssl' parameter
+      (e.g., 'sslmode=require' -> 'ssl=require'). If 'sslmode=disable', removes SSL.
+    - Strips 'channel_binding' query parameter which is unsupported by asyncpg.
+    - Preserves non-Postgres URLs (e.g. SQLite).
+    """
+    if not url:
+        return url
+
+    db_url = make_url(url)
+    drivername = db_url.drivername
+    if drivername in ("postgres", "postgresql"):
+        drivername = "postgresql+asyncpg"
+
+    query = dict(db_url.query)
+    if "sslmode" in query:
+        sslmode_val = query.pop("sslmode")
+        if sslmode_val.lower() in ("disable", "false", "0"):
+            query.pop("ssl", None)
+        else:
+            query["ssl"] = sslmode_val
+
+    query.pop("channel_binding", None)
+
+    translated = db_url.set(drivername=drivername, query=query)
+    return translated.render_as_string(hide_password=False)
+
+
+# Alias for backward-compatibility or alternate naming conventions
+translate_db_url = translate_database_url
+
+
+# Create asynchronous engine using asyncpg driver with translated URL
 engine = create_async_engine(
-    settings.DATABASE_URL,
+    translate_database_url(settings.DATABASE_URL),
     echo=(settings.ENV == "development"),
     future=True,
 )

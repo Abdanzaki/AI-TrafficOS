@@ -170,6 +170,8 @@ async def update_user(
 
     changes: dict[str, object] = {}
 
+    old_role_name = user.role.name if user.role else None
+
     if payload.full_name is not None:
         user.full_name = payload.full_name
         changes["full_name"] = payload.full_name
@@ -188,6 +190,7 @@ async def update_user(
             )
         user.role_id = role.id
         changes["role_id"] = role.id
+        changes["role"] = role.name
     elif payload.role_name is not None:
         role_stmt = select(Role).where(Role.name == payload.role_name)
         role = (await db.execute(role_stmt)).scalars().first()
@@ -209,6 +212,18 @@ async def update_user(
         details=changes,
         ip_address=client_ip,
     )
+
+    if ("role" in changes or "role_id" in changes) and changes.get("role") != old_role_name:
+        await log_audit(
+            db=db,
+            action="user.role_changed",
+            actor_user_id=admin_user.id,
+            entity_type="user",
+            entity_id=user.id,
+            details={"previous_role": old_role_name, "new_role": changes.get("role")},
+            ip_address=client_ip,
+        )
+
     await db.commit()
     await db.refresh(user, attribute_names=["role"])
 

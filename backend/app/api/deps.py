@@ -2,13 +2,14 @@
 
 from typing import Callable, Optional
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 import jwt
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
+from app.core.audit import log_audit
 from app.core.database import get_db
 from app.core.security import decode_token
 from app.models.auth import User
@@ -105,13 +106,39 @@ def require_roles(*role_names: str) -> Callable[..., User]:
     """Role-based access control guard factory.
 
     Returns a dependency callable that checks if the authenticated user
-    has one of the specified roles, returning 403 Forbidden otherwise.
+    has one of the specified roles, recording an audit log entry and
+    returning 403 Forbidden otherwise.
     """
     async def role_checker(
+        request: Request,
         current_user: User = Depends(get_current_active_user),
+        db: AsyncSession = Depends(get_db),
     ) -> User:
         user_role = current_user.role.name if current_user.role else None
         if user_role not in role_names:
+            client_ip = None
+            forwarded = request.headers.get("X-Forwarded-For")
+            if forwarded:
+                client_ip = forwarded.split(",")[0].strip()
+            elif request.client:
+                client_ip = request.client.host
+
+            await log_audit(
+                db=db,
+                action="rbac.denied",
+                actor_user_id=current_user.id,
+                entity_type="endpoint",
+                entity_id=None,
+                details={
+                    "path": request.url.path,
+                    "method": request.method,
+                    "user_role": user_role,
+                    "required_roles": list(role_names),
+                },
+                ip_address=client_ip,
+            )
+            await db.commit()
+
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail=f"Forbidden: requires role in {list(role_names)}",

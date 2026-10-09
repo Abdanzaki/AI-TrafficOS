@@ -16,6 +16,7 @@ from app.api.v1.auth import get_client_ip
 from app.assistant.providers import get_llm_provider
 from app.core.audit import log_audit
 from app.core.database import get_db
+from app.core.rate_limit import rate_limit_expensive
 from app.models.auth import User
 
 logger = logging.getLogger(__name__)
@@ -83,6 +84,7 @@ class AssistantChatResponse(BaseModel):
     "/chat",
     response_model=AssistantChatResponse,
     status_code=status.HTTP_200_OK,
+    dependencies=[Depends(rate_limit_expensive)],
     summary="Engage with AI TrafficOS assistant",
 )
 async def chat(

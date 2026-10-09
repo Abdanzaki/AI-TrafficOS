@@ -27,6 +27,29 @@ except Exception:
         "postgresql+asyncpg://trafficos:trafficos@localhost:5432/trafficos",
     )
 
+try:
+    from app.core.database import translate_database_url
+    DATABASE_URL = translate_database_url(DATABASE_URL)
+except Exception:
+    try:
+        from sqlalchemy.engine import make_url
+
+        db_url = make_url(DATABASE_URL)
+        drivername = db_url.drivername
+        if drivername in ("postgres", "postgresql"):
+            drivername = "postgresql+asyncpg"
+        query = dict(db_url.query)
+        if "sslmode" in query:
+            sslmode_val = query.pop("sslmode")
+            if sslmode_val.lower() in ("disable", "false", "0"):
+                query.pop("ssl", None)
+            else:
+                query["ssl"] = sslmode_val
+        query.pop("channel_binding", None)
+        DATABASE_URL = db_url.set(drivername=drivername, query=query).render_as_string(hide_password=False)
+    except Exception:
+        pass
+
 from app.models import Base  # noqa: E402
 
 # Alembic Config object

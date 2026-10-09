@@ -38,6 +38,7 @@ from sqlalchemy.orm import selectinload
 
 from app.api.deps import get_current_user, require_roles
 from app.core.database import get_db
+from app.core.rate_limit import rate_limit_expensive
 from app.models.auth import User
 from app.models.event import Incident, VehicleEvent
 from app.models.intersection import Intersection
@@ -121,6 +122,7 @@ def _classify_congestion_status(level: int) -> str:
     "/analyze-image",
     response_model=ImageAnalysisResponse,
     status_code=status.HTTP_200_OK,
+    dependencies=[Depends(rate_limit_expensive)],
     summary="Analyze single image with YOLO, metrics, and signal detection (officer and admin only)",
 )
 async def analyze_image(
@@ -358,6 +360,7 @@ async def analyze_image(
     "/analyze-video",
     response_model=VideoAnalysisResponse,
     status_code=status.HTTP_200_OK,
+    dependencies=[Depends(rate_limit_expensive)],
     summary="Analyze video upload with tracking and incident heuristics (officer and admin only)",
 )
 async def analyze_video(

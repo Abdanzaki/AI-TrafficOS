@@ -17,11 +17,14 @@ from app.api.deps import get_current_active_user
 from app.core.audit import log_audit
 from app.core.config import settings
 from app.core.database import get_db
+from app.core.rate_limit import rate_limit_auth
 from app.core.security import (
     create_access_token,
     create_refresh_token,
     decode_token,
     hash_password,
+    is_token_revoked,
+    revoke_token,
     verify_password,
 )
 from app.models.auth import Role, User
@@ -52,6 +55,7 @@ def get_client_ip(request: Request) -> Optional[str]:
     "/register",
     response_model=UserResponse,
     status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(rate_limit_auth)],
     summary="Register a new analyst account",
 )
 async def register(
@@ -111,6 +115,7 @@ async def register(
     "/login",
     response_model=TokenResponse,
     status_code=status.HTTP_200_OK,
+    dependencies=[Depends(rate_limit_auth)],
     summary="User credentials authentication",
 )
 async def login(
@@ -131,6 +136,16 @@ async def login(
             normalized_email,
             client_ip,
         )
+        await log_audit(
+            db=db,
+            action="auth.login_failed",
+            actor_user_id=user.id if user else None,
+            entity_type="user",
+            entity_id=user.id if user else None,
+            details={"email": normalized_email, "reason": "invalid_credentials"},
+            ip_address=client_ip,
+        )
+        await db.commit()
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password",
@@ -142,6 +157,16 @@ async def login(
             normalized_email,
             client_ip,
         )
+        await log_audit(
+            db=db,
+            action="auth.login_failed",
+            actor_user_id=user.id,
+            entity_type="user",
+            entity_id=user.id,
+            details={"email": normalized_email, "reason": "inactive_user"},
+            ip_address=client_ip,
+        )
+        await db.commit()
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="User account is inactive",
@@ -182,7 +207,11 @@ async def refresh_tokens(
     payload: RefreshRequest,
     db: AsyncSession = Depends(get_db),
 ) -> TokenResponse:
-    """Validate refresh token and issue rotated access and refresh tokens."""
+    """Validate refresh token and issue rotated access and refresh tokens.
+    
+    Enforces strict single-use token rotation: the supplied refresh token is invalidated
+    upon successful exchange, and subsequent reuse of an already-used token is rejected.
+    """
     try:
         decoded = decode_token(payload.refresh_token)
     except jwt.PyJWTError:
@@ -195,6 +224,14 @@ async def refresh_tokens(
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid token type",
+        )
+
+    # Invalidation check: reject already used or revoked refresh tokens
+    token_identifier = decoded.get("jti") or payload.refresh_token
+    if await is_token_revoked(token_identifier):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Refresh token has already been used or revoked",
         )
 
     sub = decoded.get("sub")
@@ -220,6 +257,9 @@ async def refresh_tokens(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="User not found or inactive",
         )
+
+    # Rotate: invalidate the consumed refresh token before issuing the new pair
+    await revoke_token(token_identifier)
 
     role_name = user.role.name if user.role else "analyst"
     new_access_token = create_access_token(user_id=user.id, role=role_name)

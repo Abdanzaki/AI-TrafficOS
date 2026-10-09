@@ -19,6 +19,11 @@ from app.services.control.exceptions import (
     StaleTelemetryError,
     UnsafeStateError,
 )
+from app.services.control.hardware import (
+    PhysicalHardwareControlDisabledError,
+    assert_physical_hardware_disabled,
+    dispatch_hardware_signal_command,
+)
 from app.services.control.optimization import (
     CycleConfig,
     OptimizationResult,
@@ -101,8 +106,11 @@ __all__ = [
     "PlanComparison",
     "WhatIfSimulator",
     "compute_plan_digest",
-    # Exceptions
+    # Exceptions & Guards
     "StaleTelemetryError",
     "InsufficientDataError",
     "UnsafeStateError",
+    "PhysicalHardwareControlDisabledError",
+    "assert_physical_hardware_disabled",
+    "dispatch_hardware_signal_command",
 ]

@@ -1,4 +1,8 @@
-"""Intelligent Traffic Control REST API router (Phase 6 Part 5).
+"""Intelligent Traffic Control REST API router (Phase 6 Part 5 / Phase 11 Hardened).
+
+SIMULATION ONLY: All traffic control endpoints in AI TrafficOS operate strictly in supervisory,
+simulation-only advisory mode. There is NO direct field hardware controller integration.
+Physical actuation is permanently blocked when SIGNAL_HARDWARE_ENABLED is False (default).
 
 Provides supervisory, advisory traffic control endpoints conforming to NTCIP signal conventions:
 - Recommendations formulated from real-time telemetry and predictive forecasts
@@ -23,8 +27,14 @@ from sqlalchemy.orm import selectinload
 from app.api.deps import get_current_active_user, get_current_user, require_roles
 from app.api.v1.auth import get_client_ip
 from app.core.audit import log_audit
+from app.core.config import settings
 from app.core.database import get_db
 from app.models.ai import AIDecision, AIPrediction
+from app.services.control.hardware import (
+    PhysicalHardwareControlDisabledError,
+    assert_physical_hardware_disabled,
+    dispatch_hardware_signal_command,
+)
 from app.realtime import emit_control_decision
 from app.models.auth import User
 from app.models.emergency import EmergencyEvent
@@ -138,7 +148,7 @@ async def _get_or_build_graph(
     "/recommendations",
     response_model=DecisionResponse,
     status_code=status.HTTP_201_CREATED,
-    summary="Generate supervisory control recommendation for intersection",
+    summary="[SIMULATION ONLY] Generate supervisory control recommendation for intersection",
 )
 async def create_recommendation(
     payload: RecommendationRequest,
@@ -263,7 +273,7 @@ async def create_recommendation(
     "/optimize-signals",
     response_model=OptimizeSignalsResponse,
     status_code=status.HTTP_200_OK,
-    summary="Calculate queue-proportional signal timing optimization (officer/admin)",
+    summary="[SIMULATION ONLY] Calculate queue-proportional signal timing optimization (officer/admin)",
 )
 async def optimize_signals(
     payload: OptimizeSignalsRequest,
@@ -409,7 +419,7 @@ async def optimize_signals(
     "/simulate",
     response_model=PlanComparisonResponse,
     status_code=status.HTTP_200_OK,
-    summary="Simulate and compare baseline vs proposed signal timing plans",
+    summary="[SIMULATION ONLY] Simulate and compare baseline vs proposed signal timing plans",
 )
 async def simulate_plans(
     payload: SimulateRequest,
@@ -475,7 +485,7 @@ async def simulate_plans(
     "/emergency/prioritize",
     response_model=EmergencyPrioritizeResponse,
     status_code=status.HTTP_200_OK,
-    summary="Activate advisory green corridor preemption for emergency transit (officer/admin)",
+    summary="[SIMULATION ONLY] Activate advisory green corridor preemption for emergency transit (officer/admin)",
 )
 async def emergency_prioritize(
     payload: EmergencyPrioritizeRequest,
@@ -568,7 +578,7 @@ async def emergency_prioritize(
     "/emergency/restore",
     response_model=EmergencyRestoreResponse,
     status_code=status.HTTP_200_OK,
-    summary="Conclude emergency preemption and restore standard signal plan (officer/admin)",
+    summary="[SIMULATION ONLY] Conclude emergency preemption and restore standard signal plan (officer/admin)",
 )
 async def emergency_restore(
     payload: EmergencyRestoreRequest,
@@ -637,7 +647,7 @@ async def emergency_restore(
     "/green-corridor/recommend",
     response_model=GreenCorridorRecommendResponse,
     status_code=status.HTTP_200_OK,
-    summary="Compute advisory green wave preemption corridor recommendation (officer/admin)",
+    summary="[SIMULATION ONLY] Compute advisory green wave preemption corridor recommendation (officer/admin)",
 )
 async def recommend_green_corridor(
     payload: GreenCorridorRecommendRequest,
@@ -869,7 +879,7 @@ async def get_decision(
     "/decisions/{id}/apply",
     response_model=DecisionItemResponse,
     status_code=status.HTTP_200_OK,
-    summary="Transition proposed decision to applied status (officer/admin)",
+    summary="[SIMULATION ONLY] Transition proposed decision to applied status (officer/admin)",
 )
 async def apply_decision(
     id: int,
@@ -933,7 +943,7 @@ async def apply_decision(
     "/decisions/{id}/revert",
     response_model=DecisionItemResponse,
     status_code=status.HTTP_200_OK,
-    summary="Revert decision status to reverted (officer/admin)",
+    summary="[SIMULATION ONLY] Revert decision status to reverted (officer/admin)",
 )
 async def revert_decision(
     id: int,
@@ -1002,7 +1012,7 @@ async def revert_decision(
     "/junctions/{intersection_id}/control-status",
     response_model=JunctionControlStatusResponse,
     status_code=status.HTTP_200_OK,
-    summary="Retrieve real-time supervisory control status for an intersection",
+    summary="[SIMULATION ONLY] Retrieve real-time supervisory control status for an intersection",
 )
 async def get_junction_control_status(
     intersection_id: int,

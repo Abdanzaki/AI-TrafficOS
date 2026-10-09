@@ -7,13 +7,22 @@ Provides production defaults for Phase 1 architecture foundation.
 import json
 from pathlib import Path
 from typing import Any, Optional, Union
+import warnings
 
-from pydantic import field_validator
+from pydantic import field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 # Resolve path to backend/.env relative to this file (backend/app/core/config.py)
 BACKEND_DIR = Path(__file__).resolve().parent.parent.parent
 ENV_FILE_PATH = BACKEND_DIR / ".env"
+
+DEV_DEFAULT_SECRET_KEY = "dev-secret-key-change-in-production-trafficos-2026"
+INSECURE_SECRET_KEYS = {
+    DEV_DEFAULT_SECRET_KEY,
+    "change-this-to-a-secure-random-secret-key-in-production",
+    "secret",
+    "changeme",
+}
 
 
 class Settings(BaseSettings):
@@ -23,9 +32,17 @@ class Settings(BaseSettings):
     REDIS_URL: str = "redis://localhost:6379/0"
     ENV: str = "development"
     CORS_ORIGINS: list[str] = ["http://localhost:3000"]
-    SECRET_KEY: str = "dev-secret-key-change-in-production-trafficos-2026"
+    SECRET_KEY: Optional[str] = None
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
+
+    # Physical Signal Controller Guard (Phase 11: Hardware integration is disabled / simulation only)
+    SIGNAL_HARDWARE_ENABLED: bool = False
+
+    # Rate Limiting Configuration (Phase 11)
+    RATE_LIMIT_ENABLED: bool = True
+    RATE_LIMIT_AUTH_PER_MINUTE: int = 60
+    RATE_LIMIT_EXPENSIVE_PER_MINUTE: int = 60
 
     # AI Assistant Configuration (Phase 9 Stage 4)
     ASSISTANT_LLM_PROVIDER: str = "deterministic"
@@ -48,6 +65,54 @@ class Settings(BaseSettings):
         if isinstance(value, list):
             return [str(item).strip() for item in value]
         return ["http://localhost:3000"]
+
+    @model_validator(mode="after")
+    def validate_security_settings(self) -> "Settings":
+        """Validate production security invariants.
+        
+        Enforces fail-fast startup when ENV=production:
+        - SECRET_KEY must come exclusively from environment (no default/placeholder, min 32 chars).
+        - CORS_ORIGINS must be explicitly configured and cannot contain wildcards ('*') or localhost defaults.
+        In development/test, warns loudly if SECRET_KEY is missing or insecure and uses dev fallback.
+        """
+        is_production = self.ENV.lower() in ("production", "prod")
+
+        if is_production:
+            # 1. SECRET_KEY fail-fast enforcement
+            if not self.SECRET_KEY or self.SECRET_KEY in INSECURE_SECRET_KEYS:
+                raise ValueError(
+                    "FATAL SECURITY CONFIGURATION ERROR: In production (ENV=production), "
+                    "SECRET_KEY must be explicitly set from the environment to a secure random key. "
+                    "Using default or placeholder SECRET_KEY is prohibited."
+                )
+            if len(self.SECRET_KEY) < 32:
+                raise ValueError(
+                    "FATAL SECURITY CONFIGURATION ERROR: SECRET_KEY must be at least 32 characters in production."
+                )
+
+            # 2. CORS_ORIGINS fail-fast enforcement
+            if "*" in self.CORS_ORIGINS:
+                raise ValueError(
+                    "FATAL SECURITY CONFIGURATION ERROR: Wildcard '*' CORS origin is strictly prohibited in production."
+                )
+            if set(self.CORS_ORIGINS) == {"http://localhost:3000"}:
+                raise ValueError(
+                    "FATAL SECURITY CONFIGURATION ERROR: In production (ENV=production), "
+                    "CORS_ORIGINS must be explicitly configured with production frontend domains. "
+                    "Default localhost origin cannot be used."
+                )
+        else:
+            if not self.SECRET_KEY or self.SECRET_KEY in INSECURE_SECRET_KEYS:
+                warnings.warn(
+                    "SECURITY WARNING: SECRET_KEY is unset or using an insecure development default. "
+                    "Ensure a strong, unique SECRET_KEY is configured in production.",
+                    RuntimeWarning,
+                    stacklevel=2,
+                )
+                if not self.SECRET_KEY:
+                    self.SECRET_KEY = DEV_DEFAULT_SECRET_KEY
+
+        return self
 
     model_config = SettingsConfigDict(
         env_file=ENV_FILE_PATH,
