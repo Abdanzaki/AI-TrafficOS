@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 
 
 class Role(Base):
-    """User role definition for role-based access control (admin, traffic_officer, analyst)."""
+    """User role definition for role-based access control (admin, traffic_officer, analyst, citizen)."""
 
     __tablename__ = "roles"
 

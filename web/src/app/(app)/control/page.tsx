@@ -41,6 +41,8 @@ import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { RequireRole } from "@/components/RequireRole";
+import { SignalHealthPanel } from "@/components/SignalHealthPanel";
+import { AssistantChat } from "@/components/assistant/AssistantChat";
 import {
   formatDateTime,
   formatSeconds,
@@ -317,7 +319,7 @@ export default function ControlPage() {
   const { user, isAdmin, isOfficer } = useAuth();
 
   // Navigation sub-tab
-  const [activeTab, setActiveTab] = useState<"decisions" | "emergency" | "whatif">("decisions");
+  const [activeTab, setActiveTab] = useState<"decisions" | "emergency" | "whatif" | "health" | "assistant">("decisions");
 
   // Selected Junction
   const [selectedJunctionId, setSelectedJunctionId] = useState<number | null>(null);
@@ -968,6 +970,30 @@ export default function ControlPage() {
         >
           <GitCompare className="w-4 h-4" />
           What-If Plan Simulation
+        </button>
+
+        <button
+          onClick={() => setActiveTab("health")}
+          className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer flex items-center gap-2 ${
+            activeTab === "health"
+              ? "bg-accent text-ink shadow-md shadow-accent/20"
+              : "text-muted hover:text-text hover:bg-white/5"
+          }`}
+        >
+          <Activity className="w-4 h-4" />
+          Signal Health & Predictive Maintenance
+        </button>
+
+        <button
+          onClick={() => setActiveTab("assistant")}
+          className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer flex items-center gap-2 ${
+            activeTab === "assistant"
+              ? "bg-accent text-ink shadow-md shadow-accent/20"
+              : "text-muted hover:text-text hover:bg-white/5"
+          }`}
+        >
+          <Sparkles className="w-4 h-4" />
+          Assistant & Voice Interface
         </button>
       </div>
 
@@ -1690,6 +1716,20 @@ export default function ControlPage() {
               </div>
             )}
           </Card>
+        </div>
+      )}
+
+      {/* --- TAB 4: Signal Health & Predictive Maintenance --- */}
+      {activeTab === "health" && (
+        <div className="space-y-6">
+          <SignalHealthPanel intersectionId={selectedJunctionId ?? undefined} />
+        </div>
+      )}
+
+      {/* --- TAB 5: Control Room Assistant & Voice Interface --- */}
+      {activeTab === "assistant" && (
+        <div className="h-[750px] rounded-2xl overflow-hidden border border-white/10 shadow-xl">
+          <AssistantChat className="h-full" />
         </div>
       )}
     </div>

@@ -76,13 +76,14 @@ async def register(
             detail="Email is already registered",
         )
 
-    # Fetch default analyst role
-    role_stmt = select(Role).where(Role.name == "analyst")
+    # Fetch assigned role ('analyst' by default, or 'citizen')
+    target_role = payload.role_name if payload.role_name in ("citizen", "analyst") else "analyst"
+    role_stmt = select(Role).where(Role.name == target_role)
     role = (await db.execute(role_stmt)).scalars().first()
     if not role:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Default role 'analyst' not found in system",
+            detail=f"Role '{target_role}' not found in system",
         )
 
     user = User(

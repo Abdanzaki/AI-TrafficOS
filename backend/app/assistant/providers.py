@@ -261,6 +261,35 @@ class GeminiProvider(LLMProvider):
 
         return rephrased
 
+    async def rephrase_brief(self, text: str) -> str:
+        """Conversationally rephrase deterministic brief text using Gemini.
+
+        If GEMINI_API_KEY is unset or any network/API exception occurs,
+        silently falls back to the deterministic input text.
+        """
+        api_key = (self._api_key or "").strip()
+        if not api_key:
+            logger.info("GeminiProvider invoked without key; preserving deterministic brief text.")
+            return text
+
+        if not text or not text.strip():
+            return text
+
+        try:
+            rephrased = await self._rephrase_with_gemini(
+                grounded_answer=text,
+                api_key=api_key,
+            )
+            if rephrased:
+                return rephrased
+        except Exception as exc:
+            logger.warning(
+                "Gemini brief rephrase failed (%s); silently falling back to deterministic text.",
+                type(exc).__name__,
+            )
+
+        return text
+
 
 class HttpLLMProvider(LLMProvider):
     """Extension point for external LLM vendors over HTTP.

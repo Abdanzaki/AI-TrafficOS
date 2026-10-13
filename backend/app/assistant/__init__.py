@@ -80,6 +80,18 @@ from app.assistant.tools import (
     get_traffic_state,
     simulate_signal_timing,
 )
+from app.assistant.citizen import (
+    CITIZEN_TOOL_ALLOWLIST,
+    CONTROL_ROOM_ONLY_TOOLS,
+    CitizenNLU,
+    CitizenNLUResult,
+    CitizenProvider,
+    get_citizen_general_help,
+    get_how_to_report,
+    get_public_incident_notices,
+    get_public_traffic_conditions,
+    validate_citizen_tool,
+)
 
 __all__ = [
     # Errors
@@ -114,4 +126,15 @@ __all__ = [
     "GeminiProvider",
     "HttpLLMProvider",
     "get_llm_provider",
+    # Citizen Assistant
+    "CitizenNLU",
+    "CitizenNLUResult",
+    "CitizenProvider",
+    "CITIZEN_TOOL_ALLOWLIST",
+    "CONTROL_ROOM_ONLY_TOOLS",
+    "validate_citizen_tool",
+    "get_public_traffic_conditions",
+    "get_public_incident_notices",
+    "get_how_to_report",
+    "get_citizen_general_help",
 ]

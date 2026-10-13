@@ -131,8 +131,31 @@ async def test_users(async_client: AsyncClient) -> dict[str, dict[str, str | int
     assert analyst_login.status_code == 200, analyst_login.text
     analyst_token = analyst_login.json()["access_token"]
 
+    # 4. Citizen user
+    citizen_email = f"citizen_{uid}@trafficos.io"
+    citizen_resp = await async_client.post(
+        "/api/v1/users",
+        headers={"Authorization": f"Bearer {admin_token}"},
+        json={
+            "email": citizen_email,
+            "password": password,
+            "full_name": "Citizen User",
+            "role_name": "citizen",
+        },
+    )
+    assert citizen_resp.status_code == 201, citizen_resp.text
+    citizen_id = citizen_resp.json()["id"]
+
+    citizen_login = await async_client.post(
+        "/api/v1/auth/login",
+        json={"email": citizen_email, "password": password},
+    )
+    assert citizen_login.status_code == 200, citizen_login.text
+    citizen_token = citizen_login.json()["access_token"]
+
     return {
         "admin": {"token": admin_token, "id": admin_id},
         "officer": {"token": officer_token, "id": officer_id},
         "analyst": {"token": analyst_token, "id": analyst_id},
+        "citizen": {"token": citizen_token, "id": citizen_id},
     }

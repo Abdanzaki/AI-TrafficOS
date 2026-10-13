@@ -126,3 +126,43 @@ class SignalOverrideRequest(BaseModel):
         if self.phase_id is None and self.state is None and self.is_active is None:
             raise ValueError("At least one of phase_id, state, or is_active must be provided for override")
         return self
+
+
+class SignalHealthFactor(BaseModel):
+    """Contributing factor in the heuristic predictive-maintenance health score."""
+
+    name: str = Field(..., description="Factor identifier (e.g. controller_status, phase_flapping, heartbeat_staleness, anomalous_dwell)")
+    weight: float = Field(..., ge=0.0, le=1.0, description="Relative weight in overall scoring")
+    raw_value: Any = Field(..., description="Observed metric value (e.g. flapping rate, staleness seconds)")
+    penalty: float = Field(..., ge=0.0, description="Deduction points subtracted from 100")
+    status: str = Field("normal", description="'normal', 'warning', or 'critical'")
+    description: str = Field(..., description="Human-readable explanation of this factor's impact")
+
+
+class SignalHealthResponse(BaseModel):
+    """Predictive-maintenance health score response for an individual traffic signal."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    signal_id: int
+    signal_code: str
+    intersection_id: int
+    score: int = Field(..., ge=0, le=100, description="Predictive maintenance score (0-100)")
+    status_band: str = Field(..., description="'healthy' (>=80), 'degraded' (50-79), or 'at-risk' (<50)")
+    explanation: str = Field(..., description="Transparent explanation listing factors and weights")
+    factors: list[SignalHealthFactor] = Field(default_factory=list, description="Breakdown of contributing factors")
+    provenance: str = Field("heuristic", description="Method provenance (strictly 'heuristic' / statistical)")
+    evaluated_at: datetime = Field(..., description="Timestamp when score was evaluated")
+    metrics: dict[str, Any] = Field(default_factory=dict, description="Raw statistical metrics")
+
+
+class SignalHealthListResponse(BaseModel):
+    """Collection response of signal health evaluations across intersections."""
+
+    items: list[SignalHealthResponse] = Field(default_factory=list)
+    total: int = 0
+    healthy_count: int = 0
+    degraded_count: int = 0
+    at_risk_count: int = 0
+    provenance: str = Field("heuristic", description="Method provenance (strictly 'heuristic')")
+

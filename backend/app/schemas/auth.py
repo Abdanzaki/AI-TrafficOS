@@ -9,6 +9,7 @@ class RegisterRequest(BaseModel):
     email: EmailStr
     password: str = Field(..., min_length=8, description="Password must be at least 8 characters long")
     full_name: str = Field(..., min_length=1, max_length=150, description="Full name of the user")
+    role_name: str = Field(default="analyst", description="Role to assign: 'analyst' or 'citizen'")
 
 
 class LoginRequest(BaseModel):

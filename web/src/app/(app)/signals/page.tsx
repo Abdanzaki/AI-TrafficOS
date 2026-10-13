@@ -34,6 +34,7 @@ import { ErrorState } from "@/components/ui/ErrorState";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { RequireRole } from "@/components/RequireRole";
 import { Pagination } from "@/components/ui/Pagination";
+import { SignalHealthPanel } from "@/components/SignalHealthPanel";
 import { formatDateTime, formatSeconds, formatPercent } from "@/lib/format";
 
 // --- Domain Interfaces Matching Backend Schemas ---
@@ -575,6 +576,9 @@ function SignalsPageContent() {
           )}
         </div>
       </Card>
+
+      {/* --- Predictive Maintenance Signal Health Panel --- */}
+      <SignalHealthPanel intersectionId={selectedJunctionId ?? undefined} />
 
       {/* --- Main Content Split: Signal Telemetry & Controls vs CV Observations --- */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">

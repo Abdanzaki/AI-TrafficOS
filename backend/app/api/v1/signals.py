@@ -2,7 +2,7 @@
 
 import logging
 import math
-from typing import Optional
+from typing import Any, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, status
 from sqlalchemy import func, select
@@ -20,12 +20,18 @@ from app.realtime import emit_signal_change
 from app.schemas.signal import (
     PaginatedSignals,
     SignalCreate,
+    SignalHealthListResponse,
+    SignalHealthResponse,
     SignalOverrideRequest,
     SignalPhaseCreate,
     SignalPhaseResponse,
     SignalPhaseUpdate,
     SignalResponse,
     SignalUpdate,
+)
+from app.services.signal_health import (
+    get_all_signals_health,
+    get_signal_health,
 )
 
 logger = logging.getLogger(__name__)
@@ -153,6 +159,25 @@ async def create_signal(
 
 
 @router.get(
+    "/health",
+    response_model=SignalHealthListResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Get predictive-maintenance health scores across traffic signals",
+)
+async def list_signals_health(
+    intersection_id: Optional[int] = Query(None, description="Optional intersection filter"),
+    db: AsyncSession = Depends(get_db),
+) -> dict[str, Any]:
+    """Retrieve predictive-maintenance health scores for all signals or a target intersection.
+
+    Uses transparent heuristic and statistical features (phase-flapping, heartbeat staleness,
+    dwell anomalies, hardware status).
+    Provenance: 'heuristic'.
+    """
+    return await get_all_signals_health(db, intersection_id=intersection_id)
+
+
+@router.get(
     "/{signal_id}",
     response_model=SignalResponse,
     status_code=status.HTTP_200_OK,
@@ -177,6 +202,30 @@ async def get_signal(
         )
     signal.phases.sort(key=lambda p: (p.phase_order, p.id))
     return signal
+
+
+@router.get(
+    "/{signal_id}/health",
+    response_model=SignalHealthResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Get predictive-maintenance health score for a specific signal",
+)
+async def get_single_signal_health(
+    signal_id: int,
+    db: AsyncSession = Depends(get_db),
+) -> dict[str, Any]:
+    """Retrieve predictive-maintenance health score and factor explanation for a single signal.
+
+    Returns score (0-100), status band ('healthy'/'degraded'/'at-risk'), human-readable
+    explanation with contributing weights, and provenance='heuristic'.
+    """
+    health = await get_signal_health(db, signal_id=signal_id)
+    if health is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Signal with id {signal_id} not found",
+        )
+    return health
 
 
 @router.patch(

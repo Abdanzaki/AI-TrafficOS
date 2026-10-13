@@ -65,10 +65,11 @@ class ModelRegistry:
 
     def register(
         self,
-        model: TrafficForecaster,
+        model: Any,
         metrics: dict[str, Any],
         data_summary: dict[str, Any],
         notes: str = "",
+        architecture: Optional[str] = None,
     ) -> str:
         """Register and persist a trained model with evaluation metrics and training provenance.
 
@@ -76,10 +77,11 @@ class ModelRegistry:
         with model.joblib and metadata.json.
 
         Args:
-            model: Trained TrafficForecaster instance.
+            model: Trained forecaster instance (TrafficForecaster or FlowLSTM).
             metrics: Multi-target validation and test evaluation metrics dictionary.
             data_summary: Provenance summary of training dataset.
             notes: Optional human-readable description or experiment notes.
+            architecture: Optional explicit architecture tag ('lstm' or 'gradient_boosting').
 
         Returns:
             The assigned version string (e.g., 'v1', 'v2').
@@ -105,14 +107,30 @@ class ModelRegistry:
             ),
         }
 
+        arch = architecture or getattr(model, "architecture", "gradient_boosting")
+        training_rows = (
+            data_summary.get("total_rows")
+            or data_summary.get("training_rows")
+            or data_summary.get("n_train_rows")
+            or 0
+        )
+        training_provenance = (
+            data_summary.get("provenance")
+            or data_summary.get("training_data_provenance")
+            or "observed"
+        )
+
         # 3. Build metadata dictionary
         metadata: dict[str, Any] = {
             "version": version_str,
+            "architecture": arch,
+            "training_rows": training_rows,
+            "training_data_provenance": training_provenance,
             "trained_at": datetime.now(timezone.utc).isoformat(),
             "metrics": _sanitize_for_json(metrics),
             "data_summary": _sanitize_for_json(data_summary),
-            "feature_names": list(model.feature_names),
-            "target_names": list(model.target_names),
+            "feature_names": list(model.feature_names) if hasattr(model, "feature_names") else [],
+            "target_names": list(model.target_names) if hasattr(model, "target_names") else [],
             "horizon": horizon_info,
             "horizon_info": horizon_info,
             "notes": str(notes),
@@ -123,14 +141,14 @@ class ModelRegistry:
 
         return version_str
 
-    def get_version(self, v: Union[str, int]) -> tuple[TrafficForecaster, dict[str, Any]]:
+    def get_version(self, v: Union[str, int]) -> tuple[Any, dict[str, Any]]:
         """Retrieve a specific model version and its associated metadata.
 
         Args:
             v: Version string (e.g. 'v1') or integer version index (e.g. 1).
 
         Returns:
-            tuple (model, metadata) where model is TrafficForecaster and metadata is a dict.
+            tuple (model, metadata) where model is forecaster instance and metadata is a dict.
 
         Raises:
             FileNotFoundError: If the requested version directory or files do not exist.
@@ -155,12 +173,17 @@ class ModelRegistry:
                 f"Metadata file missing for version '{v_str}' at {meta_path}"
             )
 
-        model = TrafficForecaster.load(model_path)
         metadata = json.loads(meta_path.read_text(encoding="utf-8"))
+        if metadata.get("architecture") == "lstm":
+            from ai.forecasting.lstm import FlowLSTM
+
+            model = FlowLSTM.load(model_path)
+        else:
+            model = TrafficForecaster.load(model_path)
 
         return model, metadata
 
-    def get_latest(self) -> tuple[TrafficForecaster, dict[str, Any]]:
+    def get_latest(self) -> tuple[Any, dict[str, Any]]:
         """Retrieve the latest registered model and its metadata.
 
         Returns:

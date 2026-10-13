@@ -11,7 +11,7 @@ from fastapi import APIRouter, Depends, Request, status
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.deps import get_current_active_user
+from app.api.deps import get_current_active_user, require_roles
 from app.api.v1.auth import get_client_ip
 from app.assistant.providers import get_llm_provider
 from app.core.audit import log_audit
@@ -91,7 +91,7 @@ async def chat(
     payload: AssistantChatRequest,
     request: Request,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_active_user),
+    current_user: User = Depends(require_roles("admin", "traffic_officer", "analyst")),
 ) -> AssistantChatResponse:
     """Process user message against grounded tools with role-based access control.
 

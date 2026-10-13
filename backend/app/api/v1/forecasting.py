@@ -22,10 +22,16 @@ from app.models.auth import User
 from app.models.ml import MLModel
 from app.realtime import emit_prediction_published
 from app.schemas.forecasting import (
+    FlowLSTMPredictRequest,
+    FlowLSTMPredictResponse,
     ModelVersionInfo,
     PredictBatchResponse,
     PredictRequest,
     TrainRequest,
+)
+from app.services.flow_lstm import (
+    predict_flow_lstm,
+    train_and_register_flow_lstm,
 )
 from app.services.forecasting import (
     ForecastingInsufficientDataError,
@@ -291,3 +297,101 @@ async def get_latest_model(
         "in_database": db_match is not None,
         "in_filesystem": True,
     }
+
+
+@router.post(
+    "/lstm/predict",
+    response_model=FlowLSTMPredictResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Generate near-term flow forecasts via PyTorch LSTM (officer or admin)",
+)
+@router.post(
+    "/predict-lstm",
+    response_model=FlowLSTMPredictResponse,
+    status_code=status.HTTP_200_OK,
+    include_in_schema=False,
+)
+async def generate_lstm_predictions(
+    payload: FlowLSTMPredictRequest,
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_roles("admin", "traffic_officer")),
+) -> dict[str, Any]:
+    """Generate near-term traffic flow forecasts using deep-learning PyTorch LSTM sequence model.
+
+    Evaluates recent 24-hour sequence history (requires at least 12 records).
+    Under-sampled intersections are explicitly marked as 'insufficient_data';
+    predictions include honest Monte Carlo dropout uncertainty and confidence intervals.
+    """
+    try:
+        results = await predict_flow_lstm(
+            db=db,
+            intersection_ids=payload.intersection_ids,
+            horizon_minutes=payload.horizon_minutes,
+        )
+    except ForecastingModelNotFoundError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(exc),
+        )
+
+    predictions = results.get("predictions", [])
+    insufficient = results.get("insufficient", [])
+
+    client_ip = get_client_ip(request)
+    await log_audit(
+        db=db,
+        action="forecasting.lstm_predictions_generated",
+        actor_user_id=current_user.id,
+        entity_type="ai_prediction",
+        entity_id=None,
+        details={
+            "intersection_ids": payload.intersection_ids,
+            "horizon_minutes": payload.horizon_minutes,
+            "predicted_count": len(predictions),
+            "insufficient_count": len(insufficient),
+        },
+        ip_address=client_ip,
+    )
+
+    return results
+
+
+@router.post(
+    "/lstm/train",
+    status_code=status.HTTP_200_OK,
+    summary="Train and register PyTorch LSTM flow forecasting model (admin only)",
+)
+async def train_lstm_model(
+    payload: TrainRequest,
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_roles("admin")),
+) -> dict[str, Any]:
+    """Train PyTorch LSTM sequence forecaster on telemetry or deterministic synthetic set and catalog it."""
+    report = await train_and_register_flow_lstm(
+        db=db,
+        intersection_ids=payload.intersection_ids,
+        days=payload.days,
+        notes=payload.notes,
+    )
+    clean_report = {k: v for k, v in report.items() if k != "model"}
+
+    client_ip = get_client_ip(request)
+    await log_audit(
+        db=db,
+        action="forecasting.lstm_model_trained",
+        actor_user_id=current_user.id,
+        entity_type="ml_model",
+        entity_id=clean_report.get("id"),
+        details={
+            "version": clean_report.get("version"),
+            "days": payload.days,
+            "training_rows": clean_report.get("training_rows"),
+            "provenance": clean_report.get("training_data_provenance"),
+            "notes": payload.notes,
+        },
+        ip_address=client_ip,
+    )
+    return clean_report
+

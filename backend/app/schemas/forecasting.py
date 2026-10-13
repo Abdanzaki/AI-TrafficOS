@@ -87,3 +87,52 @@ class ModelVersionInfo(BaseModel):
     created_at: Optional[datetime] = None
     in_database: bool = True
     in_filesystem: bool = True
+
+
+class FlowLSTMPredictRequest(BaseModel):
+    """Schema for requesting near-term flow forecast via PyTorch LSTM."""
+
+    intersection_ids: list[int] = Field(
+        ...,
+        min_length=1,
+        description="Target intersection IDs for sequence inference.",
+    )
+    horizon_minutes: int = Field(
+        30,
+        ge=5,
+        le=120,
+        description="Forward forecasting horizon in minutes (default: 30).",
+    )
+
+
+class FlowLSTMPredictionItem(BaseModel):
+    """Schema for individual intersection LSTM flow prediction."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    intersection_id: int
+    model_name: str = "flow_lstm"
+    model_version: str
+    provenance: str = Field(..., description="Training data provenance ('observed' or 'synthetic-deterministic-seed-N')")
+    predicted_for: datetime
+    prediction_horizon: int = Field(30, description="Forward horizon in minutes")
+    predicted_flow: float = Field(..., description="Predicted near-term vehicle count")
+    confidence: float = Field(..., ge=0.0, le=1.0, description="Confidence score [0.0, 1.0]")
+    uncertainty: float = Field(..., ge=0.0, description="Epistemic/dispersion spread (standard deviation)")
+    prediction_interval: tuple[float, float] = Field(..., description="95% confidence interval [lower, upper]")
+    status: str = "predicted"
+    payload: Optional[dict[str, Any]] = None
+    prediction_id: Optional[int] = None
+
+
+class FlowLSTMPredictResponse(BaseModel):
+    """Schema for batch LSTM flow prediction endpoint response."""
+
+    predictions: list[FlowLSTMPredictionItem] = Field(
+        default_factory=list,
+        description="List of successfully computed LSTM flow forecasts.",
+    )
+    insufficient: list[dict[str, Any]] = Field(
+        default_factory=list,
+        description="List of intersections with insufficient telemetry history.",
+    )

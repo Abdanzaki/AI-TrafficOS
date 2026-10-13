@@ -197,7 +197,10 @@ async def test_forecasting_train_as_admin(
     version = data["version"]
 
     # Verify ml_models DB row
-    stmt = select(MLModel).where(MLModel.version == version)
+    stmt = select(MLModel).where(
+        MLModel.name == "traffic_forecaster",
+        MLModel.version == version,
+    )
     res = await db_session.execute(stmt)
     ml_row = res.scalar_one_or_none()
     assert ml_row is not None

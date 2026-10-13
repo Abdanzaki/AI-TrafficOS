@@ -41,6 +41,7 @@ import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Pagination } from "@/components/ui/Pagination";
+import { EventDemandForecast } from "@/components/EventDemandForecast";
 import {
   formatNumber,
   formatPercent,
@@ -1425,6 +1426,9 @@ export default function PredictionsPage() {
           </div>
         )}
       </Card>
+
+      {/* Event Traffic Demand Forecasting Panel */}
+      <EventDemandForecast />
     </div>
   );
 }

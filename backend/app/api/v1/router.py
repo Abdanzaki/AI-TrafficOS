@@ -13,8 +13,11 @@ from app.api.v1.analytics import router as analytics_router
 from app.api.v1.assistant import router as assistant_router
 from app.api.v1.audit import router as audit_router
 from app.api.v1.auth import router as auth_router
+from app.api.v1.briefs import router as briefs_router
+from app.api.v1.citizen import router as citizen_router
 from app.api.v1.control import router as control_router
 from app.api.v1.emergency_events import router as emergency_events_router
+from app.api.v1.events import router as events_router
 from app.api.v1.forecasting import router as forecasting_router
 from app.api.v1.incidents import router as incidents_router
 from app.api.v1.intersections import router as intersections_router
@@ -72,6 +75,13 @@ router.include_router(vision_router)
 
 # Mount assistant router under v1 prefix
 router.include_router(assistant_router)
+
+# Mount citizen assistant router under v1 prefix
+router.include_router(citizen_router)
+
+# Mount daily briefs and event forecasting routers under v1 prefix
+router.include_router(briefs_router)
+router.include_router(events_router)
 
 
 @router.get("/health")

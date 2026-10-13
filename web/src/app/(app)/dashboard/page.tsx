@@ -31,6 +31,7 @@ import { Badge, type BadgeVariant } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { ErrorState } from "@/components/ui/ErrorState";
+import { DailyBriefCard } from "@/components/DailyBriefCard";
 
 interface HealthData {
   status: string;
@@ -212,6 +213,9 @@ export default function DashboardPage() {
           )}
         </div>
       </div>
+
+      {/* Daily Operations Brief Card */}
+      <DailyBriefCard />
 
       {/* Backend Status Strip */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

@@ -37,6 +37,7 @@ import {
   type ChatHistoryEntry,
 } from "@/lib/assistant";
 import { formatDateTime, formatRelativeTime, formatTime } from "@/lib/format";
+import { VoiceInputButton } from "./VoiceInputButton";
 
 export interface AssistantChatProps {
   className?: string;
@@ -817,6 +818,16 @@ export const AssistantChat: React.FC<AssistantChatProps> = ({ className = "" }) 
                 className="w-full resize-none bg-transparent p-3 text-xs sm:text-sm text-text placeholder:text-muted focus:outline-none disabled:opacity-50 min-h-[44px] max-h-36"
               />
             </div>
+
+            <VoiceInputButton
+              disabled={isLoading}
+              onTranscript={(transcript) => {
+                setInputMessage(transcript);
+              }}
+              onAutoSubmit={(transcript) => {
+                handleSendMessage(transcript);
+              }}
+            />
 
             <button
               type="submit"
