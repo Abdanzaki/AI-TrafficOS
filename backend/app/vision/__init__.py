@@ -59,11 +59,19 @@ from .processor import (
     VideoProcessor,
     get_video_processor,
 )
+from .crash import (
+    CrashCandidate,
+    CrashHeuristic,
+    get_crash_detector,
+    handle_crash_candidate,
+    handle_crash_candidates,
+)
 from .storage import (
     map_confidence_to_severity,
     record_congestion_observation,
     record_incident_candidate,
     record_incident_candidates,
+    save_evidence_snapshot,
 )
 from .tracking import (
     MultiObjectTracker,
@@ -73,6 +81,20 @@ from .tracking import (
     compute_centroid,
     estimate_speed_from_history,
     get_vehicle_tracker,
+)
+from .violations import (
+    HelmetClassifier,
+    NoHelmetViolationHeuristic,
+    PyTorchHelmetClassifier,
+    RedLightViolationHeuristic,
+    StopLineConfig,
+    ViolationCandidate,
+    ViolationDetector,
+    WrongWayViolationHeuristic,
+    get_violation_detector,
+    persist_violation,
+    persist_violations,
+    save_violation_evidence_snapshot,
 )
 
 __all__ = [
@@ -131,4 +153,22 @@ __all__ = [
     "record_incident_candidate",
     "record_incident_candidates",
     "record_signal_observation",
+    "HelmetClassifier",
+    "NoHelmetViolationHeuristic",
+    "PyTorchHelmetClassifier",
+    "RedLightViolationHeuristic",
+    "StopLineConfig",
+    "ViolationCandidate",
+    "ViolationDetector",
+    "WrongWayViolationHeuristic",
+    "get_violation_detector",
+    "persist_violation",
+    "persist_violations",
+    "save_violation_evidence_snapshot",
+    "CrashCandidate",
+    "CrashHeuristic",
+    "get_crash_detector",
+    "handle_crash_candidate",
+    "handle_crash_candidates",
+    "save_evidence_snapshot",
 ]

@@ -61,6 +61,8 @@ async def list_incidents(
     status_filter: Optional[str] = Query(None, alias="status", description="Filter by status (reported, acknowledged, resolved)"),
     severity: Optional[str] = Query(None, description="Filter by severity (low, medium, high, critical, unknown)"),
     intersection_id: Optional[int] = Query(None, description="Filter by intersection ID"),
+    is_crash: Optional[bool] = Query(None, description="Filter by crash auto-detection (description contains crash)"),
+    search: Optional[str] = Query(None, description="Keyword search in description"),
     from_date: Optional[str] = Query(None, alias="from", description="Created from timestamp (inclusive, ISO 8601)"),
     to_date: Optional[str] = Query(None, alias="to", description="Created to timestamp (inclusive, ISO 8601)"),
     created_from: Optional[str] = Query(None, description="Created from timestamp (alias, ISO 8601)"),
@@ -77,6 +79,12 @@ async def list_incidents(
         conditions.append(Incident.severity == severity)
     if intersection_id is not None:
         conditions.append(Incident.intersection_id == intersection_id)
+    if is_crash is True:
+        conditions.append(Incident.description.ilike("%crash%"))
+    elif is_crash is False:
+        conditions.append(~Incident.description.ilike("%crash%"))
+    if search and search.strip():
+        conditions.append(Incident.description.ilike(f"%{search.strip()}%"))
 
     raw_start = from_date or created_from
     raw_end = to_date or created_to

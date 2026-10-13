@@ -15,6 +15,7 @@ from app.models.notification import Notification
 from app.models.road import Lane, Road
 from app.models.signal import Signal, SignalPhase
 from app.models.traffic import TrafficRecord
+from app.models.violation import Violation
 
 __all__ = [
     "Base",
@@ -27,6 +28,7 @@ __all__ = [
     "SignalPhase",
     "VehicleEvent",
     "Incident",
+    "Violation",
     "EmergencyEvent",
     "TrafficRecord",
     "Notification",

@@ -37,6 +37,7 @@ import {
   formatRelativeTime,
   getSeverityBadgeVariant,
 } from "@/lib/format";
+import { ViolationsList } from "@/components/violations/ViolationsList";
 
 // --- Types conforming strictly to backend schemas (backend/app/schemas/incident.py) ---
 
@@ -112,6 +113,9 @@ function getStatusPill(status: string): {
 export default function IncidentsPage() {
   const queryClient = useQueryClient();
   const { user, isAdmin, canWrite } = useAuth();
+
+  // Section Tab Selection (Incidents vs CV Violations)
+  const [activeSection, setActiveSection] = useState<"incidents" | "violations">("incidents");
 
   // Filters & Pagination
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -459,8 +463,45 @@ export default function IncidentsPage() {
         </div>
       )}
 
-      {/* Overview Stat Counters */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+      {/* Navigation Tabs: Traffic Incidents vs CV Violations */}
+      <div className="flex items-center gap-3 border-b border-white/10 pb-3">
+        <button
+          type="button"
+          onClick={() => setActiveSection("incidents")}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all cursor-pointer ${
+            activeSection === "incidents"
+              ? "bg-accent/15 text-accent border border-accent/30 font-semibold shadow-sm"
+              : "text-muted hover:text-text hover:bg-surface/50"
+          }`}
+        >
+          <AlertTriangle className="w-4 h-4" />
+          <span>Traffic Incidents</span>
+          <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-accent/20 text-accent font-mono">
+            {totalItems}
+          </span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveSection("violations")}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all cursor-pointer ${
+            activeSection === "violations"
+              ? "bg-accent/15 text-accent border border-accent/30 font-semibold shadow-sm"
+              : "text-muted hover:text-text hover:bg-surface/50"
+          }`}
+        >
+          <ShieldAlert className="w-4 h-4" />
+          <span>CV Violations</span>
+          <Badge variant="amber" className="text-[10px] px-1.5 py-0">
+            Red Light • Wrong-Way • Helmet
+          </Badge>
+        </button>
+      </div>
+
+      {activeSection === "incidents" ? (
+        <>
+          {/* Overview Stat Counters */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
         <Card className="p-4 bg-surface/70 border-white/10">
           <div className="text-[11px] font-medium text-muted uppercase tracking-wider">
             Total Matching
@@ -682,6 +723,13 @@ export default function IncidentsPage() {
 
                       {/* Description */}
                       <td className="py-3 px-3.5 align-top max-w-xs">
+                        {incident.description?.toLowerCase().includes("crash") && (
+                          <div className="mb-1">
+                            <Badge variant="danger" className="text-[9px] tracking-wider uppercase font-semibold">
+                              Crash Auto-Detected
+                            </Badge>
+                          </div>
+                        )}
                         <p className="text-text line-clamp-2 leading-relaxed">
                           {incident.description || (
                             <span className="text-muted italic">No description provided</span>
@@ -793,6 +841,10 @@ export default function IncidentsPage() {
           </div>
         </Card>
       )}
+        </>
+      ) : (
+        <ViolationsList />
+      )}
 
       {/* DETAIL DRAWER */}
       {selectedIncident && (
@@ -818,6 +870,11 @@ export default function IncidentsPage() {
                 <Badge variant={getSeverityBadgeVariant(selectedIncident.severity)}>
                   {selectedIncident.severity}
                 </Badge>
+                {selectedIncident.description?.toLowerCase().includes("crash") && (
+                  <Badge variant="danger" dot>
+                    Crash Auto-Detected
+                  </Badge>
+                )}
                 <Badge variant={getStatusPill(selectedIncident.status).variant} dot>
                   {getStatusPill(selectedIncident.status).label}
                 </Badge>

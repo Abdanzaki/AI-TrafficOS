@@ -20,7 +20,11 @@ user actions, manual signal overrides, role permissions changes, and administrat
 """
 
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Optional, Sequence
+import uuid
+import numpy as np
+import cv2
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -226,3 +230,40 @@ async def record_incident_candidates(
         )
         persisted.append(inc)
     return persisted
+
+
+def save_evidence_snapshot(
+    frame_bgr: np.ndarray,
+    category: str = "crash",
+    timestamp: Optional[datetime] = None,
+    output_dir: Optional[str | Path] = None,
+) -> Optional[str]:
+    """Save an evidence frame snapshot to disk and return the relative evidence reference path.
+
+    Args:
+        frame_bgr: 3-channel BGR numpy image frame.
+        category: Anomaly/incident category for directory indexing (default 'crash').
+        timestamp: Measurement capture timestamp.
+        output_dir: Storage directory path. Defaults to 'storage/evidence/{category}'.
+
+    Returns:
+        Optional[str]: Relative snapshot path if successfully written, None if frame is invalid or empty.
+    """
+    if frame_bgr is None or not isinstance(frame_bgr, np.ndarray) or frame_bgr.size == 0:
+        return None
+
+    dt = timestamp or datetime.now(timezone.utc)
+    ts_str = dt.strftime("%Y%m%d_%H%M%S")
+    uid = uuid.uuid4().hex[:6]
+
+    base_dir = Path(output_dir) if output_dir else Path(f"storage/evidence/{category}")
+    base_dir.mkdir(parents=True, exist_ok=True)
+
+    filename = f"{category}_{ts_str}_{uid}.jpg"
+    filepath = base_dir / filename
+
+    try:
+        cv2.imwrite(str(filepath), frame_bgr)
+        return str(filepath)
+    except Exception:
+        return None

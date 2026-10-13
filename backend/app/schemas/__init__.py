@@ -24,6 +24,13 @@ from app.schemas.auth import (
     RegisterRequest,
     TokenResponse,
 )
+from app.schemas.violation import (
+    PaginatedViolations,
+    ViolationCreate,
+    ViolationRead,
+    ViolationResponse,
+    ViolationUpdate,
+)
 from app.schemas.forecasting import (
     ModelVersionInfo,
     PredictBatchResponse,
@@ -267,5 +274,10 @@ __all__ = [
     "PredictionResult",
     "PredictBatchResponse",
     "ModelVersionInfo",
+    "ViolationCreate",
+    "ViolationRead",
+    "ViolationResponse",
+    "ViolationUpdate",
+    "PaginatedViolations",
 ]
 

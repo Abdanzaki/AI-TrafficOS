@@ -257,9 +257,17 @@ def evaluate_event_policy(
         status_val = payload.get("status", "reported")
         loc_str = f" at intersection {intersection_id}" if intersection_id is not None else ""
 
+        verdict = payload.get("verdict")
+        if verdict:
+            title = f"Crash Alert #{incident_id} ({str(verdict).upper()})"
+            message = f"Crash detected #{incident_id} [{str(verdict).upper()}]{loc_str} (status: {status_val}, severity: {inc_sev})."
+        else:
+            title = f"Traffic Incident #{incident_id} ({inc_sev.upper()})"
+            message = f"Incident #{incident_id} reported{loc_str} (status: {status_val}, severity: {inc_sev})."
+
         return {
-            "title": f"Traffic Incident #{incident_id} ({inc_sev.upper()})",
-            "message": f"Incident #{incident_id} reported{loc_str} (status: {status_val}, severity: {inc_sev}).",
+            "title": title,
+            "message": message,
             "severity": severity,
             "entity_type": "incident",
             "entity_id": int(incident_id),

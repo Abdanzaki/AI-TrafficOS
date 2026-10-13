@@ -25,6 +25,10 @@ class ModelLoadError(VisionDetectorError):
     """Raised when model weights cannot be located, initialized, or parsed."""
 
 
+class HelmetModelMissingError(ModelLoadError):
+    """Raised when helmet classification weights are not configured or found."""
+
+
 class SingleFrameSpeedError(VisionDetectorError):
     """Raised when speed calculation is attempted on a single image without temporal tracking."""
 

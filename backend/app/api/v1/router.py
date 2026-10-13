@@ -26,6 +26,7 @@ from app.api.v1.signals import phases_router, router as signals_router
 from app.api.v1.traffic_records import router as traffic_records_router
 from app.api.v1.users import router as users_router
 from app.api.v1.vehicle_events import router as vehicle_events_router
+from app.api.v1.violations import router as violations_router
 from app.api.v1.vision import router as vision_router
 from app.api.v1.websocket import router as websocket_router
 
@@ -50,6 +51,7 @@ router.include_router(phases_router)
 # Mount event and telemetry routers under v1 prefix
 router.include_router(vehicle_events_router)
 router.include_router(incidents_router)
+router.include_router(violations_router)
 router.include_router(emergency_events_router)
 router.include_router(traffic_records_router)
 router.include_router(notifications_router)

@@ -18,6 +18,7 @@ if TYPE_CHECKING:
     from app.models.road import Lane, Road
     from app.models.signal import Signal, SignalPhase
     from app.models.traffic import TrafficRecord
+    from app.models.violation import Violation
 
 
 class Intersection(Base):
@@ -73,6 +74,11 @@ class Intersection(Base):
     incidents: Mapped[list["Incident"]] = relationship(
         "Incident",
         back_populates="intersection",
+    )
+    violations: Mapped[list["Violation"]] = relationship(
+        "Violation",
+        back_populates="intersection",
+        cascade="all, delete-orphan",
     )
     traffic_records: Mapped[list["TrafficRecord"]] = relationship(
         "TrafficRecord",
