@@ -7,6 +7,9 @@ permissions:
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/neon-migrate-once.yml']
 
 jobs:
   migrate:
