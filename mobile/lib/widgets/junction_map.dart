@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 
 import '../models/junction.dart';
@@ -429,6 +431,7 @@ class _JunctionMapWidgetState extends State<JunctionMapWidget> {
                         painter: SchematicMapPainter(
                           junctions: validJunctions,
                           roads: widget.roads,
+                          congestionLevels: widget.congestionLevels,
                           bounds: bounds,
                           selectedId: _selected?.id,
                           highlightedPath: widget.highlightedPath,
@@ -508,6 +511,7 @@ class SchematicMapPainter extends CustomPainter {
   SchematicMapPainter({
     required this.junctions,
     this.roads,
+    this.congestionLevels,
     required this.bounds,
     this.selectedId,
     this.highlightedPath,
@@ -515,9 +519,132 @@ class SchematicMapPainter extends CustomPainter {
 
   final List<Junction> junctions;
   final List<RoadSegment>? roads;
+  final Map<int, double>? congestionLevels;
   final MapCoordinateBounds bounds;
   final int? selectedId;
   final List<int>? highlightedPath;
+
+  /// Returns the color corresponding to [congestionLevel] (0.0 to 1.0):
+  /// - < 0.33: [AppTokens.success] (green)
+  /// - 0.33 to 0.66: [AppTokens.amber] (amber)
+  /// - > 0.66: [AppTokens.danger] (red)
+  /// - null or missing: [AppTokens.teal] with alpha 55 (existing default)
+  static Color congestionColor(double? congestionLevel) {
+    if (congestionLevel == null || congestionLevel.isNaN) {
+      return AppTokens.teal.withAlpha(55);
+    }
+    if (congestionLevel < 0.33) {
+      return AppTokens.success;
+    }
+    if (congestionLevel <= 0.66) {
+      return AppTokens.amber;
+    }
+    return AppTokens.danger;
+  }
+
+  static Color roadColorForCongestion(double? congestionLevel) =>
+      congestionColor(congestionLevel);
+
+  static Color getRoadColor(double? congestionLevel) =>
+      congestionColor(congestionLevel);
+
+  /// Parses geometry string into a list of [lat, lon] coordinate pairs.
+  /// Supports:
+  /// - JSON array of [lon, lat] pairs: `[[lon, lat], [lon, lat], ...]`
+  /// - JSON object with coordinates: `{"coordinates": [[lon, lat], ...]}`
+  /// - GeoJSON LineString / Feature
+  /// Returns null if geometry is absent, malformed, or contains fewer than 2 valid points.
+  static List<({double lat, double lon})>? parseCoordinates(String? geometry) {
+    if (geometry == null) return null;
+    final trimmed = geometry.trim();
+    if (trimmed.isEmpty) return null;
+
+    try {
+      final dynamic decoded = jsonDecode(trimmed);
+      List<dynamic>? rawCoords;
+
+      if (decoded is List) {
+        rawCoords = decoded;
+      } else if (decoded is Map) {
+        dynamic geo = decoded;
+        if (geo['type'] == 'Feature' && geo['geometry'] is Map) {
+          geo = geo['geometry'];
+        } else if (geo['geometry'] is Map) {
+          geo = geo['geometry'];
+        }
+
+        if (geo['type'] == 'FeatureCollection' &&
+            geo['features'] is List &&
+            (geo['features'] as List).isNotEmpty) {
+          final first = (geo['features'] as List).first;
+          if (first is Map) {
+            geo = first['geometry'] is Map ? first['geometry'] : first;
+          }
+        }
+
+        if (geo['coordinates'] is List) {
+          rawCoords = geo['coordinates'] as List;
+        }
+      }
+
+      if (rawCoords != null) {
+        if (rawCoords.isNotEmpty &&
+            rawCoords.first is List &&
+            (rawCoords.first as List).isNotEmpty &&
+            (rawCoords.first as List).first is List) {
+          // MultiLineString: flatten first line
+          rawCoords = rawCoords.first as List;
+        }
+
+        final result = <({double lat, double lon})>[];
+        for (final item in rawCoords) {
+          if (item is List && item.length >= 2) {
+            final lon = _numToDouble(item[0]);
+            final lat = _numToDouble(item[1]);
+            if (lon != null &&
+                lat != null &&
+                !lon.isNaN &&
+                !lat.isNaN &&
+                !lon.isInfinite &&
+                !lat.isInfinite) {
+              result.add((lat: lat, lon: lon));
+            } else {
+              return null;
+            }
+          } else {
+            return null;
+          }
+        }
+        if (result.length >= 2) {
+          return result;
+        }
+      }
+    } catch (_) {
+      // Malformed JSON or geometry
+    }
+
+    return null;
+  }
+
+  static double? _numToDouble(dynamic value) {
+    if (value is num) return value.toDouble();
+    if (value is String) return double.tryParse(value);
+    return null;
+  }
+
+  static List<({double lat, double lon})>? _getRoadCoordinates(RoadSegment road) {
+    final parsed = parseCoordinates(road.geometry);
+    if (parsed != null && parsed.length >= 2) {
+      return parsed;
+    }
+    try {
+      final fallback = road.parseCoordinates();
+      if (fallback != null && fallback.length >= 2) {
+        return fallback.map((p) => (lat: p[0], lon: p[1])).toList();
+      }
+    } catch (_) {}
+    return null;
+  }
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -542,22 +669,52 @@ class SchematicMapPainter extends CustomPainter {
     }
 
     // Draw real road network links connecting intersections (F-06)
-    final linkPaint = Paint()
-      ..color = AppTokens.teal.withAlpha(55)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.0;
-
     if (roads != null && roads!.isNotEmpty) {
       for (final road in roads!) {
-        if (road.fromIntersectionId != null && road.toIntersectionId != null) {
-          final p1 = points[road.fromIntersectionId];
-          final p2 = points[road.toIntersectionId];
-          if (p1 != null && p2 != null) {
-            canvas.drawLine(p1, p2, linkPaint);
+        final congestion = congestionLevels?[road.id];
+        final roadColor = congestionColor(congestion);
+        final roadPaint = Paint()
+          ..color = roadColor
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 2.0
+          ..strokeCap = StrokeCap.round
+          ..strokeJoin = StrokeJoin.round;
+
+        bool polylineDrawn = false;
+        final coords = _getRoadCoordinates(road);
+        if (coords != null && coords.length >= 2) {
+          try {
+            final path = Path();
+            final p0 = bounds.project(coords[0].lat, coords[0].lon, size);
+            path.moveTo(p0.dx, p0.dy);
+            for (int i = 1; i < coords.length; i++) {
+              final pt = bounds.project(coords[i].lat, coords[i].lon, size);
+              path.lineTo(pt.dx, pt.dy);
+            }
+            canvas.drawPath(path, roadPaint);
+            polylineDrawn = true;
+          } catch (_) {
+            polylineDrawn = false;
+          }
+        }
+
+        if (!polylineDrawn) {
+          // Fall back to existing straight line between from/to intersections
+          if (road.fromIntersectionId != null && road.toIntersectionId != null) {
+            final p1 = points[road.fromIntersectionId];
+            final p2 = points[road.toIntersectionId];
+            if (p1 != null && p2 != null) {
+              canvas.drawLine(p1, p2, roadPaint);
+            }
           }
         }
       }
     } else {
+      final linkPaint = Paint()
+        ..color = AppTokens.teal.withAlpha(55)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.0;
+
       // Topologically nearby proximity links (avoiding cross-city zigzags)
       for (int i = 0; i < junctions.length; i++) {
         final p1 = points[junctions[i].id];
@@ -714,6 +871,7 @@ class SchematicMapPainter extends CustomPainter {
   bool shouldRepaint(covariant SchematicMapPainter oldDelegate) {
     return oldDelegate.junctions != junctions ||
         oldDelegate.roads != roads ||
+        oldDelegate.congestionLevels != congestionLevels ||
         oldDelegate.selectedId != selectedId ||
         oldDelegate.bounds != bounds ||
         oldDelegate.highlightedPath != highlightedPath;

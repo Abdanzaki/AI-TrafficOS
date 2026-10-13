@@ -273,6 +273,7 @@ The Android release build uses environment-driven keystore signing with zero har
 | Variable | Required | Example Value | Description |
 | :--- | :--- | :--- | :--- |
 | `NEXT_PUBLIC_API_URL` | **Yes** | `https://ai-trafficos-api.fly.dev` | Public URL of the Fly.io backend for REST & WebSockets. |
+| `NEXT_PUBLIC_TOMTOM_API_KEY` | No | _(TomTom developer key)_ | Optional. Enables the live TomTom traffic-flow tile overlay on the web map (toggle + LIVE badge). When absent, the map works exactly as before with system congestion data. Free tier: ~2,500 transactions/day, no card required. |
 
 ### Mobile Application (`mobile/`)
 
