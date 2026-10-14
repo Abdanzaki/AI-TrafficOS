@@ -70,7 +70,7 @@ export const VoiceInputButton: React.FC<VoiceInputButtonProps> = ({
               <span className="w-2.5 h-2.5 rounded-full bg-danger animate-ping" />
               <span
                 data-testid="voice-listening-indicator"
-                className="text-xs font-mono font-semibold text-rose-400"
+                className="text-xs font-mono font-semibold text-danger"
               >
                 Listening…
               </span>

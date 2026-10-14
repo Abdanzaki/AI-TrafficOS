@@ -409,7 +409,7 @@ export function renderMarkdownToHtml(markdown: string): string {
 
     // 2. Inline code: `code`
     str = str.replace(/`([^`]+)`/g, (_m, code) => {
-      return `<code class="px-1.5 py-0.5 rounded bg-white/10 font-mono text-xs text-accent">${code}</code>`;
+      return `<code class="px-1.5 py-0.5 rounded bg-cream font-mono text-xs text-accent-deep">${code}</code>`;
     });
 
     // 3. Bold: **text** or __text__
