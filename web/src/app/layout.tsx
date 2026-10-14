@@ -18,7 +18,7 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "AI TrafficOS | Intelligent Traffic Management System",
   description:
-    "AI TrafficOS is an AI-powered intelligent traffic management system. Phase 1 foundation and architecture.",
+    "AI TrafficOS is a live AI-powered intelligent traffic management system — computer-vision perception, LSTM traffic forecasting, adaptive signal intelligence, and a Gemini-powered assistant.",
 };
 
 

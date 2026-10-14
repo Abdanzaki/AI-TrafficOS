@@ -13,69 +13,69 @@ import { Stat } from "@/components/ui/Stat";
 import { SystemStatus } from "@/components/SystemStatus";
 import { useAuth } from "@/lib/auth";
 
-const ROADMAP_FEATURES = [
+const LIVE_FEATURES = [
   {
     name: "Vehicle Detection",
     emoji: "🚗",
     description:
-      "Real-time multi-class vehicle identification and volume tracking using computer vision models.",
-    badge: "Phase 2+",
+      "Multi-class vehicle identification and volume tracking through the computer-vision detection pipeline.",
+    badge: "Live",
   },
   {
     name: "Signal Detection",
     emoji: "🚦",
     description:
-      "Automated optical traffic light status monitoring and intersection phase state capture.",
-    badge: "Phase 2+",
+      "Automated traffic-light status monitoring and intersection phase-state capture via optical signal detection.",
+    badge: "Live",
   },
   {
     name: "Traffic Prediction",
     emoji: "📈",
     description:
-      "Spatio-temporal traffic flow and congestion forecasting using recurrent neural networks.",
-    badge: "Phase 2+",
+      "Short-horizon traffic flow and congestion forecasting with LSTM neural networks — uncertainty bands on every forecast.",
+    badge: "Live",
   },
   {
     name: "Route Guidance",
     emoji: "🗺️",
     description:
-      "Dynamic congestion-aware navigation strategies and alternate arterial routing dispatch.",
-    badge: "Phase 2+",
+      "Congestion-aware alternate routing and green-corridor dispatch for faster cross-city trips.",
+    badge: "Live",
   },
   {
     name: "Emergency Detection",
     emoji: "🚨",
     description:
-      "Priority acoustic and visual identification of sirens, police cruisers, and ambulances.",
-    badge: "Phase 2+",
+      "Heuristic detection of emergency vehicles and priority incident alerts for rapid response coordination.",
+    badge: "Live",
   },
   {
     name: "Incident Detection",
     emoji: "⚠️",
     description:
-      "Automated anomaly recognition for collisions, breakdown stalls, and lane blockages.",
-    badge: "Phase 2+",
+      "Automated crash and anomaly detection from video feeds, with instant control-room alerts.",
+    badge: "Live",
   },
   {
     name: "Signal Optimization",
     emoji: "⚡",
     description:
-      "Adaptive green-wave cycle timing algorithms trained with reinforcement learning.",
-    badge: "Phase 2+",
+      "Advisory adaptive signal timing using Webster-inspired queue-proportional allocation — recommendations only, never direct hardware control.",
+    badge: "Live",
   },
   {
     name: "Analytics",
     emoji: "📊",
     description:
-      "Macro-level metropolitan throughput telemetry, emissions tracking, and bottleneck reports.",
-    badge: "Phase 2+",
+      "City-wide throughput telemetry, emissions tracking, and bottleneck reports on the analytics dashboard.",
+    badge: "Live",
   },
   {
     name: "AI Assistant",
     emoji: "🤖",
     description:
-      "Operator-facing conversational copilot for natural language traffic queries and dispatch.",
-    badge: "Phase 2+",
+      "Conversational traffic copilot powered by Gemini — ask about congestion, signals, and incidents in plain language.",
+    badge: "Live",
   },
 ];
 
@@ -84,36 +84,36 @@ const ARCHITECTURE_STACK = [
     name: "Next.js 15",
     role: "Web Application & App Router",
     spec: "React 19, TypeScript, Tailwind CSS v4",
-    status: "Active (Phase 1)",
+    status: "Live",
     statusVariant: "teal" as const,
   },
   {
     name: "FastAPI",
     role: "Backend API & Inference Gateway",
     spec: "Python async microservice framework",
-    status: "Phase 2 Target",
-    statusVariant: "amber" as const,
+    status: "Live",
+    statusVariant: "teal" as const,
   },
   {
     name: "PostgreSQL",
     role: "Relational & Spatial Database",
     spec: "ACID storage with PostGIS geographic support",
-    status: "Phase 2 Target",
-    statusVariant: "amber" as const,
+    status: "Live",
+    statusVariant: "teal" as const,
   },
   {
     name: "Redis",
     role: "Cache & Pub/Sub Message Broker",
-    spec: "In-memory low-latency state synchronization",
-    status: "Phase 3 Target",
+    spec: "In-memory fallback (no dedicated Redis server)",
+    status: "Degraded",
     statusVariant: "amber" as const,
   },
   {
     name: "WebSockets",
     role: "Real-time Telemetry Pipeline",
     spec: "Bidirectional high-frequency sensor streams",
-    status: "Phase 4 Target",
-    statusVariant: "amber" as const,
+    status: "Live",
+    statusVariant: "teal" as const,
   },
 ];
 
@@ -148,9 +148,9 @@ export default function HomePage() {
             >
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-surface/90 border border-white/10 text-xs text-muted mb-6">
                 <span className="w-2 h-2 rounded-full bg-accent" />
-                <span className="text-text font-medium">Phase 7 Command</span>
+                <span className="text-text font-medium">AI TrafficOS v1.0</span>
                 <span className="text-white/20">•</span>
-                <span>Active Management</span>
+                <span>Live in Production</span>
               </div>
 
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-display font-extrabold text-text tracking-tight leading-[1.15]">
@@ -187,14 +187,14 @@ export default function HomePage() {
               className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-4"
             >
               <Stat
-                label="Current Stage"
-                value="Phase 1"
-                helperText="Foundation & Architecture scaffold verified."
+                label="Status"
+                value="Live"
+                helperText="All 11 phases shipped and deployed to production."
               />
               <Stat
-                label="Full Roadmap"
-                value="11 Phases"
-                helperText="Structured progression from core to deployment."
+                label="AI Modules"
+                value="9+"
+                helperText="Vision, forecasting, signal intelligence, and assistant — all operational."
               />
               <Stat
                 label="Frontend Engine"
@@ -210,17 +210,17 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ROADMAP FEATURE GRID */}
+        {/* LIVE CAPABILITY GRID */}
         <section className="py-20 sm:py-24 border-b border-white/5 relative">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <SectionHeading
-              eyebrow="Capability Roadmap"
-              title="Planned Future Capabilities"
-              description="The 9 intelligent modules below represent future roadmap milestones planned for Phases 2 through 11. These are architecture specifications, not currently functioning live features in Phase 1."
+              eyebrow="Live Capabilities"
+              title="Shipped & Running in Production"
+              description="Nine intelligent modules, fully built and live — from computer-vision perception to LSTM flow forecasting, adaptive signal intelligence, and a Gemini-powered assistant."
             />
 
             <div className="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-              {ROADMAP_FEATURES.map((feat, idx) => (
+              {LIVE_FEATURES.map((feat, idx) => (
                 <motion.div
                   key={feat.name}
                   initial={{ opacity: 0, y: 15 }}
@@ -250,8 +250,8 @@ export default function HomePage() {
                     </div>
 
                     <div className="mt-5 pt-4 border-t border-white/5 flex items-center justify-between text-xs text-muted/80">
-                      <span>Milestone Target</span>
-                      <span className="font-mono text-accent">Phased Integration</span>
+                      <span>Status</span>
+                      <span className="font-mono text-accent">Live in production</span>
                     </div>
                   </Card>
                 </motion.div>
@@ -265,8 +265,8 @@ export default function HomePage() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <SectionHeading
               eyebrow="System Design"
-              title="Phase 1 Architecture Foundation"
-              description="The technology foundation designed to scale from initial web scaffolding to full-scale traffic perception and neural edge control."
+              title="Production Architecture"
+              description="The production stack running AI TrafficOS today — from the Next.js frontend to the FastAPI inference gateway and the real-time telemetry pipeline."
             />
 
             {/* System Status Banner */}
@@ -298,7 +298,7 @@ export default function HomePage() {
                   </div>
 
                   <div className="mt-4 pt-3 border-t border-white/5 text-[11px] text-muted/70 font-mono">
-                    Tier: Foundation Spec
+                    Tier: Production
                   </div>
                 </Card>
               ))}
@@ -313,15 +313,15 @@ export default function HomePage() {
               <div className="pointer-events-none absolute -bottom-24 left-1/2 -translate-x-1/2 w-[400px] h-[200px] bg-accent/15 blur-[90px] rounded-full" />
 
               <h2 className="text-2xl sm:text-3xl lg:text-4xl font-display font-bold text-text">
-                Ready to inspect the AI TrafficOS architecture?
+                Ready to explore the live AI TrafficOS platform?
               </h2>
               <p className="mt-4 text-sm sm:text-base text-muted max-w-xl mx-auto leading-relaxed">
-                Review the operations dashboard shell or check the open-source repository for technical documentation, architectural blueprints, and phase roadmaps.
+                Open the live operations dashboard or browse the open-source repository for technical documentation and system design.
               </p>
 
               <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
                 <Button href="/dashboard" variant="primary" size="md">
-                  Open Operations Shell
+                  Open Live Dashboard
                 </Button>
                 <Button
                   href={docsUrl}

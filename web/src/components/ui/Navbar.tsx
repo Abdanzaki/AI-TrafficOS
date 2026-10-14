@@ -40,7 +40,7 @@ export const Navbar: React.FC = () => {
               AI TrafficOS
             </span>
             <span className="hidden sm:inline-block text-[10px] font-semibold tracking-wider uppercase px-2 py-0.5 rounded-full bg-accent/10 text-accent border border-accent/20">
-              Phase 7
+              Live
             </span>
           </Link>
 

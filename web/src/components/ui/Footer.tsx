@@ -12,11 +12,11 @@ export const Footer: React.FC = () => {
                 AI TrafficOS
               </span>
               <span className="text-xs px-2 py-0.5 rounded-full bg-accent/10 text-accent border border-accent/20">
-                Phase 1 Foundation
+                Live in Production
               </span>
             </div>
             <p className="text-xs text-muted max-w-md text-center md:text-left mt-1">
-              Phase 1 foundation & architecture build. Intelligent traffic management capabilities will be phased in throughout Phases 2 through 11.
+              Fully deployed intelligent traffic management platform — vision, forecasting, signal intelligence, and AI assistance, live in production.
             </p>
           </div>
 
@@ -59,7 +59,7 @@ export const Footer: React.FC = () => {
         </div>
 
         <div className="mt-8 pt-6 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between text-xs text-muted/80 gap-3">
-          <p>© {new Date().getFullYear()} AI TrafficOS. Open architecture foundation.</p>
+          <p>© {new Date().getFullYear()} AI TrafficOS. All systems operational.</p>
           <p className="font-mono text-[11px] text-muted/60">
             Next.js 15 App Router • React 19 • Tailwind CSS v4
           </p>
