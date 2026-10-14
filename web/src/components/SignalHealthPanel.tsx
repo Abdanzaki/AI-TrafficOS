@@ -119,16 +119,16 @@ export const SignalHealthPanel: React.FC<SignalHealthPanelProps> = ({
   const items = data?.items ?? [];
 
   return (
-    <Card className={`p-4 sm:p-5 space-y-4 bg-surface/90 border-white/10 ${className}`}>
+    <Card className={`p-4 sm:p-5 space-y-4 bg-surface/90 border-line ${className}`}>
       {/* --- Panel Header --- */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-line pb-3">
         <div className="space-y-1">
           <div className="flex flex-wrap items-center gap-2">
             <h2 className="text-base sm:text-lg font-display font-semibold text-text flex items-center gap-2">
               <Activity className="w-4 h-4 text-accent" />
               Signal Predictive Maintenance & Health
             </h2>
-            <Badge variant="teal" dot>
+            <Badge variant="signal" dot>
               Heuristic Model
             </Badge>
           </div>
@@ -194,7 +194,7 @@ export const SignalHealthPanel: React.FC<SignalHealthPanelProps> = ({
             return (
               <div
                 key={item.signal_id}
-                className="rounded-xl border border-white/10 bg-surface/50 p-3.5 hover:border-white/20 transition-colors space-y-3"
+                className="rounded-xl border border-line bg-surface/50 p-3.5 hover:border-line transition-colors space-y-3"
               >
                 {/* --- Row Header --- */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
@@ -256,7 +256,7 @@ export const SignalHealthPanel: React.FC<SignalHealthPanelProps> = ({
 
                 {/* --- Expandable Factor Breakdown --- */}
                 {isExpanded && (
-                  <div className="mt-3 pt-3 border-t border-white/10 space-y-2.5 animate-in fade-in duration-200">
+                  <div className="mt-3 pt-3 border-t border-line space-y-2.5 animate-in fade-in duration-200">
                     <div className="flex items-center justify-between text-[11px] text-muted">
                       <span className="font-semibold uppercase tracking-wider">
                         Contributing Risk Factors & Weights
@@ -278,7 +278,7 @@ export const SignalHealthPanel: React.FC<SignalHealthPanelProps> = ({
                                 ? "bg-danger/10 border-danger/30 text-danger"
                                 : factor.status === "warning"
                                 ? "bg-amber/10 border-amber/30 text-amber"
-                                : "bg-white/5 border-white/10 text-muted"
+                                : "bg-ink/5 border-line text-muted"
                             }`}
                           >
                             <div className="flex items-center justify-between mb-1">

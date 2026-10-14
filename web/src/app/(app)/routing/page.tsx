@@ -222,7 +222,7 @@ export default function RoutingPage() {
   return (
     <div className="max-w-7xl mx-auto space-y-8">
       {/* 1. Header Section */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-white/10">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-line">
         <div>
           <div className="flex items-center gap-2.5 mb-1">
             <div className="p-2 rounded-xl bg-accent/10 border border-accent/20 text-accent">
@@ -231,7 +231,7 @@ export default function RoutingPage() {
             <h1 className="text-2xl sm:text-3xl font-display font-bold text-text tracking-tight">
               Route Optimization
             </h1>
-            <Badge variant="teal">Graph Topology Engine</Badge>
+            <Badge variant="signal">Graph Topology Engine</Badge>
           </div>
           <p className="text-xs sm:text-sm text-muted">
             Minimum impedance pathfinding across metropolitan junction networks using Dijkstra &amp; A* heuristics.
@@ -252,7 +252,7 @@ export default function RoutingPage() {
             variant="ghost"
             size="sm"
             href="/emergency"
-            className="text-xs border border-white/10"
+            className="text-xs border border-line"
           >
             <Navigation className="w-3.5 h-3.5 mr-1.5 text-danger" />
             Emergency Corridors
@@ -261,7 +261,7 @@ export default function RoutingPage() {
       </div>
 
       {/* 2. Note on Phase 5 Predictive Congestion Integration */}
-      <Card className="p-4 sm:p-5 border-accent/30 bg-gradient-to-r from-surface to-accent/5 relative overflow-hidden">
+      <Card className="p-4 sm:p-5 border-accent/30 bg-accent-tint/60 relative overflow-hidden">
         <div className="flex items-start gap-3.5">
           <div className="p-2 rounded-xl bg-accent/15 border border-accent/30 text-accent shrink-0 mt-0.5">
             <Sparkles className="w-5 h-5" />
@@ -271,7 +271,7 @@ export default function RoutingPage() {
               <h3 className="text-sm font-display font-semibold text-text">
                 Phase 5 Predictive Congestion Integration
               </h3>
-              <Badge variant="teal" dot>Live Telemetry Feeds</Badge>
+              <Badge variant="signal" dot>Live Telemetry Feeds</Badge>
             </div>
             <p className="text-xs text-muted leading-relaxed">
               Routing impedance calculations dynamically merge real-time telemetry sensor records with{" "}
@@ -282,7 +282,7 @@ export default function RoutingPage() {
           </div>
           <Link
             href="/predictions"
-            className="hidden md:inline-flex items-center gap-1.5 text-xs text-accent hover:text-[#1ae4b7] font-medium shrink-0 self-center"
+            className="hidden md:inline-flex items-center gap-1.5 text-xs text-accent hover:text-[#9A3412] font-medium shrink-0 self-center"
           >
             <span>View AI Models</span>
             <ExternalLink className="w-3 h-3" />
@@ -310,7 +310,7 @@ export default function RoutingPage() {
           />
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <Card className="p-4 bg-surface/70 border-white/10 flex items-center gap-4">
+            <Card className="p-4 bg-surface/70 border-line flex items-center gap-4">
               <div className="w-12 h-12 rounded-xl bg-accent/10 border border-accent/20 flex items-center justify-center text-accent">
                 <Network className="w-6 h-6" />
               </div>
@@ -324,7 +324,7 @@ export default function RoutingPage() {
               </div>
             </Card>
 
-            <Card className="p-4 bg-surface/70 border-white/10 flex items-center gap-4">
+            <Card className="p-4 bg-surface/70 border-line flex items-center gap-4">
               <div className="w-12 h-12 rounded-xl bg-amber/10 border border-amber/20 flex items-center justify-center text-amber">
                 <GitFork className="w-6 h-6" />
               </div>
@@ -338,7 +338,7 @@ export default function RoutingPage() {
               </div>
             </Card>
 
-            <Card className="p-4 bg-surface/70 border-white/10 flex items-center gap-4">
+            <Card className="p-4 bg-surface/70 border-line flex items-center gap-4">
               <div className="w-12 h-12 rounded-xl bg-success/10 border border-success/20 flex items-center justify-center text-success">
                 <ArrowLeftRight className="w-6 h-6" />
               </div>
@@ -358,8 +358,8 @@ export default function RoutingPage() {
       {/* 4. Main Two-Column Layout: Route Planner & Route Results */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Left Column: Route Configuration Console (5 cols) */}
-        <Card className="lg:col-span-5 p-5 sm:p-6 border-white/10 space-y-5 bg-surface/90">
-          <div className="flex items-center justify-between pb-3 border-b border-white/10">
+        <Card className="lg:col-span-5 p-5 sm:p-6 border-line space-y-5 bg-surface/90">
+          <div className="flex items-center justify-between pb-3 border-b border-line">
             <div>
               <h2 className="text-base font-display font-bold text-text flex items-center gap-2">
                 <Navigation className="w-4 h-4 text-accent" />
@@ -369,7 +369,7 @@ export default function RoutingPage() {
                 Configure origin, destination, and impedance weighting
               </p>
             </div>
-            <Badge variant="teal">Dijkstra &amp; A*</Badge>
+            <Badge variant="signal">Dijkstra &amp; A*</Badge>
           </div>
 
           {junctionsError && (
@@ -403,7 +403,7 @@ export default function RoutingPage() {
                 )}
               </label>
               {junctionsLoading ? (
-                <div className="h-10 px-3 rounded-xl bg-ink/60 border border-white/10 flex items-center text-xs text-muted">
+                <div className="h-10 px-3 rounded-xl bg-paper border border-line flex items-center text-xs text-muted">
                   <LoadingSpinner size="sm" className="mr-2" /> Loading junctions...
                 </div>
               ) : (
@@ -414,7 +414,7 @@ export default function RoutingPage() {
                     setFromIntersectionId(e.target.value);
                     setFormValidationMsg(null);
                   }}
-                  className="w-full h-11 px-3 rounded-xl bg-ink/80 border border-white/15 text-text text-xs sm:text-sm focus:border-accent focus:outline-none transition-colors"
+                  className="w-full h-11 px-3 rounded-xl bg-ink/80 border border-line text-text text-xs sm:text-sm focus:border-accent focus:outline-none transition-colors"
                 >
                   <option value="">-- Select Origin Intersection --</option>
                   {junctionsData?.items?.map((j) => (
@@ -432,7 +432,7 @@ export default function RoutingPage() {
                 type="button"
                 onClick={handleSwapJunctions}
                 disabled={!fromIntersectionId && !toIntersectionId}
-                className="p-1.5 rounded-full bg-surface border border-white/15 text-muted hover:text-accent hover:border-accent/40 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                className="p-1.5 rounded-full bg-surface border border-line text-muted hover:text-accent hover:border-accent/40 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                 title="Swap origin and destination"
               >
                 <ArrowLeftRight className="w-3.5 h-3.5" />
@@ -456,7 +456,7 @@ export default function RoutingPage() {
                 )}
               </label>
               {junctionsLoading ? (
-                <div className="h-10 px-3 rounded-xl bg-ink/60 border border-white/10 flex items-center text-xs text-muted">
+                <div className="h-10 px-3 rounded-xl bg-paper border border-line flex items-center text-xs text-muted">
                   <LoadingSpinner size="sm" className="mr-2" /> Loading junctions...
                 </div>
               ) : (
@@ -467,7 +467,7 @@ export default function RoutingPage() {
                     setToIntersectionId(e.target.value);
                     setFormValidationMsg(null);
                   }}
-                  className="w-full h-11 px-3 rounded-xl bg-ink/80 border border-white/15 text-text text-xs sm:text-sm focus:border-accent focus:outline-none transition-colors"
+                  className="w-full h-11 px-3 rounded-xl bg-ink/80 border border-line text-text text-xs sm:text-sm focus:border-accent focus:outline-none transition-colors"
                 >
                   <option value="">-- Select Destination Intersection --</option>
                   {junctionsData?.items?.map((j) => (
@@ -484,13 +484,13 @@ export default function RoutingPage() {
               <label className="block text-xs font-semibold text-text uppercase tracking-wider font-mono">
                 Pathfinding Algorithm
               </label>
-              <div className="grid grid-cols-2 gap-2 p-1 rounded-xl bg-ink/80 border border-white/10">
+              <div className="grid grid-cols-2 gap-2 p-1 rounded-xl bg-ink/80 border border-line">
                 <button
                   type="button"
                   onClick={() => setAlgorithm("astar")}
                   className={`py-2 px-3 rounded-lg text-xs font-medium transition-all ${
                     algorithm === "astar"
-                      ? "bg-accent text-ink font-semibold shadow-sm"
+                      ? "bg-accent text-paper font-semibold shadow-sm"
                       : "text-muted hover:text-text hover:bg-surface/50"
                   }`}
                 >
@@ -502,7 +502,7 @@ export default function RoutingPage() {
                   onClick={() => setAlgorithm("dijkstra")}
                   className={`py-2 px-3 rounded-lg text-xs font-medium transition-all ${
                     algorithm === "dijkstra"
-                      ? "bg-accent text-ink font-semibold shadow-sm"
+                      ? "bg-accent text-paper font-semibold shadow-sm"
                       : "text-muted hover:text-text hover:bg-surface/50"
                   }`}
                 >
@@ -513,7 +513,7 @@ export default function RoutingPage() {
             </div>
 
             {/* Advanced Cost Profile Tuning (Collapsible) */}
-            <div className="pt-2 border-t border-white/10">
+            <div className="pt-2 border-t border-line">
               <button
                 type="button"
                 onClick={() => setShowAdvancedWeights(!showAdvancedWeights)}
@@ -534,7 +534,7 @@ export default function RoutingPage() {
               </button>
 
               {showAdvancedWeights && (
-                <div className="mt-3 space-y-3 p-3 rounded-xl bg-ink/60 border border-white/10 text-xs">
+                <div className="mt-3 space-y-3 p-3 rounded-xl bg-paper border border-line text-xs">
                   <div>
                     <div className="flex justify-between text-[11px] text-muted mb-1">
                       <span>Travel Time Weight</span>
@@ -579,7 +579,7 @@ export default function RoutingPage() {
                       step="0.05"
                       value={distanceWeight}
                       onChange={(e) => setDistanceWeight(parseFloat(e.target.value))}
-                      className="w-full accent-teal h-1 bg-surface rounded-lg"
+                      className="w-full accent-[#C2410C] h-1 bg-surface rounded-lg"
                     />
                   </div>
 
@@ -635,8 +635,8 @@ export default function RoutingPage() {
 
         {/* Right Column: Computed Route Display (7 cols) */}
         <div className="lg:col-span-7 space-y-4">
-          <Card className="p-5 sm:p-6 border-white/10 bg-surface/90">
-            <div className="flex items-center justify-between pb-3 border-b border-white/10 mb-4">
+          <Card className="p-5 sm:p-6 border-line bg-surface/90">
+            <div className="flex items-center justify-between pb-3 border-b border-line mb-4">
               <div>
                 <h2 className="text-base font-display font-bold text-text flex items-center gap-2">
                   <Navigation className="w-4 h-4 text-accent" />
@@ -648,7 +648,7 @@ export default function RoutingPage() {
               </div>
               {routeResult && (
                 <div className="flex items-center gap-2">
-                  <Badge variant="teal">{routeResult.algorithm.toUpperCase()}</Badge>
+                  <Badge variant="signal">{routeResult.algorithm.toUpperCase()}</Badge>
                   <Button
                     variant="ghost"
                     size="sm"
@@ -689,7 +689,7 @@ export default function RoutingPage() {
             ) : (
               <div className="space-y-6">
                 {/* Metrics Summary Strip */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3.5 rounded-xl bg-ink/60 border border-white/10">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3.5 rounded-xl bg-paper border border-line">
                   <div>
                     <div className="text-[11px] text-muted uppercase tracking-wider font-mono">
                       Traversal Cost
@@ -741,7 +741,7 @@ export default function RoutingPage() {
                     <span>Ordered Traversal Sequence ({routeResult.path.length} Junctions)</span>
                   </div>
 
-                  <div className="p-3 rounded-xl bg-ink/40 border border-white/10 max-h-56 overflow-y-auto space-y-2">
+                  <div className="p-3 rounded-xl bg-cream/70 border border-line max-h-56 overflow-y-auto space-y-2">
                     {routeResult.path.map((nodeId, idx) => {
                       const junctionInfo = junctionMap.get(nodeId);
                       const isOrigin = idx === 0;
@@ -750,15 +750,15 @@ export default function RoutingPage() {
                       return (
                         <div
                           key={`${nodeId}-${idx}`}
-                          className="flex items-center gap-3 text-xs p-2 rounded-lg bg-surface/70 border border-white/5"
+                          className="flex items-center gap-3 text-xs p-2 rounded-lg bg-surface/70 border border-line"
                         >
                           <div
                             className={`w-6 h-6 rounded-full flex items-center justify-center font-mono text-[11px] font-bold ${
                               isOrigin
-                                ? "bg-accent text-ink"
+                                ? "bg-accent text-paper"
                                 : isDest
                                 ? "bg-danger text-white"
-                                : "bg-white/10 text-text"
+                                : "bg-ink/5 text-text"
                             }`}
                           >
                             {idx + 1}
@@ -781,7 +781,7 @@ export default function RoutingPage() {
 
                           <div>
                             {isOrigin ? (
-                              <Badge variant="teal">Origin</Badge>
+                              <Badge variant="signal">Origin</Badge>
                             ) : isDest ? (
                               <Badge variant="danger">Destination</Badge>
                             ) : (
@@ -803,9 +803,9 @@ export default function RoutingPage() {
                     </span>
                   </div>
 
-                  <div className="overflow-x-auto rounded-xl border border-white/10">
+                  <div className="overflow-x-auto rounded-xl border border-line">
                     <table className="w-full text-left text-xs">
-                      <thead className="bg-ink/80 text-muted uppercase font-mono text-[10px] border-b border-white/10">
+                      <thead className="bg-ink/80 text-muted uppercase font-mono text-[10px] border-b border-line">
                         <tr>
                           <th className="py-2.5 px-3">#</th>
                           <th className="py-2.5 px-3">Segment Corridor</th>
@@ -814,7 +814,7 @@ export default function RoutingPage() {
                           <th className="py-2.5 px-3 text-right">Cost (min)</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-white/5 font-mono text-[11px]">
+                      <tbody className="divide-y divide-line font-mono text-[11px]">
                         {routeResult.edges.map((edge, idx) => {
                           const fromJ = junctionMap.get(edge.from_intersection_id);
                           const toJ = junctionMap.get(edge.to_intersection_id);
@@ -823,7 +823,7 @@ export default function RoutingPage() {
                             : 0;
 
                           return (
-                            <tr key={idx} className="hover:bg-white/[0.02] transition-colors">
+                            <tr key={idx} className="hover:bg-ink/[0.03] transition-colors">
                               <td className="py-2 px-3 text-muted">{idx + 1}</td>
                               <td className="py-2 px-3 font-sans text-text">
                                 <span className="font-mono text-accent">Road #{edge.road_id}</span>
@@ -862,7 +862,7 @@ export default function RoutingPage() {
       </div>
 
       {/* 5. Network Congestion Ranking Table (GET /routing/congestion-ranking) */}
-      <div className="space-y-4 pt-4 border-t border-white/10">
+      <div className="space-y-4 pt-4 border-t border-line">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <div className="flex items-center gap-2">
@@ -884,7 +884,7 @@ export default function RoutingPage() {
               <select
                 value={rankingLimit}
                 onChange={(e) => setRankingLimit(Number(e.target.value))}
-                className="h-8 px-2 rounded-lg bg-ink/80 border border-white/15 text-text text-xs focus:border-accent focus:outline-none"
+                className="h-8 px-2 rounded-lg bg-ink/80 border border-line text-text text-xs focus:border-accent focus:outline-none"
               >
                 <option value={5}>Top 5</option>
                 <option value={10}>Top 10</option>
@@ -904,7 +904,7 @@ export default function RoutingPage() {
           </div>
         </div>
 
-        <Card className="border-white/10 overflow-hidden bg-surface/80">
+        <Card className="border-line overflow-hidden bg-surface/80">
           {rankingLoading ? (
             <div className="py-12 flex justify-center">
               <LoadingSpinner size="md" label="Analyzing road congestion indices across network..." />
@@ -928,7 +928,7 @@ export default function RoutingPage() {
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="bg-ink/80 text-muted uppercase font-mono text-[10px] border-b border-white/10">
+                <thead className="bg-ink/80 text-muted uppercase font-mono text-[10px] border-b border-line">
                   <tr>
                     <th className="py-3 px-4 w-14">Rank</th>
                     <th className="py-3 px-4">Road Corridor Name</th>
@@ -938,14 +938,14 @@ export default function RoutingPage() {
                     <th className="py-3 px-4 text-right">Route Action</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-white/5">
+                <tbody className="divide-y divide-line">
                   {congestionRanking.map((item) => {
                     const status = getCongestionStatus(item.congestion_level);
                     const fromJ = item.from_intersection_id ? junctionMap.get(item.from_intersection_id) : null;
                     const toJ = item.to_intersection_id ? junctionMap.get(item.to_intersection_id) : null;
 
                     return (
-                      <tr key={item.road_id} className="hover:bg-white/[0.02] transition-colors">
+                      <tr key={item.road_id} className="hover:bg-ink/[0.03] transition-colors">
                         <td className="py-3 px-4 font-mono">
                           <span
                             className={`w-6 h-6 rounded-md inline-flex items-center justify-center font-bold text-xs ${
@@ -953,7 +953,7 @@ export default function RoutingPage() {
                                 ? "bg-danger text-white shadow-sm"
                                 : item.rank <= 3
                                 ? "bg-amber/20 text-amber"
-                                : "bg-white/5 text-muted"
+                                : "bg-ink/5 text-muted"
                             }`}
                           >
                             #{item.rank}
@@ -992,7 +992,7 @@ export default function RoutingPage() {
                               <span className={status.colorClass}>{item.congestion_level.toFixed(1)}%</span>
                               <span className="text-muted text-[10px]">LOS: {status.label}</span>
                             </div>
-                            <div className="w-full h-2 rounded-full bg-ink overflow-hidden border border-white/5">
+                            <div className="w-full h-2 rounded-full bg-cream overflow-hidden border border-line">
                               <div
                                 className={`h-full rounded-full transition-all duration-300 ${
                                   status.level === "high"

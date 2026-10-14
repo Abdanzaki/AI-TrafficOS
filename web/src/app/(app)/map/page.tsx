@@ -39,7 +39,7 @@ const DynamicTrafficMap = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="w-full h-full min-h-[500px] flex flex-col items-center justify-center bg-surface/50 border border-white/10 rounded-2xl">
+      <div className="w-full h-full min-h-[500px] flex flex-col items-center justify-center bg-surface/50 border border-line rounded-2xl">
         <LoadingSpinner size="lg" label="Initializing OpenStreetMap GIS canvas..." />
       </div>
     ),
@@ -278,7 +278,7 @@ export default function MapPage() {
   const getStatusBadgeVariant = (status: string): BadgeVariant => {
     switch (status.toLowerCase()) {
       case "active":
-        return "teal";
+        return "signal";
       case "maintenance":
         return "amber";
       case "inactive":
@@ -290,7 +290,7 @@ export default function MapPage() {
 
   const getSignalStateBadge = (state: string | null | undefined) => {
     const s = state?.toLowerCase();
-    if (s === "green") return <Badge variant="teal" dot>Green</Badge>;
+    if (s === "green") return <Badge variant="signal" dot>Green</Badge>;
     if (s === "yellow") return <Badge variant="amber" dot>Yellow</Badge>;
     if (s === "red") return <Badge variant="danger" dot>Red</Badge>;
     return <Badge variant="muted">Unknown</Badge>;
@@ -299,13 +299,13 @@ export default function MapPage() {
   return (
     <div className="max-w-7xl mx-auto space-y-6">
       {/* Top Controls Bar */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-6 rounded-2xl bg-surface/70 border border-white/10 backdrop-blur-sm">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-6 rounded-2xl bg-surface/70 border border-line backdrop-blur-sm">
         <div>
           <div className="flex items-center gap-2 mb-1.5">
             <h1 className="text-2xl sm:text-3xl font-display font-bold text-text tracking-tight">
               Geospatial Operations Map
             </h1>
-            <Badge variant="teal" dot>
+            <Badge variant="signal" dot>
               OSM Vector GIS
             </Badge>
           </div>
@@ -321,14 +321,14 @@ export default function MapPage() {
             placeholder="Search name, code, zone..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="px-3 py-1.5 rounded-xl bg-ink/60 border border-white/10 text-xs text-text placeholder-muted focus:outline-none focus:border-accent/50 w-44 sm:w-56"
+            className="px-3 py-1.5 rounded-xl bg-paper border border-line text-xs text-text placeholder-muted focus:outline-none focus:border-accent/50 w-44 sm:w-56"
           />
 
           {/* Status Filter */}
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="px-3 py-1.5 rounded-xl bg-ink/60 border border-white/10 text-xs text-text focus:outline-none focus:border-accent/50 cursor-pointer"
+            className="px-3 py-1.5 rounded-xl bg-paper border border-line text-xs text-text focus:outline-none focus:border-accent/50 cursor-pointer"
             aria-label="Filter junctions by operating status"
           >
             <option value="all">All Statuses</option>
@@ -394,13 +394,13 @@ export default function MapPage() {
               />
 
               {/* Map floating stats chip */}
-              <div className="absolute top-4 left-4 z-[1000] bg-surface/90 backdrop-blur-md border border-white/10 px-3.5 py-2 rounded-xl text-xs flex items-center gap-3 shadow-lg pointer-events-auto font-mono">
+              <div className="absolute top-4 left-4 z-[1000] bg-surface/90 backdrop-blur-md border border-line px-3.5 py-2 rounded-xl text-xs flex items-center gap-3 shadow-lg pointer-events-auto font-mono">
                 <div className="flex items-center gap-1.5">
                   <span className="w-2 h-2 rounded-full bg-accent" />
                   <span className="text-text font-semibold">{mappedJunctions.length}</span>
                   <span className="text-muted">On Map</span>
                 </div>
-                <span className="text-white/20">•</span>
+                <span className="text-ink/20">•</span>
                 <div className="flex items-center gap-1.5">
                   <span className="text-muted">{unmappedJunctions.length}</span>
                   <span className="text-muted">Unpositioned</span>
@@ -410,7 +410,7 @@ export default function MapPage() {
 
             {/* Unpositioned Junctions Drawer (Safe display for nodes without lat/lon coordinates) */}
             {unmappedJunctions.length > 0 && (
-              <Card className="p-4 bg-surface/60 border-white/10">
+              <Card className="p-4 bg-surface/60 border-line">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <AlertTriangle className="w-4 h-4 text-amber" />
@@ -435,7 +435,7 @@ export default function MapPage() {
                         className={`p-2.5 rounded-xl text-left border transition-all cursor-pointer flex items-center justify-between ${
                           isSelected
                             ? "bg-accent/15 border-accent text-accent"
-                            : "bg-ink/50 border-white/5 hover:border-white/20 text-text"
+                            : "bg-cream border-line hover:border-line text-text"
                         }`}
                       >
                         <div className="min-w-0 pr-2">
@@ -458,12 +458,12 @@ export default function MapPage() {
           {/* Selected Junction Details Side Panel */}
           {selectedJunction && (
             <div className="lg:col-span-4 space-y-4">
-              <Card className="p-5 border-white/15 bg-surface/90 backdrop-blur-md shadow-2xl relative">
+              <Card className="p-5 border-line bg-surface/90 backdrop-blur-md shadow-2xl relative">
                 {/* Close Button */}
                 <button
                   type="button"
                   onClick={() => setSelectedJunctionId(null)}
-                  className="absolute top-4 right-4 p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-muted hover:text-text transition-colors cursor-pointer"
+                  className="absolute top-4 right-4 p-1.5 rounded-lg bg-ink/5 hover:bg-ink/5 text-muted hover:text-text transition-colors cursor-pointer"
                   title="Close panel"
                 >
                   <X className="w-4 h-4" />
@@ -489,15 +489,15 @@ export default function MapPage() {
                 </div>
 
                 {/* Location & Coordinates Strip */}
-                <div className="grid grid-cols-2 gap-2 mt-4 pt-4 border-t border-white/10 text-xs font-mono">
-                  <div className="p-2.5 rounded-lg bg-ink/50 border border-white/5">
+                <div className="grid grid-cols-2 gap-2 mt-4 pt-4 border-t border-line text-xs font-mono">
+                  <div className="p-2.5 rounded-lg bg-cream border border-line">
                     <span className="text-muted block text-[10px] uppercase">Zone / City</span>
                     <span className="text-text font-medium truncate block mt-0.5">
                       {selectedJunction.zone || selectedJunction.city || "Metropolitan"}
                     </span>
                   </div>
 
-                  <div className="p-2.5 rounded-lg bg-ink/50 border border-white/5">
+                  <div className="p-2.5 rounded-lg bg-cream border border-line">
                     <span className="text-muted block text-[10px] uppercase">Coordinates</span>
                     <span className="text-text font-medium truncate block mt-0.5">
                       {selectedJunction.lat != null && selectedJunction.lon != null
@@ -508,7 +508,7 @@ export default function MapPage() {
                 </div>
 
                 {/* Congestion Status Box */}
-                <div className="mt-4 p-3 rounded-xl bg-ink/60 border border-white/10 flex items-center justify-between">
+                <div className="mt-4 p-3 rounded-xl bg-paper border border-line flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Gauge className="w-4 h-4 text-accent" />
                     <div>
@@ -532,7 +532,7 @@ export default function MapPage() {
                 </div>
 
                 {/* Signals & Phases Feed */}
-                <div className="mt-5 pt-4 border-t border-white/10 space-y-3">
+                <div className="mt-5 pt-4 border-t border-line space-y-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-1.5 text-xs font-display font-semibold text-text">
                       <Radio className="w-3.5 h-3.5 text-accent" />
@@ -550,7 +550,7 @@ export default function MapPage() {
                       {signalsData.items.map((sig) => (
                         <div
                           key={sig.id}
-                          className="p-3 rounded-xl bg-ink/50 border border-white/5 text-xs space-y-2"
+                          className="p-3 rounded-xl bg-cream border border-line text-xs space-y-2"
                         >
                           <div className="flex items-center justify-between">
                             <span className="font-mono font-semibold text-text">
@@ -577,7 +577,7 @@ export default function MapPage() {
                                     className={`p-1.5 rounded-lg border flex items-center justify-between ${
                                       phase.is_active
                                         ? "bg-accent/15 border-accent text-accent font-semibold"
-                                        : "bg-surface/50 border-white/5 text-muted"
+                                        : "bg-surface/50 border-line text-muted"
                                     }`}
                                   >
                                     <span className="truncate">
@@ -597,14 +597,14 @@ export default function MapPage() {
                       ))}
                     </div>
                   ) : (
-                    <div className="p-3 rounded-xl bg-ink/30 border border-white/5 text-center text-xs text-muted font-mono">
+                    <div className="p-3 rounded-xl bg-cream/60 border border-line text-center text-xs text-muted font-mono">
                       No signal controllers connected to this junction
                     </div>
                   )}
                 </div>
 
                 {/* Recent Vehicle Detection Events */}
-                <div className="mt-5 pt-4 border-t border-white/10 space-y-3">
+                <div className="mt-5 pt-4 border-t border-line space-y-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-1.5 text-xs font-display font-semibold text-text">
                       <Car className="w-3.5 h-3.5 text-accent" />
@@ -622,7 +622,7 @@ export default function MapPage() {
                       {eventsData.items.slice(0, 5).map((ev) => (
                         <div
                           key={ev.id}
-                          className="p-2 rounded-lg bg-ink/40 border border-white/5 flex items-center justify-between"
+                          className="p-2 rounded-lg bg-cream/70 border border-line flex items-center justify-between"
                         >
                           <div className="flex items-center gap-2">
                             <span className="text-text font-semibold capitalize">
@@ -641,14 +641,14 @@ export default function MapPage() {
                       ))}
                     </div>
                   ) : (
-                    <div className="p-3 rounded-xl bg-ink/30 border border-white/5 text-center text-xs text-muted font-mono">
+                    <div className="p-3 rounded-xl bg-cream/60 border border-line text-center text-xs text-muted font-mono">
                       No recent vehicle detections at this node
                     </div>
                   )}
                 </div>
 
                 {/* Action Links */}
-                <div className="mt-5 pt-4 border-t border-white/10 flex items-center gap-2">
+                <div className="mt-5 pt-4 border-t border-line flex items-center gap-2">
                   <Button
                     href="/traffic"
                     variant="secondary"

@@ -15,12 +15,12 @@ export const Stat: React.FC<StatProps> = ({
 }) => {
   return (
     <div
-      className={`p-5 rounded-[14px] bg-surface/60 border border-white/10 flex flex-col items-center sm:items-start text-center sm:text-left transition-colors hover:border-white/20 ${className}`}
+      className={`p-5 rounded-[10px] bg-surface border border-line flex flex-col items-center sm:items-start text-center sm:text-left transition-colors hover:border-pine/30 ${className}`}
     >
-      <div className="font-display text-2xl sm:text-3xl font-bold text-text tracking-tight">
+      <div className="font-display text-3xl sm:text-4xl font-semibold text-text tracking-tight tnum">
         {value}
       </div>
-      <div className="text-xs uppercase tracking-wider font-semibold text-accent mt-1">
+      <div className="text-[11px] uppercase tracking-[0.14em] font-semibold text-pine mt-1.5">
         {label}
       </div>
       {helperText && (

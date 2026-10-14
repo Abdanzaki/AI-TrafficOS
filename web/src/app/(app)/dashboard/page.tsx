@@ -175,25 +175,26 @@ export default function DashboardPage() {
   return (
     <div className="max-w-7xl mx-auto space-y-8">
       {/* Welcome Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 sm:p-8 rounded-2xl bg-surface/70 border border-white/10 relative overflow-hidden shadow-lg backdrop-blur-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 sm:p-8 rounded-[10px] bg-pine-deep bg-grid-civic-light border border-pine-ink/50 relative overflow-hidden shadow-[0_4px_16px_rgba(13,58,32,0.25)]">
         <div className="relative">
-          <div className="flex items-center gap-2 mb-2">
-            <Badge variant="teal" dot>
+          <div className="flex items-center gap-2 mb-3">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-[11px] font-semibold tracking-wide uppercase bg-paper/10 text-paper border border-paper/25">
+              <span className="w-1.5 h-1.5 rounded-full bg-accent" />
               Operational
-            </Badge>
-            <span className="text-white/20">•</span>
-            <span className="text-xs text-muted font-mono">
+            </span>
+            <span className="text-paper/40">•</span>
+            <span className="text-xs text-paper/60 font-mono">
               FastAPI v1
             </span>
           </div>
 
-          <h1 className="text-2xl sm:text-3xl font-display font-bold text-text tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-display font-semibold text-paper tracking-tight">
             Welcome back, {user?.full_name || user?.email}
           </h1>
 
-          <p className="mt-2 text-xs sm:text-sm text-muted max-w-2xl leading-relaxed">
+          <p className="mt-2 text-xs sm:text-sm text-paper/70 max-w-2xl leading-relaxed">
             Traffic operations command interface initialized. Active clearance level:{" "}
-            <span className="text-text font-semibold uppercase font-mono">
+            <span className="text-paper font-semibold uppercase font-mono">
               {user?.role}
             </span>
             . All actions are logged to the immutable audit ledger.
@@ -201,12 +202,15 @@ export default function DashboardPage() {
         </div>
 
         <div className="relative flex items-center gap-3 shrink-0">
-          <Button href="/audit-logs" variant="secondary" size="sm">
+          <a
+            href="/audit-logs"
+            className="inline-flex items-center justify-center rounded-lg text-xs px-3.5 py-1.5 gap-1.5 font-medium text-paper border border-paper/30 hover:bg-paper/10 transition-all"
+          >
             <FileText className="w-4 h-4 mr-1.5" />
             Audit Ledger
-          </Button>
+          </a>
           {isAdmin() && (
-            <Button href="/users" variant="primary" size="sm">
+            <Button href="/users" variant="terracotta" size="sm">
               <Users className="w-4 h-4 mr-1.5" />
               Manage Users
             </Button>
@@ -250,7 +254,7 @@ export default function DashboardPage() {
             )}
           </div>
 
-          <div className="mt-3 pt-3 border-t border-white/5 text-[11px] text-muted font-mono flex items-center justify-between">
+          <div className="mt-3 pt-3 border-t border-line text-[11px] text-muted font-mono flex items-center justify-between">
             <span>Target: /api/v1</span>
             <span>HTTP 200</span>
           </div>
@@ -271,7 +275,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="mt-3 pt-3 border-t border-white/5 text-[11px] text-muted flex items-center justify-between">
+          <div className="mt-3 pt-3 border-t border-line text-[11px] text-muted flex items-center justify-between">
             <span>Write Capability:</span>
             <span className={isAdmin() || isOfficer() ? "text-amber font-mono" : "text-muted font-mono"}>
               {isAdmin() || isOfficer() ? "Granted (Officer/Admin)" : "Read-Only (Analyst)"}
@@ -295,7 +299,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="mt-3 pt-3 border-t border-white/5 text-[11px] text-muted font-mono flex items-center justify-between">
+          <div className="mt-3 pt-3 border-t border-line text-[11px] text-muted font-mono flex items-center justify-between">
             <span>Token Storage:</span>
             <span>localStorage</span>
           </div>
@@ -320,10 +324,10 @@ export default function DashboardPage() {
               <Link
                 key={item.title}
                 href={item.href}
-                className="group block p-5 rounded-2xl bg-surface/60 border border-white/10 hover:border-accent/40 hover:bg-surface/90 transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                className="group block p-5 rounded-2xl bg-surface/60 border border-line hover:border-accent/40 hover:bg-surface/90 transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
               >
                 <div className="flex items-center justify-between mb-3">
-                  <div className="w-10 h-10 rounded-xl bg-ink/70 border border-white/10 flex items-center justify-center text-text group-hover:scale-105 transition-transform">
+                  <div className="w-10 h-10 rounded-xl bg-surface border border-line flex items-center justify-center text-text group-hover:scale-105 transition-transform">
                     <Icon className={`w-5 h-5 ${item.color}`} />
                   </div>
                   {item.badge && (

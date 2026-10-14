@@ -157,7 +157,7 @@ function createJunctionIcon(
       }
       <div style="position: relative; width: ${isSelected ? "26px" : "20px"}; height: ${
     isSelected ? "26px" : "20px"
-  }; border-radius: 9999px; background-color: #0B1020; border: 2.5px solid ${color}; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 10px ${color}80; transition: all 0.2s;">
+  }; border-radius: 9999px; background-color: #1C1917; border: 2.5px solid ${color}; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 10px ${color}80; transition: all 0.2s;">
         <div style="width: ${isSelected ? "10px" : "7px"}; height: ${
     isSelected ? "10px" : "7px"
   }; border-radius: 9999px; background-color: ${color};"></div>
@@ -261,13 +261,13 @@ export const TrafficMap: React.FC<TrafficMapProps> = ({
 
   return (
     <div
-      className={`relative w-full h-full rounded-2xl overflow-hidden border border-white/10 ${className}`}
+      className={`relative w-full h-full rounded-2xl overflow-hidden border border-line ${className}`}
     >
       <MapContainer
         center={initialCenter}
         zoom={13}
         scrollWheelZoom={true}
-        style={{ width: "100%", height: "100%", backgroundColor: "#0B1020" }}
+        style={{ width: "100%", height: "100%", backgroundColor: "#1C1917" }}
       >
         <TileLayer
           attribution='&copy; <a href="https://www.esri.com" target="_blank" rel="noreferrer">Esri</a> &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap</a> contributors'
@@ -363,7 +363,7 @@ export const TrafficMap: React.FC<TrafficMapProps> = ({
                   <div className="text-[11px] text-muted font-mono mt-0.5">
                     Code: {j.code}
                   </div>
-                  <div className="mt-2 pt-2 border-t border-white/10 flex items-center justify-between">
+                  <div className="mt-2 pt-2 border-t border-line flex items-center justify-between">
                     <span className="text-muted">Congestion:</span>
                     <span
                       className="font-mono font-medium flex items-center gap-1"
@@ -418,7 +418,7 @@ export const TrafficMap: React.FC<TrafficMapProps> = ({
 
       {/* Live traffic toggle control */}
       {hasTomTomKey && (
-        <div className="absolute top-4 right-4 z-[1000] bg-surface/90 backdrop-blur-md border border-white/10 p-2.5 rounded-xl shadow-xl text-xs pointer-events-auto space-y-1.5">
+        <div className="absolute top-4 right-4 z-[1000] bg-surface/90 backdrop-blur-md border border-line p-2.5 rounded-xl shadow-xl text-xs pointer-events-auto space-y-1.5">
           <button
             type="button"
             role="switch"
@@ -433,7 +433,7 @@ export const TrafficMap: React.FC<TrafficMapProps> = ({
             <span
               aria-hidden="true"
               className={`relative inline-flex h-4.5 w-8 shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out ${
-                showLiveTraffic ? "bg-accent" : "bg-white/20"
+                showLiveTraffic ? "bg-accent" : "bg-ink/10"
               }`}
             >
               <span
@@ -444,7 +444,7 @@ export const TrafficMap: React.FC<TrafficMapProps> = ({
             </span>
           </button>
           {showLiveTraffic && (
-            <div className="flex items-center gap-1.5 pt-1.5 border-t border-white/10 text-[10px] font-mono">
+            <div className="flex items-center gap-1.5 pt-1.5 border-t border-line text-[10px] font-mono">
               <span className="px-1.5 py-0.5 rounded bg-danger/20 border border-danger/40 text-danger font-bold uppercase text-[9px] tracking-wider animate-pulse">
                 LIVE
               </span>
@@ -455,7 +455,7 @@ export const TrafficMap: React.FC<TrafficMapProps> = ({
       )}
 
       {/* Map Legend Overlay */}
-      <div className="absolute bottom-4 left-4 z-[1000] bg-surface/90 backdrop-blur-md border border-white/10 p-3 rounded-xl shadow-xl text-xs space-y-2 pointer-events-auto">
+      <div className="absolute bottom-4 left-4 z-[1000] bg-surface/90 backdrop-blur-md border border-line p-3 rounded-xl shadow-xl text-xs space-y-2 pointer-events-auto">
         <div className="font-display font-medium text-text text-[11px] uppercase tracking-wider">
           {isLiveOverlayActive
             ? "Congestion Legend"
@@ -489,7 +489,7 @@ export const TrafficMap: React.FC<TrafficMapProps> = ({
             <span className="text-text font-medium">■ Congested</span>
             <span className="text-muted">&ge; 70%</span>
           </div>
-          <div className="pt-1.5 mt-1 border-t border-white/10 flex items-center gap-2 text-muted">
+          <div className="pt-1.5 mt-1 border-t border-line flex items-center gap-2 text-muted">
             <span className="w-3.5 h-0.5 bg-[#3B4763] shrink-0 rounded-full" />
             <span className="text-[10px]">
               Corridor (derived from junction network)

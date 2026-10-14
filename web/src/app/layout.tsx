@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Space_Grotesk, Inter } from "next/font/google";
+import { Space_Grotesk, Fraunces } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/Providers";
 
@@ -9,10 +9,12 @@ const spaceGrotesk = Space_Grotesk({
   display: "swap",
 });
 
-const inter = Inter({
+const fraunces = Fraunces({
   subsets: ["latin"],
-  variable: "--font-inter",
+  variable: "--font-fraunces",
   display: "swap",
+  weight: ["400", "500", "600", "700"],
+  style: ["normal", "italic"],
 });
 
 export const metadata: Metadata = {
@@ -21,21 +23,17 @@ export const metadata: Metadata = {
     "AI TrafficOS is a live AI-powered intelligent traffic management system — computer-vision perception, LSTM traffic forecasting, adaptive signal intelligence, and a Gemini-powered assistant.",
 };
 
-
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      className={`${spaceGrotesk.variable} ${inter.variable} dark`}
-    >
-      <body className="min-h-screen bg-ink text-text font-body antialiased flex flex-col selection:bg-accent/20 selection:text-accent">
+    <html lang="en" className={`${spaceGrotesk.variable} ${fraunces.variable}`}>
+      <body className="min-h-screen bg-paper text-text font-body antialiased flex flex-col">
         <a
           href="#main-content"
-          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-accent focus:text-ink focus:font-semibold focus:rounded-lg focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-white"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[70] focus:px-4 focus:py-2 focus:bg-ink focus:text-paper focus:font-semibold focus:rounded-md focus:shadow-lg"
         >
           Skip to main content
         </a>

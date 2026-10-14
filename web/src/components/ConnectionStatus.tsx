@@ -37,11 +37,11 @@ export const ConnectionStatus: React.FC<ConnectionStatusProps> = ({ className = 
           data-testid="connection-status-pill"
           data-status="live"
           title={tooltipText}
-          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-mono font-medium tracking-wide bg-[#00D9A8]/10 text-[#00D9A8] border border-[#00D9A8]/40 shadow-sm"
+          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-mono font-medium tracking-wide bg-[#C2410C]/10 text-[#C2410C] border border-[#C2410C]/40 shadow-sm"
         >
           <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00D9A8] opacity-75" />
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-[#00D9A8]" />
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#C2410C] opacity-75" />
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-[#C2410C]" />
           </span>
           LIVE
         </span>
@@ -52,11 +52,11 @@ export const ConnectionStatus: React.FC<ConnectionStatusProps> = ({ className = 
           data-testid="connection-status-pill"
           data-status="connecting"
           title={tooltipText}
-          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-mono font-medium tracking-wide bg-[#FFB800]/10 text-[#FFB800] border border-[#FFB800]/40 shadow-sm"
+          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-mono font-medium tracking-wide bg-[#B45309]/10 text-[#B45309] border border-[#B45309]/40 shadow-sm"
         >
           <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#FFB800] opacity-75" />
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-[#FFB800]" />
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#B45309] opacity-75" />
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-[#B45309]" />
           </span>
           CONNECTING
         </span>
@@ -67,9 +67,9 @@ export const ConnectionStatus: React.FC<ConnectionStatusProps> = ({ className = 
           data-testid="connection-status-pill"
           data-status="stale"
           title={tooltipText}
-          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-mono font-medium tracking-wide bg-transparent text-[#FFB800] border border-[#FFB800] shadow-sm"
+          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-mono font-medium tracking-wide bg-transparent text-[#B45309] border border-[#B45309] shadow-sm"
         >
-          <span className="inline-flex rounded-full h-2 w-2 bg-[#FFB800]" />
+          <span className="inline-flex rounded-full h-2 w-2 bg-[#B45309]" />
           STALE
         </span>
       )}
@@ -82,9 +82,9 @@ export const ConnectionStatus: React.FC<ConnectionStatusProps> = ({ className = 
           onClick={() => reconnect()}
           title={`${tooltipText} — Click to reconnect`}
           aria-label="Offline: Click to reconnect"
-          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-mono font-medium tracking-wide bg-[#FF4D6D]/10 text-[#FF4D6D] border border-[#FF4D6D]/40 hover:bg-[#FF4D6D]/20 hover:border-[#FF4D6D]/70 transition-colors cursor-pointer shadow-sm focus:outline-none focus:ring-1 focus:ring-[#FF4D6D]"
+          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-mono font-medium tracking-wide bg-[#B91C1C]/10 text-[#B91C1C] border border-[#B91C1C]/40 hover:bg-[#B91C1C]/20 hover:border-[#B91C1C]/70 transition-colors cursor-pointer shadow-sm focus:outline-none focus:ring-1 focus:ring-[#B91C1C]"
         >
-          <span className="inline-flex rounded-full h-2 w-2 bg-[#FF4D6D]" />
+          <span className="inline-flex rounded-full h-2 w-2 bg-[#B91C1C]" />
           OFFLINE
         </button>
       )}
@@ -93,7 +93,7 @@ export const ConnectionStatus: React.FC<ConnectionStatusProps> = ({ className = 
       {showTooltip && (
         <div
           role="tooltip"
-          className="absolute top-full mt-1.5 left-1/2 -translate-x-1/2 z-50 whitespace-nowrap px-2.5 py-1 rounded bg-[#0B1020] text-xs font-mono text-text border border-white/10 shadow-lg pointer-events-none"
+          className="absolute top-full mt-1.5 left-1/2 -translate-x-1/2 z-50 whitespace-nowrap px-2.5 py-1 rounded bg-[#1C1917] text-xs font-mono text-text border border-line shadow-lg pointer-events-none"
         >
           {tooltipText}
           {stateKey === "offline" && (

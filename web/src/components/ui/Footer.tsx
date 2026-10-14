@@ -3,15 +3,15 @@ import Link from "next/link";
 
 export const Footer: React.FC = () => {
   return (
-    <footer className="mt-auto border-t border-white/10 bg-ink/60 py-10">
+    <footer className="mt-auto border-t border-line bg-paper py-10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex flex-col items-center md:items-start gap-1">
             <div className="flex items-center gap-2">
-              <span className="font-display font-bold text-text text-base">
+              <span className="font-display font-semibold text-text text-lg">
                 AI TrafficOS
               </span>
-              <span className="text-xs px-2 py-0.5 rounded-full bg-accent/10 text-accent border border-accent/20">
+              <span className="text-xs px-2 py-0.5 rounded-md bg-accent-tint text-accent-deep border border-accent/25 font-medium">
                 Live in Production
               </span>
             </div>
@@ -58,7 +58,7 @@ export const Footer: React.FC = () => {
           </div>
         </div>
 
-        <div className="mt-8 pt-6 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between text-xs text-muted/80 gap-3">
+        <div className="mt-8 pt-6 border-t border-line flex flex-col sm:flex-row items-center justify-between text-xs text-muted/80 gap-3">
           <p>© {new Date().getFullYear()} AI TrafficOS. All systems operational.</p>
           <p className="font-mono text-[11px] text-muted/60">
             Next.js 15 App Router • React 19 • Tailwind CSS v4

@@ -87,13 +87,13 @@ function AuditLogsContent() {
   return (
     <div className="max-w-7xl mx-auto space-y-6">
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 rounded-2xl bg-surface/70 border border-white/10 backdrop-blur-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 rounded-2xl bg-surface/70 border border-line backdrop-blur-sm">
         <div>
           <div className="flex items-center gap-2 mb-1">
             <h1 className="text-2xl font-display font-bold text-text">
               Immutable Audit Ledger
             </h1>
-            <Badge variant="teal">Admin Clearance</Badge>
+            <Badge variant="signal">Admin Clearance</Badge>
           </div>
           <p className="text-xs sm:text-sm text-muted">
             Cryptographically sealed verification log of authentication events, user updates, and supervisory actuations.
@@ -101,7 +101,7 @@ function AuditLogsContent() {
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="text-xs text-muted font-mono bg-ink/60 px-3 py-1.5 rounded-lg border border-white/10">
+          <div className="text-xs text-muted font-mono bg-paper px-3 py-1.5 rounded-lg border border-line">
             Recorded Events: {data?.total ?? "..."}
           </div>
           <Button
@@ -116,7 +116,7 @@ function AuditLogsContent() {
       </div>
 
       {/* Filter Toolbar */}
-      <div className="p-4 rounded-xl bg-surface/50 border border-white/10 space-y-3">
+      <div className="p-4 rounded-xl bg-surface/50 border border-line space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-xs font-semibold text-text uppercase tracking-wider">
             <Filter className="w-3.5 h-3.5 text-accent" />
@@ -148,7 +148,7 @@ function AuditLogsContent() {
                 setActionFilter(e.target.value);
                 setPage(1);
               }}
-              className="w-full px-3 py-1.5 bg-ink/70 border border-white/10 rounded-xl text-xs text-text placeholder:text-muted/50 focus:outline-none focus:border-accent"
+              className="w-full px-3 py-1.5 bg-surface border border-line rounded-xl text-xs text-text placeholder:text-muted/50 focus:outline-none focus:border-accent"
             />
           </div>
 
@@ -164,7 +164,7 @@ function AuditLogsContent() {
                 setEntityTypeFilter(e.target.value);
                 setPage(1);
               }}
-              className="w-full px-3 py-1.5 bg-ink/70 border border-white/10 rounded-xl text-xs text-text placeholder:text-muted/50 focus:outline-none focus:border-accent"
+              className="w-full px-3 py-1.5 bg-surface border border-line rounded-xl text-xs text-text placeholder:text-muted/50 focus:outline-none focus:border-accent"
             />
           </div>
 
@@ -180,7 +180,7 @@ function AuditLogsContent() {
                 setActorFilter(e.target.value);
                 setPage(1);
               }}
-              className="w-full px-3 py-1.5 bg-ink/70 border border-white/10 rounded-xl text-xs text-text placeholder:text-muted/50 focus:outline-none focus:border-accent"
+              className="w-full px-3 py-1.5 bg-surface border border-line rounded-xl text-xs text-text placeholder:text-muted/50 focus:outline-none focus:border-accent"
             />
           </div>
         </div>
@@ -216,11 +216,11 @@ function AuditLogsContent() {
           }
         />
       ) : (
-        <Card className="overflow-hidden border-white/10">
+        <Card className="overflow-hidden border-line">
           <div className="overflow-x-auto">
             <table className="w-full min-w-[700px] text-left border-collapse text-xs sm:text-sm">
               <thead>
-                <tr className="border-b border-white/10 bg-surface/60 text-muted uppercase text-[11px] font-semibold tracking-wider font-mono">
+                <tr className="border-b border-line bg-surface/60 text-muted uppercase text-[11px] font-semibold tracking-wider font-mono">
                   <th className="py-3 px-4 w-8"></th>
                   <th className="py-3 px-4">Action</th>
                   <th className="py-3 px-4">Entity</th>
@@ -229,14 +229,14 @@ function AuditLogsContent() {
                   <th className="py-3 px-4">Timestamp</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/5 font-mono text-xs">
+              <tbody className="divide-y divide-line font-mono text-xs">
                 {data.items.map((log) => {
                   const isExpanded = expandedId === log.id;
                   return (
                     <React.Fragment key={log.id}>
                       <tr
                         onClick={() => setExpandedId(isExpanded ? null : log.id)}
-                        className="hover:bg-white/[0.02] transition-colors cursor-pointer"
+                        className="hover:bg-ink/[0.03] transition-colors cursor-pointer"
                       >
                         <td className="py-3 px-4 text-muted">
                           {log.details ? (
@@ -274,14 +274,14 @@ function AuditLogsContent() {
 
                       {/* Expanded Details JSON Block */}
                       {isExpanded && (
-                        <tr className="bg-ink/60">
-                          <td colSpan={6} className="p-4 border-t border-b border-white/5">
+                        <tr className="bg-paper">
+                          <td colSpan={6} className="p-4 border-t border-b border-line">
                             <div className="space-y-1.5">
                               <div className="flex items-center gap-2 text-[11px] text-muted font-mono uppercase">
                                 <Terminal className="w-3.5 h-3.5 text-accent" />
                                 <span>Payload Details (#event {log.id})</span>
                               </div>
-                              <pre className="p-3 rounded-xl bg-ink/90 border border-white/10 text-[11px] font-mono text-accent/90 overflow-x-auto max-h-48">
+                              <pre className="p-3 rounded-xl bg-ink/90 border border-line text-[11px] font-mono text-accent/90 overflow-x-auto max-h-48">
                                 {JSON.stringify(log.details || {}, null, 2)}
                               </pre>
                             </div>

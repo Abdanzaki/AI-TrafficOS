@@ -114,7 +114,7 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
   const unreadCount = unreadData?.total ?? 0;
 
   const roleVariant: Record<UserRole, BadgeVariant> = {
-    admin: "teal",
+    admin: "signal",
     traffic_officer: "amber",
     analyst: "muted",
   };
@@ -137,7 +137,7 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
   })).filter((sec) => sec.items.length > 0);
 
   return (
-    <div className="min-h-screen bg-ink text-text flex">
+    <div className="min-h-screen bg-paper text-text flex">
       {/* Mobile Backdrop */}
       {mobileOpen && (
         <div
@@ -149,22 +149,22 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
 
       {/* SIDEBAR */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex flex-col bg-surface/95 border-r border-white/10 transition-all duration-300 backdrop-blur-md lg:static ${
+        className={`fixed inset-y-0 left-0 z-50 flex flex-col bg-surface/95 border-r border-line transition-all duration-300 backdrop-blur-md lg:static ${
           mobileOpen ? "translate-x-0 w-64" : "-translate-x-full lg:translate-x-0"
         } ${sidebarCollapsed ? "lg:w-20" : "lg:w-64"}`}
       >
         {/* Brand Header */}
-        <div className="h-16 flex items-center justify-between px-4 border-b border-white/10 shrink-0">
+        <div className="h-16 flex items-center justify-between px-4 border-b border-line shrink-0">
           <Link
             href="/dashboard"
             className="flex items-center gap-2.5 overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded-lg"
           >
-            <div className="w-9 h-9 rounded-xl bg-accent/15 border border-accent/40 flex items-center justify-center text-accent shrink-0 shadow-sm">
+            <div className="w-9 h-9 rounded-lg bg-pine border border-pine-deep/50 flex items-center justify-center text-paper shrink-0 shadow-sm">
               <Cpu className="w-5 h-5" />
             </div>
             {(!sidebarCollapsed || mobileOpen) && (
               <div className="flex flex-col truncate">
-                <span className="font-display font-bold text-base tracking-tight text-text leading-none">
+                <span className="font-display font-semibold text-lg tracking-tight text-text leading-none">
                   AI TrafficOS
                 </span>
                 <span className="text-[10px] text-muted font-mono uppercase tracking-wider mt-0.5">
@@ -209,13 +209,13 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
                     title={sidebarCollapsed && !mobileOpen ? item.name : undefined}
                     className={`group flex items-center gap-3 px-3 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
                       isActive
-                        ? "bg-accent/15 text-accent border border-accent/30 font-semibold shadow-sm"
+                        ? "bg-pine-tint text-pine-deep border border-pine/25 font-semibold shadow-sm"
                         : "text-muted hover:text-text hover:bg-surface/70 border border-transparent"
                     } ${sidebarCollapsed && !mobileOpen ? "justify-center px-0" : ""}`}
                   >
                     <Icon
                       className={`w-4 h-4 shrink-0 transition-transform ${
-                        isActive ? "text-accent scale-110" : "text-muted group-hover:text-text"
+                        isActive ? "text-pine-deep scale-110" : "text-muted group-hover:text-text"
                       }`}
                     />
 
@@ -248,7 +248,7 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
         </nav>
 
         {/* Sidebar Footer / Desktop Collapse Toggle */}
-        <div className="p-3 border-t border-white/10 shrink-0 hidden lg:flex items-center justify-between">
+        <div className="p-3 border-t border-line shrink-0 hidden lg:flex items-center justify-between">
           <button
             type="button"
             onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
@@ -270,7 +270,7 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
       {/* MAIN CONTENT WRAPPER */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* TOPBAR */}
-        <header className="sticky top-0 z-30 h-16 bg-ink/80 backdrop-blur-md border-b border-white/10 flex items-center justify-between px-4 sm:px-6">
+        <header className="sticky top-0 z-30 h-16 bg-paper/90 backdrop-blur-md border-b border-line flex items-center justify-between px-4 sm:px-6">
           <div className="flex items-center gap-3">
             {/* Mobile menu trigger */}
             <button
@@ -285,7 +285,7 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
             {/* Breadcrumb / Section context */}
             <div className="hidden sm:flex items-center gap-2 text-xs">
               <span className="text-muted">AI TrafficOS</span>
-              <span className="text-white/20">/</span>
+              <span className="text-ink/20">/</span>
               <span className="text-text font-medium capitalize">
                 {pathname.replace(/^\//, "").split("/")[0] || "Dashboard"}
               </span>
@@ -308,18 +308,18 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
               {unreadCount > 0 && (
                 <span
                   data-testid="unread-notification-badge"
-                  className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 px-1 items-center justify-center rounded-full bg-accent text-[10px] font-bold text-ink ring-2 ring-ink"
+                  className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 px-1 items-center justify-center rounded-full bg-accent text-[10px] font-bold text-paper ring-2 ring-paper"
                 >
                   {unreadCount > 99 ? "99+" : unreadCount}
                 </span>
               )}
             </Link>
 
-            <Badge variant="teal" dot className="hidden md:inline-flex">
+            <Badge variant="signal" dot className="hidden md:inline-flex">
               FastAPI v1
             </Badge>
 
-            <div className="h-4 w-px bg-white/10 hidden md:block" />
+            <div className="h-4 w-px bg-ink/5 hidden md:block" />
 
             {/* User Info & Role Badge */}
             {user && (

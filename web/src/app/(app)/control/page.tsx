@@ -247,39 +247,39 @@ function getDecisionTypeBadge(decisionType: string): {
   switch (norm) {
     case "EXTEND_GREEN":
       return {
-        badgeVariant: "teal",
+        badgeVariant: "signal",
         label: "EXTEND GREEN",
         bgClass: "bg-teal-500/15 text-teal-400 border-teal-500/30",
       };
     case "EARLY_GREEN":
       return {
-        badgeVariant: "teal",
+        badgeVariant: "signal",
         label: "EARLY GREEN",
-        bgClass: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
+        bgClass: "bg-emerald-500/15 text-emerald-400 border-success/30",
       };
     case "HOLD_RED":
       return {
         badgeVariant: "danger",
         label: "HOLD RED",
-        bgClass: "bg-rose-500/15 text-rose-400 border-rose-500/30",
+        bgClass: "bg-danger/15 text-rose-400 border-danger/30",
       };
     case "TRUNCATE_GREEN":
       return {
         badgeVariant: "amber",
         label: "TRUNCATE GREEN",
-        bgClass: "bg-amber-500/15 text-amber-400 border-amber-500/30",
+        bgClass: "bg-amber/15 text-amber border-amber/30",
       };
     case "COORDINATE_CORRIDOR":
       return {
-        badgeVariant: "teal",
+        badgeVariant: "signal",
         label: "COORDINATE CORRIDOR",
-        bgClass: "bg-cyan-500/15 text-cyan-400 border-cyan-500/30",
+        bgClass: "bg-accent/15 text-accent border-accent/30",
       };
     case "EMERGENCY_PREEMPT":
       return {
         badgeVariant: "danger",
         label: "EMERGENCY PREEMPT",
-        bgClass: "bg-rose-600/20 text-rose-300 border-rose-500/40",
+        bgClass: "bg-danger/20 text-rose-300 border-danger/40",
       };
     case "CYCLE_SPLIT_OPTIMIZE":
       return {
@@ -292,7 +292,7 @@ function getDecisionTypeBadge(decisionType: string): {
       return {
         badgeVariant: "muted",
         label: norm.replace(/_/g, " "),
-        bgClass: "bg-white/10 text-muted border-white/15",
+        bgClass: "bg-ink/5 text-muted border-line",
       };
   }
 }
@@ -708,7 +708,7 @@ export default function ControlPage() {
   return (
     <div className="max-w-7xl mx-auto space-y-6 pb-12">
       {/* --- Page Header --- */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-line pb-5">
         <div>
           <div className="flex flex-wrap items-center gap-2 mb-1">
             <h1 className="text-2xl sm:text-3xl font-display font-bold text-text tracking-tight">
@@ -717,7 +717,7 @@ export default function ControlPage() {
             <Badge variant="amber" dot>
               Supervisory Engine
             </Badge>
-            <Badge variant={isAdmin() || isOfficer() ? "teal" : "muted"}>
+            <Badge variant={isAdmin() || isOfficer() ? "signal" : "muted"}>
               {isAdmin() || isOfficer() ? "Operator Clearance Active" : "Analyst Read-Only"}
             </Badge>
           </div>
@@ -790,8 +790,8 @@ export default function ControlPage() {
       )}
 
       {/* --- Section 1: Junction Selector & Control Telemetry Status --- */}
-      <Card className="p-5 sm:p-6 bg-surface border-white/10 space-y-5">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/10 pb-4">
+      <Card className="p-5 sm:p-6 bg-surface border-line space-y-5">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-line pb-4">
           <div className="flex-1 min-w-0">
             <label
               htmlFor="ctrl-junction-select"
@@ -801,7 +801,7 @@ export default function ControlPage() {
             </label>
             <div className="relative max-w-lg">
               {junctionsLoading ? (
-                <div className="h-10 rounded-xl bg-ink/60 border border-white/10 flex items-center px-3 gap-2 text-xs text-muted">
+                <div className="h-10 rounded-xl bg-paper border border-line flex items-center px-3 gap-2 text-xs text-muted">
                   <LoadingSpinner size="sm" />
                   <span>Loading junctions...</span>
                 </div>
@@ -811,10 +811,10 @@ export default function ControlPage() {
                     id="ctrl-junction-select"
                     value={selectedJunctionId ?? ""}
                     onChange={(e) => setSelectedJunctionId(Number(e.target.value))}
-                    className="w-full h-11 pl-3.5 pr-10 rounded-xl bg-ink/80 border border-white/15 text-text text-sm font-medium focus:outline-none focus:ring-2 focus:ring-accent appearance-none cursor-pointer"
+                    className="w-full h-11 pl-3.5 pr-10 rounded-xl bg-ink/80 border border-line text-text text-sm font-medium focus:outline-none focus:ring-2 focus:ring-accent appearance-none cursor-pointer"
                   >
                     {junctionsData?.items.map((j) => (
-                      <option key={j.id} value={j.id} className="bg-ink text-text">
+                      <option key={j.id} value={j.id} className="bg-surface text-text">
                         [{j.code}] {j.name} ({j.zone || "Zone Central"})
                       </option>
                     ))}
@@ -837,7 +837,7 @@ export default function ControlPage() {
             <LoadingSpinner size="sm" label="Polling real-time control status..." />
           </div>
         ) : statusIsError ? (
-          <div className="p-4 rounded-xl bg-ink/60 border border-danger/30 text-xs text-danger flex items-center justify-between">
+          <div className="p-4 rounded-xl bg-paper border border-danger/30 text-xs text-danger flex items-center justify-between">
             <span>Failed to query control status for junction #{selectedJunctionId}.</span>
             <Button variant="ghost" size="sm" onClick={() => refetchControlStatus()}>
               Retry
@@ -846,7 +846,7 @@ export default function ControlPage() {
         ) : controlStatus ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
             {/* 1. Telemetry Freshness */}
-            <div className="p-4 rounded-xl bg-ink/60 border border-white/10 space-y-1.5">
+            <div className="p-4 rounded-xl bg-paper border border-line space-y-1.5">
               <span className="text-[10px] uppercase font-mono tracking-wider text-muted block">
                 Telemetry Freshness
               </span>
@@ -861,7 +861,7 @@ export default function ControlPage() {
               <p className="text-[11px] text-muted font-mono">
                 {controlStatus.latest_telemetry_age_s !== null &&
                 controlStatus.latest_telemetry_age_s > 300 ? (
-                  <span className="text-amber-400 font-semibold">Stale (&gt;300s)</span>
+                  <span className="text-amber font-semibold">Stale (&gt;300s)</span>
                 ) : (
                   <span className="text-emerald-400">Live Streaming</span>
                 )}
@@ -869,7 +869,7 @@ export default function ControlPage() {
             </div>
 
             {/* 2. Optical Lamp Indication */}
-            <div className="p-4 rounded-xl bg-ink/60 border border-white/10 space-y-1.5">
+            <div className="p-4 rounded-xl bg-paper border border-line space-y-1.5">
               <span className="text-[10px] uppercase font-mono tracking-wider text-muted block">
                 Camera Optical Lamp
               </span>
@@ -885,7 +885,7 @@ export default function ControlPage() {
             </div>
 
             {/* 3. Incidents & Emergency */}
-            <div className="p-4 rounded-xl bg-ink/60 border border-white/10 space-y-1.5">
+            <div className="p-4 rounded-xl bg-paper border border-line space-y-1.5">
               <span className="text-[10px] uppercase font-mono tracking-wider text-muted block">
                 Incidents & Emergency
               </span>
@@ -911,7 +911,7 @@ export default function ControlPage() {
             </div>
 
             {/* 4. ML Congestion Forecast & Latest Decision */}
-            <div className="p-4 rounded-xl bg-ink/60 border border-white/10 space-y-1.5">
+            <div className="p-4 rounded-xl bg-paper border border-line space-y-1.5">
               <span className="text-[10px] uppercase font-mono tracking-wider text-muted block">
                 Forecast & Latest Action
               </span>
@@ -935,13 +935,13 @@ export default function ControlPage() {
       </Card>
 
       {/* --- Section 2: Sub-navigation Tabs --- */}
-      <div className="flex items-center gap-2 border-b border-white/10 pb-2">
+      <div className="flex items-center gap-2 border-b border-line pb-2">
         <button
           onClick={() => setActiveTab("decisions")}
           className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer flex items-center gap-2 ${
             activeTab === "decisions"
-              ? "bg-accent text-ink shadow-md shadow-accent/20"
-              : "text-muted hover:text-text hover:bg-white/5"
+              ? "bg-accent text-paper shadow-md shadow-accent/20"
+              : "text-muted hover:text-text hover:bg-ink/5"
           }`}
         >
           <BrainCircuit className="w-4 h-4" />
@@ -952,8 +952,8 @@ export default function ControlPage() {
           onClick={() => setActiveTab("emergency")}
           className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer flex items-center gap-2 ${
             activeTab === "emergency"
-              ? "bg-rose-500 text-white shadow-md shadow-rose-500/20"
-              : "text-muted hover:text-text hover:bg-white/5"
+              ? "bg-danger text-white shadow-md shadow-danger/20"
+              : "text-muted hover:text-text hover:bg-ink/5"
           }`}
         >
           <Siren className="w-4 h-4" />
@@ -964,8 +964,8 @@ export default function ControlPage() {
           onClick={() => setActiveTab("whatif")}
           className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer flex items-center gap-2 ${
             activeTab === "whatif"
-              ? "bg-accent text-ink shadow-md shadow-accent/20"
-              : "text-muted hover:text-text hover:bg-white/5"
+              ? "bg-accent text-paper shadow-md shadow-accent/20"
+              : "text-muted hover:text-text hover:bg-ink/5"
           }`}
         >
           <GitCompare className="w-4 h-4" />
@@ -976,8 +976,8 @@ export default function ControlPage() {
           onClick={() => setActiveTab("health")}
           className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer flex items-center gap-2 ${
             activeTab === "health"
-              ? "bg-accent text-ink shadow-md shadow-accent/20"
-              : "text-muted hover:text-text hover:bg-white/5"
+              ? "bg-accent text-paper shadow-md shadow-accent/20"
+              : "text-muted hover:text-text hover:bg-ink/5"
           }`}
         >
           <Activity className="w-4 h-4" />
@@ -988,8 +988,8 @@ export default function ControlPage() {
           onClick={() => setActiveTab("assistant")}
           className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer flex items-center gap-2 ${
             activeTab === "assistant"
-              ? "bg-accent text-ink shadow-md shadow-accent/20"
-              : "text-muted hover:text-text hover:bg-white/5"
+              ? "bg-accent text-paper shadow-md shadow-accent/20"
+              : "text-muted hover:text-text hover:bg-ink/5"
           }`}
         >
           <Sparkles className="w-4 h-4" />
@@ -1001,14 +1001,14 @@ export default function ControlPage() {
       {activeTab === "decisions" && (
         <div className="space-y-6">
           {/* Decision Filter Bar */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-surface/60 p-3 rounded-xl border border-white/10 text-xs">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-surface/60 p-3 rounded-xl border border-line text-xs">
             <div className="flex flex-wrap items-center gap-2">
               <span className="text-muted font-mono uppercase text-[11px] mr-1">Scope:</span>
               <button
                 onClick={() => setJunctionFilter("all")}
                 className={`px-2.5 py-1 rounded-lg font-mono transition-colors cursor-pointer ${
                   junctionFilter === "all"
-                    ? "bg-white/15 text-text font-bold"
+                    ? "bg-ink/10 text-text font-bold"
                     : "text-muted hover:text-text"
                 }`}
               >
@@ -1018,7 +1018,7 @@ export default function ControlPage() {
                 onClick={() => setJunctionFilter("current")}
                 className={`px-2.5 py-1 rounded-lg font-mono transition-colors cursor-pointer ${
                   junctionFilter === "current"
-                    ? "bg-white/15 text-text font-bold"
+                    ? "bg-ink/10 text-text font-bold"
                     : "text-muted hover:text-text"
                 }`}
               >
@@ -1079,7 +1079,7 @@ export default function ControlPage() {
                       className={`p-4 sm:p-5 rounded-xl border transition-all cursor-pointer relative ${
                         isSelected
                           ? "bg-surface border-accent shadow-lg shadow-accent/5 ring-1 ring-accent"
-                          : "bg-surface/70 border-white/10 hover:border-white/20 hover:bg-surface"
+                          : "bg-surface/70 border-line hover:border-line hover:bg-surface"
                       }`}
                     >
                       <div className="flex items-start justify-between gap-3 mb-2.5">
@@ -1106,7 +1106,7 @@ export default function ControlPage() {
                         {reasonText}
                       </p>
 
-                      <div className="flex flex-wrap items-center justify-between text-[11px] text-muted font-mono pt-2 border-t border-white/5">
+                      <div className="flex flex-wrap items-center justify-between text-[11px] text-muted font-mono pt-2 border-t border-line">
                         <div className="flex items-center gap-3">
                           <span>Decision #{decision.id}</span>
                           <span>•</span>
@@ -1127,13 +1127,13 @@ export default function ControlPage() {
             {/* Right Column: Selected Decision Detail & Supervisory Apply/Revert Actions */}
             <div className="lg:col-span-5 space-y-6">
               {!selectedDecision ? (
-                <Card className="p-8 text-center border-white/10 text-muted text-xs">
+                <Card className="p-8 text-center border-line text-muted text-xs">
                   Select a supervisory decision from the list to view full telemetry snapshot, algorithmic justification, and execute human-in-the-loop approval.
                 </Card>
               ) : (
-                <Card className="p-5 sm:p-6 bg-surface border-white/10 space-y-5">
+                <Card className="p-5 sm:p-6 bg-surface border-line space-y-5">
                   {/* Detail Header */}
-                  <div className="border-b border-white/10 pb-4">
+                  <div className="border-b border-line pb-4">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-xs font-mono text-muted uppercase">
                         Decision Detail #{selectedDecision.id}
@@ -1153,7 +1153,7 @@ export default function ControlPage() {
                   </div>
 
                   {/* Operational Rationale */}
-                  <div className="p-3.5 rounded-xl bg-ink/60 border border-white/10 space-y-1.5">
+                  <div className="p-3.5 rounded-xl bg-paper border border-line space-y-1.5">
                     <span className="text-[11px] uppercase font-mono tracking-wider text-accent font-semibold flex items-center gap-1.5">
                       <FileText className="w-3.5 h-3.5" />
                       Algorithmic Explanation
@@ -1184,25 +1184,25 @@ export default function ControlPage() {
                         Observed Conditions Snapshot
                       </span>
                       <div className="grid grid-cols-2 gap-2 text-xs">
-                        <div className="p-2.5 rounded-lg bg-ink/50 border border-white/5">
+                        <div className="p-2.5 rounded-lg bg-cream border border-line">
                           <span className="text-muted block text-[10px] uppercase font-mono">Volume</span>
                           <span className="font-mono font-semibold text-text">
                             {formatNumber(selectedDecision.payload.current.vehicle_count)} veh
                           </span>
                         </div>
-                        <div className="p-2.5 rounded-lg bg-ink/50 border border-white/5">
+                        <div className="p-2.5 rounded-lg bg-cream border border-line">
                           <span className="text-muted block text-[10px] uppercase font-mono">Queue Length</span>
                           <span className="font-mono font-semibold text-text">
                             {formatQueueLength(selectedDecision.payload.current.queue_length)}
                           </span>
                         </div>
-                        <div className="p-2.5 rounded-lg bg-ink/50 border border-white/5">
+                        <div className="p-2.5 rounded-lg bg-cream border border-line">
                           <span className="text-muted block text-[10px] uppercase font-mono">Approach Density</span>
                           <span className="font-mono font-semibold text-text">
                             {formatNumber(selectedDecision.payload.current.density, 2)}
                           </span>
                         </div>
-                        <div className="p-2.5 rounded-lg bg-ink/50 border border-white/5">
+                        <div className="p-2.5 rounded-lg bg-cream border border-line">
                           <span className="text-muted block text-[10px] uppercase font-mono">Avg Speed</span>
                           <span className="font-mono font-semibold text-text">
                             {formatSpeed(selectedDecision.payload.current.avg_speed_kmh)}
@@ -1219,13 +1219,13 @@ export default function ControlPage() {
                         ML Horizon Forecast
                       </span>
                       <div className="grid grid-cols-2 gap-2 text-xs">
-                        <div className="p-2.5 rounded-lg bg-ink/50 border border-white/5">
+                        <div className="p-2.5 rounded-lg bg-cream border border-line">
                           <span className="text-muted block text-[10px] uppercase font-mono">Predicted Congestion</span>
                           <span className="font-mono font-semibold text-accent">
                             {selectedDecision.payload.predicted.congestion.toFixed(1)}%
                           </span>
                         </div>
-                        <div className="p-2.5 rounded-lg bg-ink/50 border border-white/5">
+                        <div className="p-2.5 rounded-lg bg-cream border border-line">
                           <span className="text-muted block text-[10px] uppercase font-mono">Queue Growth</span>
                           <span className="font-mono font-semibold text-text">
                             {selectedDecision.payload.predicted.queue_growth > 0 ? "+" : ""}
@@ -1237,7 +1237,7 @@ export default function ControlPage() {
                   )}
 
                   {/* Supervisory Actions (Apply & Revert) */}
-                  <div className="border-t border-white/10 pt-4 space-y-4">
+                  <div className="border-t border-line pt-4 space-y-4">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-mono uppercase font-semibold text-text">
                         Supervisory Action Controls
@@ -1252,7 +1252,7 @@ export default function ControlPage() {
                     <RequireRole
                       allowedRoles={["admin", "traffic_officer"]}
                       fallback={
-                        <div className="p-4 rounded-xl bg-ink/60 border border-amber/30 text-xs text-amber space-y-1">
+                        <div className="p-4 rounded-xl bg-paper border border-amber/30 text-xs text-amber space-y-1">
                           <div className="flex items-center gap-1.5 font-semibold">
                             <ShieldAlert className="w-4 h-4 shrink-0" />
                             <span>Read-Only Clearance</span>
@@ -1264,7 +1264,7 @@ export default function ControlPage() {
                       }
                     >
                       {/* Audit Note */}
-                      <div className="p-3 rounded-xl bg-ink/60 border border-white/10 text-[11px] text-muted space-y-1">
+                      <div className="p-3 rounded-xl bg-paper border border-line text-[11px] text-muted space-y-1">
                         <div className="flex items-center gap-1.5 text-accent font-semibold font-mono">
                           <ShieldCheck className="w-3.5 h-3.5" />
                           <span>Audit Trail Enforced</span>
@@ -1328,8 +1328,8 @@ export default function ControlPage() {
       {/* --- TAB 2: Emergency Green Corridor Preemption --- */}
       {activeTab === "emergency" && (
         <div className="space-y-6">
-          <Card className="p-5 sm:p-6 bg-surface border-white/10 space-y-6">
-            <div className="flex items-start justify-between border-b border-white/10 pb-4">
+          <Card className="p-5 sm:p-6 bg-surface border-line space-y-6">
+            <div className="flex items-start justify-between border-b border-line pb-4">
               <div>
                 <div className="flex items-center gap-2">
                   <Siren className="w-6 h-6 text-rose-400" />
@@ -1348,7 +1348,7 @@ export default function ControlPage() {
             <RequireRole
               allowedRoles={["admin", "traffic_officer"]}
               fallback={
-                <div className="p-5 rounded-xl bg-ink/60 border border-amber/30 text-xs text-amber space-y-2">
+                <div className="p-5 rounded-xl bg-paper border border-amber/30 text-xs text-amber space-y-2">
                   <div className="flex items-center gap-2 font-semibold">
                     <ShieldAlert className="w-5 h-5 shrink-0" />
                     <span>Emergency Clearance Required</span>
@@ -1367,7 +1367,7 @@ export default function ControlPage() {
                       Active Emergency Vehicle / Incident
                     </label>
                     {emergencyEventsLoading ? (
-                      <div className="h-10 rounded-xl bg-ink/60 border border-white/10 flex items-center px-3 gap-2 text-xs text-muted">
+                      <div className="h-10 rounded-xl bg-paper border border-line flex items-center px-3 gap-2 text-xs text-muted">
                         <LoadingSpinner size="sm" />
                         <span>Loading emergency incidents...</span>
                       </div>
@@ -1375,7 +1375,7 @@ export default function ControlPage() {
                       <select
                         value={emergencyEventId ?? ""}
                         onChange={(e) => setEmergencyEventId(Number(e.target.value))}
-                        className="w-full h-11 px-3 rounded-xl bg-ink/80 border border-white/15 text-text text-xs sm:text-sm font-medium focus:ring-2 focus:ring-rose-500 cursor-pointer"
+                        className="w-full h-11 px-3 rounded-xl bg-ink/80 border border-line text-text text-xs sm:text-sm font-medium focus:ring-2 focus:ring-danger cursor-pointer"
                       >
                         {emergencyEventsData?.items && emergencyEventsData.items.length > 0 ? (
                           emergencyEventsData.items.map((ev) => (
@@ -1398,7 +1398,7 @@ export default function ControlPage() {
                     <select
                       value={destJunctionId ?? ""}
                       onChange={(e) => setDestJunctionId(Number(e.target.value))}
-                      className="w-full h-11 px-3 rounded-xl bg-ink/80 border border-white/15 text-text text-xs sm:text-sm font-medium focus:ring-2 focus:ring-rose-500 cursor-pointer"
+                      className="w-full h-11 px-3 rounded-xl bg-ink/80 border border-line text-text text-xs sm:text-sm font-medium focus:ring-2 focus:ring-danger cursor-pointer"
                     >
                       {junctionsData?.items.map((j) => (
                         <option key={j.id} value={j.id}>
@@ -1414,7 +1414,7 @@ export default function ControlPage() {
                     type="submit"
                     variant="primary"
                     disabled={emergencyPrioritizeMutation.isPending || !emergencyEventId}
-                    className="bg-rose-500 hover:bg-rose-600 text-white border-rose-500 shadow-rose-500/20"
+                    className="bg-danger hover:bg-danger text-white border-danger shadow-danger/20"
                   >
                     {emergencyPrioritizeMutation.isPending ? (
                       <LoadingSpinner size="sm" label="Calculating Route..." />
@@ -1431,7 +1431,7 @@ export default function ControlPage() {
                     variant="secondary"
                     onClick={handleEmergencyRestore}
                     disabled={emergencyRestoreMutation.isPending || !emergencyEventId}
-                    className="border-white/20 text-text"
+                    className="border-line text-text"
                   >
                     {emergencyRestoreMutation.isPending ? (
                       <LoadingSpinner size="sm" label="Restoring..." />
@@ -1448,8 +1448,8 @@ export default function ControlPage() {
 
             {/* Preemption Corridor Results */}
             {prioritizeResult && (
-              <div className="p-5 rounded-xl bg-ink/80 border border-rose-500/40 space-y-4 shadow-lg">
-                <div className="flex items-center justify-between border-b border-white/10 pb-3">
+              <div className="p-5 rounded-xl bg-ink/80 border border-danger/40 space-y-4 shadow-lg">
+                <div className="flex items-center justify-between border-b border-line pb-3">
                   <div>
                     <span className="text-xs font-mono uppercase text-rose-400 font-bold block">
                       Active Emergency Corridor
@@ -1471,7 +1471,7 @@ export default function ControlPage() {
                   <div className="flex flex-wrap items-center gap-2">
                     {prioritizeResult.corridor_plan.path.map((jId, idx) => (
                       <React.Fragment key={jId}>
-                        <span className="px-2.5 py-1 rounded bg-surface border border-white/15 text-xs font-mono text-text">
+                        <span className="px-2.5 py-1 rounded bg-surface border border-line text-xs font-mono text-text">
                           Junction #{jId}
                         </span>
                         {idx < prioritizeResult.corridor_plan.path.length - 1 && (
@@ -1491,7 +1491,7 @@ export default function ControlPage() {
                     {prioritizeResult.corridor_plan.signal_actions.map((act, i) => (
                       <div
                         key={i}
-                        className="p-3 rounded-lg bg-surface/70 border border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs font-mono"
+                        className="p-3 rounded-lg bg-surface/70 border border-line flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs font-mono"
                       >
                         <div className="flex items-center gap-2">
                           <span className="text-text font-bold">
@@ -1517,7 +1517,7 @@ export default function ControlPage() {
             )}
 
             {restoreResult && (
-              <div className="p-4 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-xs text-emerald-400 space-y-1">
+              <div className="p-4 rounded-xl bg-emerald-500/15 border border-success/30 text-xs text-emerald-400 space-y-1">
                 <div className="flex items-center gap-2 font-semibold">
                   <CheckCircle2 className="w-4 h-4 text-emerald-400" />
                   <span>Normal Cyclic Signal Operations Restored</span>
@@ -1534,8 +1534,8 @@ export default function ControlPage() {
       {/* --- TAB 3: What-If Plan Simulation --- */}
       {activeTab === "whatif" && (
         <div className="space-y-6">
-          <Card className="p-5 sm:p-6 bg-surface border-white/10 space-y-6">
-            <div className="border-b border-white/10 pb-4">
+          <Card className="p-5 sm:p-6 bg-surface border-line space-y-6">
+            <div className="border-b border-line pb-4">
               <div className="flex items-center gap-2">
                 <GitCompare className="w-6 h-6 text-accent" />
                 <h2 className="text-lg font-display font-bold text-text">
@@ -1557,7 +1557,7 @@ export default function ControlPage() {
                   <select
                     value={simHorizon}
                     onChange={(e) => setSimHorizon(Number(e.target.value))}
-                    className="w-full h-10 px-3 rounded-xl bg-ink/80 border border-white/15 text-text"
+                    className="w-full h-10 px-3 rounded-xl bg-ink/80 border border-line text-text"
                   >
                     <option value={10}>10.0 Minutes</option>
                     <option value={15}>15.0 Minutes (Standard)</option>
@@ -1572,7 +1572,7 @@ export default function ControlPage() {
                   <select
                     value={simDt}
                     onChange={(e) => setSimDt(Number(e.target.value))}
-                    className="w-full h-10 px-3 rounded-xl bg-ink/80 border border-white/15 text-text"
+                    className="w-full h-10 px-3 rounded-xl bg-ink/80 border border-line text-text"
                   >
                     <option value={2}>2.0 Seconds</option>
                     <option value={5}>5.0 Seconds (Default)</option>
@@ -1590,7 +1590,7 @@ export default function ControlPage() {
                     max={120}
                     value={simCurrentGreen}
                     onChange={(e) => setSimCurrentGreen(Number(e.target.value))}
-                    className="w-full h-10 px-3 rounded-xl bg-ink/80 border border-white/15 text-text"
+                    className="w-full h-10 px-3 rounded-xl bg-ink/80 border border-line text-text"
                   />
                 </div>
 
@@ -1604,7 +1604,7 @@ export default function ControlPage() {
                     max={120}
                     value={simProposedGreen}
                     onChange={(e) => setSimProposedGreen(Number(e.target.value))}
-                    className="w-full h-10 px-3 rounded-xl bg-ink/80 border border-white/15 text-text"
+                    className="w-full h-10 px-3 rounded-xl bg-ink/80 border border-line text-text"
                   />
                 </div>
               </div>
@@ -1628,8 +1628,8 @@ export default function ControlPage() {
 
             {/* Simulation Results Comparison */}
             {simResult && (
-              <div className="p-5 rounded-xl bg-ink/70 border border-white/10 space-y-5">
-                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-3">
+              <div className="p-5 rounded-xl bg-surface border border-line space-y-5">
+                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line pb-3">
                   <div>
                     <span className="text-[11px] font-mono uppercase text-muted block">
                       Deterministic Verdict
@@ -1657,7 +1657,7 @@ export default function ControlPage() {
 
                 {/* Deltas Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div className="p-3.5 rounded-xl bg-surface/70 border border-white/10 space-y-1">
+                  <div className="p-3.5 rounded-xl bg-surface/70 border border-line space-y-1">
                     <span className="text-[10px] font-mono uppercase text-muted block">
                       Delta Total Wait Delay
                     </span>
@@ -1674,7 +1674,7 @@ export default function ControlPage() {
                     </span>
                   </div>
 
-                  <div className="p-3.5 rounded-xl bg-surface/70 border border-white/10 space-y-1">
+                  <div className="p-3.5 rounded-xl bg-surface/70 border border-line space-y-1">
                     <span className="text-[10px] font-mono uppercase text-muted block">
                       Delta Average Queue
                     </span>
@@ -1691,7 +1691,7 @@ export default function ControlPage() {
                     </span>
                   </div>
 
-                  <div className="p-3.5 rounded-xl bg-surface/70 border border-white/10 space-y-1">
+                  <div className="p-3.5 rounded-xl bg-surface/70 border border-line space-y-1">
                     <span className="text-[10px] font-mono uppercase text-muted block">
                       Delta Vehicle Throughput
                     </span>
@@ -1709,7 +1709,7 @@ export default function ControlPage() {
                   </div>
                 </div>
 
-                <div className="p-3 rounded-lg bg-surface/40 border border-white/5 text-[11px] text-muted space-y-1 font-mono">
+                <div className="p-3 rounded-lg bg-surface/40 border border-line text-[11px] text-muted space-y-1 font-mono">
                   <div>Baseline Digest: {simResult.current_result.plan_digest.slice(0, 16)}...</div>
                   <div>Proposed Digest: {simResult.proposed_result.plan_digest.slice(0, 16)}...</div>
                 </div>
@@ -1728,7 +1728,7 @@ export default function ControlPage() {
 
       {/* --- TAB 5: Control Room Assistant & Voice Interface --- */}
       {activeTab === "assistant" && (
-        <div className="h-[750px] rounded-2xl overflow-hidden border border-white/10 shadow-xl">
+        <div className="h-[750px] rounded-2xl overflow-hidden border border-line shadow-xl">
           <AssistantChat className="h-full" />
         </div>
       )}

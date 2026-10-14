@@ -464,7 +464,7 @@ export default function IncidentsPage() {
       )}
 
       {/* Navigation Tabs: Traffic Incidents vs CV Violations */}
-      <div className="flex items-center gap-3 border-b border-white/10 pb-3">
+      <div className="flex items-center gap-3 border-b border-line pb-3">
         <button
           type="button"
           onClick={() => setActiveSection("incidents")}
@@ -502,7 +502,7 @@ export default function IncidentsPage() {
         <>
           {/* Overview Stat Counters */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-        <Card className="p-4 bg-surface/70 border-white/10">
+        <Card className="p-4 bg-surface/70 border-line">
           <div className="text-[11px] font-medium text-muted uppercase tracking-wider">
             Total Matching
           </div>
@@ -512,7 +512,7 @@ export default function IncidentsPage() {
           <div className="text-[10px] text-muted mt-0.5">Across indexed records</div>
         </Card>
 
-        <Card className="p-4 bg-surface/70 border-white/10">
+        <Card className="p-4 bg-surface/70 border-line">
           <div className="text-[11px] font-medium text-danger uppercase tracking-wider">
             Reported
           </div>
@@ -522,7 +522,7 @@ export default function IncidentsPage() {
           <div className="text-[10px] text-muted mt-0.5">Current page pending</div>
         </Card>
 
-        <Card className="p-4 bg-surface/70 border-white/10">
+        <Card className="p-4 bg-surface/70 border-line">
           <div className="text-[11px] font-medium text-amber uppercase tracking-wider">
             Acknowledged
           </div>
@@ -532,7 +532,7 @@ export default function IncidentsPage() {
           <div className="text-[10px] text-muted mt-0.5">Response dispatched</div>
         </Card>
 
-        <Card className="p-4 bg-surface/70 border-white/10">
+        <Card className="p-4 bg-surface/70 border-line">
           <div className="text-[11px] font-medium text-success uppercase tracking-wider">
             Resolved
           </div>
@@ -544,7 +544,7 @@ export default function IncidentsPage() {
       </div>
 
       {/* Filter Controls Bar */}
-      <div className="bg-surface/60 p-4 rounded-2xl border border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-3 flex-wrap">
+      <div className="bg-surface/60 p-4 rounded-2xl border border-line flex flex-col md:flex-row md:items-center justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-2 text-xs font-medium text-muted uppercase tracking-wider">
           <Filter className="w-3.5 h-3.5 text-accent" />
           <span>Filters:</span>
@@ -555,7 +555,7 @@ export default function IncidentsPage() {
           <select
             value={statusFilter}
             onChange={(e) => handleFilterChange(setStatusFilter, e.target.value)}
-            className="bg-ink/80 border border-white/15 rounded-xl px-3 py-1.5 text-xs font-medium text-text focus:outline-none focus:border-accent"
+            className="bg-ink/80 border border-line rounded-xl px-3 py-1.5 text-xs font-medium text-text focus:outline-none focus:border-accent"
           >
             <option value="all">All Statuses</option>
             <option value="reported">Reported</option>
@@ -567,7 +567,7 @@ export default function IncidentsPage() {
           <select
             value={severityFilter}
             onChange={(e) => handleFilterChange(setSeverityFilter, e.target.value)}
-            className="bg-ink/80 border border-white/15 rounded-xl px-3 py-1.5 text-xs font-medium text-text focus:outline-none focus:border-accent"
+            className="bg-ink/80 border border-line rounded-xl px-3 py-1.5 text-xs font-medium text-text focus:outline-none focus:border-accent"
           >
             <option value="all">All Severities</option>
             <option value="critical">Critical</option>
@@ -581,7 +581,7 @@ export default function IncidentsPage() {
           <select
             value={junctionFilter}
             onChange={(e) => handleFilterChange(setJunctionFilter, e.target.value)}
-            className="bg-ink/80 border border-white/15 rounded-xl px-3 py-1.5 text-xs font-medium text-text focus:outline-none focus:border-accent max-w-xs truncate"
+            className="bg-ink/80 border border-line rounded-xl px-3 py-1.5 text-xs font-medium text-text focus:outline-none focus:border-accent max-w-xs truncate"
           >
             <option value="all">All Junctions</option>
             {junctionsData?.items?.map((j) => (
@@ -594,7 +594,7 @@ export default function IncidentsPage() {
           {hasActiveFilters && (
             <button
               onClick={handleResetFilters}
-              className="text-xs text-muted hover:text-text flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-white/10 hover:bg-white/5 transition-colors cursor-pointer"
+              className="text-xs text-muted hover:text-text flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-line hover:bg-ink/5 transition-colors cursor-pointer"
             >
               <RotateCcw className="w-3 h-3" />
               <span>Reset</span>
@@ -638,11 +638,11 @@ export default function IncidentsPage() {
           }
         />
       ) : (
-        <Card className="border-white/10 bg-surface/70 overflow-hidden">
+        <Card className="border-line bg-surface/70 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead>
-                <tr className="border-b border-white/10 bg-ink/40 text-muted uppercase tracking-wider text-[11px]">
+                <tr className="border-b border-line bg-cream/70 text-muted uppercase tracking-wider text-[11px]">
                   <th className="py-3 px-3.5">ID / Reported</th>
                   <th className="py-3 px-3.5">Junction / Location</th>
                   <th className="py-3 px-3.5">Severity</th>
@@ -652,7 +652,7 @@ export default function IncidentsPage() {
                   <th className="py-3 px-3.5 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/5">
+              <tbody className="divide-y divide-line">
                 {items.map((incident) => {
                   const statusPill = getStatusPill(incident.status);
                   const severityVariant = getSeverityBadgeVariant(incident.severity);
@@ -664,7 +664,7 @@ export default function IncidentsPage() {
                     <tr
                       key={incident.id}
                       onClick={() => setSelectedIncident(incident)}
-                      className="hover:bg-white/5 transition-colors cursor-pointer group"
+                      className="hover:bg-ink/5 transition-colors cursor-pointer group"
                     >
                       {/* ID / Timestamp */}
                       <td className="py-3 px-3.5 align-top">
@@ -798,7 +798,7 @@ export default function IncidentsPage() {
           </div>
 
           {/* Pagination Footer */}
-          <div className="p-4 border-t border-white/5 bg-ink/30 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+          <div className="p-4 border-t border-line bg-cream/60 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
             <div className="text-muted">
               Showing{" "}
               <span className="font-mono text-text font-medium">
@@ -823,7 +823,7 @@ export default function IncidentsPage() {
                 <span>Prev</span>
               </Button>
 
-              <span className="px-3 py-1 font-mono text-text text-xs bg-ink/60 rounded-md border border-white/5">
+              <span className="px-3 py-1 font-mono text-text text-xs bg-paper rounded-md border border-line">
                 Page {page} of {totalPages}
               </span>
 
@@ -860,9 +860,9 @@ export default function IncidentsPage() {
           />
 
           {/* Drawer Panel */}
-          <div className="relative w-full max-w-xl bg-ink border-l border-white/10 shadow-2xl z-10 overflow-y-auto flex flex-col h-full animate-in slide-in-from-right duration-200">
+          <div className="relative w-full max-w-xl bg-surface border-l border-line shadow-2xl z-10 overflow-y-auto flex flex-col h-full animate-in slide-in-from-right duration-200">
             {/* Header */}
-            <div className="p-5 border-b border-white/10 flex items-center justify-between bg-surface/80 sticky top-0 z-20 backdrop-blur-md">
+            <div className="p-5 border-b border-line flex items-center justify-between bg-surface/80 sticky top-0 z-20 backdrop-blur-md">
               <div className="flex items-center gap-2.5 flex-wrap">
                 <span className="font-mono font-bold text-text text-lg">
                   Incident #{selectedIncident.id}
@@ -883,7 +883,7 @@ export default function IncidentsPage() {
               <button
                 type="button"
                 onClick={() => setSelectedIncident(null)}
-                className="w-8 h-8 rounded-lg bg-surface hover:bg-white/10 border border-white/10 flex items-center justify-center text-muted hover:text-text transition-colors cursor-pointer"
+                className="w-8 h-8 rounded-lg bg-surface hover:bg-ink/5 border border-line flex items-center justify-center text-muted hover:text-text transition-colors cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -896,7 +896,7 @@ export default function IncidentsPage() {
                 <div className="text-xs uppercase tracking-wider font-semibold text-muted">
                   Incident Description
                 </div>
-                <Card className="p-4 bg-surface/60 border-white/10 text-text leading-relaxed">
+                <Card className="p-4 bg-surface/60 border-line text-text leading-relaxed">
                   {selectedIncident.description || "No descriptive notes recorded."}
                 </Card>
               </div>
@@ -906,7 +906,7 @@ export default function IncidentsPage() {
                 <div className="text-xs uppercase tracking-wider font-semibold text-muted">
                   Lifecycle Timeline
                 </div>
-                <Card className="p-4 bg-surface/60 border-white/10 divide-y divide-white/5 space-y-3 font-mono text-xs">
+                <Card className="p-4 bg-surface/60 border-line divide-y divide-line space-y-3 font-mono text-xs">
                   <div className="flex items-center justify-between pt-1">
                     <span className="text-muted flex items-center gap-1.5 font-sans">
                       <Clock className="w-3.5 h-3.5 text-accent" />
@@ -946,8 +946,8 @@ export default function IncidentsPage() {
                 <div className="text-xs uppercase tracking-wider font-semibold text-muted">
                   Location & Reporter Details
                 </div>
-                <Card className="p-4 bg-surface/60 border-white/10 grid grid-cols-2 gap-3 text-xs">
-                  <div className="p-2.5 rounded-lg bg-ink/50 border border-white/5">
+                <Card className="p-4 bg-surface/60 border-line grid grid-cols-2 gap-3 text-xs">
+                  <div className="p-2.5 rounded-lg bg-cream border border-line">
                     <div className="text-[10px] text-muted uppercase mb-0.5">Junction</div>
                     <div className="text-text font-medium">
                       {selectedIncident.intersection_id
@@ -957,14 +957,14 @@ export default function IncidentsPage() {
                     </div>
                   </div>
 
-                  <div className="p-2.5 rounded-lg bg-ink/50 border border-white/5">
+                  <div className="p-2.5 rounded-lg bg-cream border border-line">
                     <div className="text-[10px] text-muted uppercase mb-0.5">Reporter User ID</div>
                     <div className="text-text font-mono">
                       {selectedIncident.reported_by ? `#${selectedIncident.reported_by}` : "System Anomaly Sensor"}
                     </div>
                   </div>
 
-                  <div className="col-span-2 p-2.5 rounded-lg bg-ink/50 border border-white/5">
+                  <div className="col-span-2 p-2.5 rounded-lg bg-cream border border-line">
                     <div className="text-[10px] text-muted uppercase mb-0.5">Coordinates (Lat, Lon)</div>
                     <div className="text-accent font-mono">
                       {selectedIncident.lat !== null && selectedIncident.lat !== undefined && selectedIncident.lon !== null && selectedIncident.lon !== undefined
@@ -984,13 +984,13 @@ export default function IncidentsPage() {
                 <RequireRole
                   allowedRoles={["admin", "traffic_officer"]}
                   fallback={
-                    <div className="p-3.5 rounded-xl bg-white/5 border border-white/10 text-muted text-xs flex items-center gap-2">
+                    <div className="p-3.5 rounded-xl bg-ink/5 border border-line text-muted text-xs flex items-center gap-2">
                       <ShieldAlert className="w-4 h-4 text-amber shrink-0" />
                       <span>Read-only clearance. Status transitions and deletions require traffic officer or admin authorization.</span>
                     </div>
                   }
                 >
-                  <div className="p-4 rounded-xl bg-surface border border-white/10 space-y-3">
+                  <div className="p-4 rounded-xl bg-surface border border-line space-y-3">
                     <div className="text-xs text-muted">
                       Transition incident status:
                     </div>
@@ -1032,7 +1032,7 @@ export default function IncidentsPage() {
 
                     {/* Admin Delete */}
                     {isAdmin() && (
-                      <div className="border-t border-white/10 pt-3 mt-3 flex items-center justify-between">
+                      <div className="border-t border-line pt-3 mt-3 flex items-center justify-between">
                         <span className="text-xs text-muted">Admin Privileges:</span>
                         <Button
                           variant="secondary"
@@ -1068,8 +1068,8 @@ export default function IncidentsPage() {
           />
 
           {/* Dialog Body */}
-          <div className="relative w-full max-w-lg bg-surface border border-white/15 rounded-2xl shadow-2xl p-6 z-10 space-y-5 animate-in zoom-in-95 duration-150">
-            <div className="flex items-center justify-between border-b border-white/10 pb-4">
+          <div className="relative w-full max-w-lg bg-surface border border-line rounded-2xl shadow-2xl p-6 z-10 space-y-5 animate-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between border-b border-line pb-4">
               <div>
                 <h2 className="text-lg font-display font-bold text-text">
                   Report Traffic Incident
@@ -1081,7 +1081,7 @@ export default function IncidentsPage() {
               <button
                 type="button"
                 onClick={() => setIsCreateOpen(false)}
-                className="w-8 h-8 rounded-lg bg-ink hover:bg-white/10 border border-white/10 flex items-center justify-center text-muted hover:text-text cursor-pointer"
+                className="w-8 h-8 rounded-lg bg-ink hover:bg-ink/5 border border-line flex items-center justify-center text-muted hover:text-text cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -1103,7 +1103,7 @@ export default function IncidentsPage() {
                 <select
                   value={newJunctionId}
                   onChange={(e) => setNewJunctionId(e.target.value)}
-                  className="w-full bg-ink border border-white/15 rounded-xl px-3 py-2 text-text text-xs focus:outline-none focus:border-accent"
+                  className="w-full bg-surface border border-line rounded-xl px-3 py-2 text-text text-xs focus:outline-none focus:border-accent"
                 >
                   <option value="">None / Open Highway Segment</option>
                   {junctionsData?.items?.map((j) => (
@@ -1123,7 +1123,7 @@ export default function IncidentsPage() {
                   <select
                     value={newSeverity}
                     onChange={(e) => setNewSeverity(e.target.value)}
-                    className="w-full bg-ink border border-white/15 rounded-xl px-3 py-2 text-text text-xs focus:outline-none focus:border-accent"
+                    className="w-full bg-surface border border-line rounded-xl px-3 py-2 text-text text-xs focus:outline-none focus:border-accent"
                   >
                     <option value="low">Low</option>
                     <option value="medium">Medium</option>
@@ -1141,7 +1141,7 @@ export default function IncidentsPage() {
                   <select
                     value={newStatus}
                     onChange={(e) => setNewStatus(e.target.value)}
-                    className="w-full bg-ink border border-white/15 rounded-xl px-3 py-2 text-text text-xs focus:outline-none focus:border-accent"
+                    className="w-full bg-surface border border-line rounded-xl px-3 py-2 text-text text-xs focus:outline-none focus:border-accent"
                   >
                     <option value="reported">Reported</option>
                     <option value="acknowledged">Acknowledged</option>
@@ -1161,7 +1161,7 @@ export default function IncidentsPage() {
                   rows={3}
                   maxLength={500}
                   placeholder="Collision blocking north approach, debris scattered..."
-                  className="w-full bg-ink border border-white/15 rounded-xl p-3 text-text text-xs focus:outline-none focus:border-accent placeholder:text-muted/60"
+                  className="w-full bg-surface border border-line rounded-xl p-3 text-text text-xs focus:outline-none focus:border-accent placeholder:text-muted/60"
                 />
               </div>
 
@@ -1177,7 +1177,7 @@ export default function IncidentsPage() {
                     value={newLat}
                     onChange={(e) => setNewLat(e.target.value)}
                     placeholder="e.g. 40.7128"
-                    className="w-full bg-ink border border-white/15 rounded-xl px-3 py-2 text-text text-xs focus:outline-none focus:border-accent font-mono placeholder:text-muted/60"
+                    className="w-full bg-surface border border-line rounded-xl px-3 py-2 text-text text-xs focus:outline-none focus:border-accent font-mono placeholder:text-muted/60"
                   />
                 </div>
 
@@ -1191,12 +1191,12 @@ export default function IncidentsPage() {
                     value={newLon}
                     onChange={(e) => setNewLon(e.target.value)}
                     placeholder="e.g. -74.0060"
-                    className="w-full bg-ink border border-white/15 rounded-xl px-3 py-2 text-text text-xs focus:outline-none focus:border-accent font-mono placeholder:text-muted/60"
+                    className="w-full bg-surface border border-line rounded-xl px-3 py-2 text-text text-xs focus:outline-none focus:border-accent font-mono placeholder:text-muted/60"
                   />
                 </div>
               </div>
 
-              <div className="pt-3 border-t border-white/10 flex items-center justify-end gap-2.5">
+              <div className="pt-3 border-t border-line flex items-center justify-end gap-2.5">
                 <Button
                   type="button"
                   variant="ghost"

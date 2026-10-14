@@ -43,7 +43,7 @@ const CustomTooltip: React.FC<CustomTooltipProps> = ({
   if (!active || !payload || !payload.length) return null;
 
   return (
-    <div className="rounded-lg bg-surface/95 border border-white/10 p-2.5 shadow-xl backdrop-blur-md text-xs">
+    <div className="rounded-lg bg-surface border border-line p-2.5 shadow-lg text-xs">
       <div className="font-mono text-muted mb-1">{label}</div>
       <div className="space-y-1">
         {payload.map((entry, idx) => (
@@ -76,7 +76,7 @@ export const DensityLineChart: React.FC<DensityLineChartProps> = ({
     return (
       <div
         style={{ height }}
-        className={`w-full flex items-center justify-center text-xs text-muted font-mono bg-ink/30 rounded-xl border border-white/5 ${className}`}
+        className={`w-full flex items-center justify-center text-xs text-muted font-mono bg-cream/60 rounded-xl border border-line ${className}`}
       >
         No density/occupancy observations recorded
       </div>
@@ -92,18 +92,18 @@ export const DensityLineChart: React.FC<DensityLineChartProps> = ({
         >
           <CartesianGrid
             strokeDasharray="3 3"
-            stroke="rgba(255, 255, 255, 0.05)"
+            stroke="rgba(28, 25, 23, 0.08)"
             vertical={false}
           />
           <XAxis
             dataKey="time"
-            stroke="#8B93B0"
+            stroke="#6B6257"
             fontSize={11}
             tickLine={false}
-            axisLine={{ stroke: "rgba(255, 255, 255, 0.1)" }}
+            axisLine={{ stroke: "rgba(28, 25, 23, 0.2)" }}
           />
           <YAxis
-            stroke="#8B93B0"
+            stroke="#6B6257"
             fontSize={11}
             domain={[0, 100]}
             tickLine={false}
@@ -118,17 +118,17 @@ export const DensityLineChart: React.FC<DensityLineChartProps> = ({
             wrapperStyle={{
               fontSize: 12,
               paddingBottom: 4,
-              color: "#8B93B0",
+              color: "#6B6257",
             }}
           />
           <Line
             type="monotone"
             dataKey="density"
             name="Congestion / Density"
-            stroke="#FFB800"
+            stroke="#B45309"
             strokeWidth={2}
-            dot={{ r: 2, fill: "#FFB800" }}
-            activeDot={{ r: 4, stroke: "#FFB800" }}
+            dot={{ r: 2, fill: "#B45309" }}
+            activeDot={{ r: 4, stroke: "#B45309" }}
           />
         </LineChart>
       </ResponsiveContainer>

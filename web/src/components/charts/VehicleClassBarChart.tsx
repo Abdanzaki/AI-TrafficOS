@@ -41,7 +41,7 @@ const CustomTooltip: React.FC<CustomTooltipProps> = ({
   if (!active || !payload || !payload.length) return null;
 
   return (
-    <div className="rounded-lg bg-surface/95 border border-white/10 p-2.5 shadow-xl backdrop-blur-md text-xs">
+    <div className="rounded-lg bg-surface border border-line p-2.5 shadow-lg text-xs">
       <div className="font-medium text-text capitalize mb-1">{label}</div>
       <div className="flex items-center gap-2 text-muted">
         <span>Detected count:</span>
@@ -54,11 +54,11 @@ const CustomTooltip: React.FC<CustomTooltipProps> = ({
 };
 
 const DEFAULT_COLORS: Record<string, string> = {
-  car: "#00D9A8",
-  truck: "#FFB800",
-  bus: "#38BDF8",
-  motorcycle: "#A855F7",
-  bicycle: "#22C55E",
+  car: "#14532D",
+  truck: "#B45309",
+  bus: "#C2410C",
+  motorcycle: "#6B6257",
+  bicycle: "#15803D",
 };
 
 export const VehicleClassBarChart: React.FC<VehicleClassBarChartProps> = ({
@@ -70,7 +70,7 @@ export const VehicleClassBarChart: React.FC<VehicleClassBarChartProps> = ({
     return (
       <div
         style={{ height }}
-        className={`w-full flex items-center justify-center text-xs text-muted font-mono bg-ink/30 rounded-xl border border-white/5 ${className}`}
+        className={`w-full flex items-center justify-center text-xs text-muted font-mono bg-cream/60 rounded-xl border border-line ${className}`}
       >
         No vehicle classification events detected
       </div>
@@ -86,19 +86,19 @@ export const VehicleClassBarChart: React.FC<VehicleClassBarChartProps> = ({
         >
           <CartesianGrid
             strokeDasharray="3 3"
-            stroke="rgba(255, 255, 255, 0.05)"
+            stroke="rgba(28, 25, 23, 0.08)"
             vertical={false}
           />
           <XAxis
             dataKey="name"
-            stroke="#8B93B0"
+            stroke="#6B6257"
             fontSize={11}
             tickLine={false}
-            axisLine={{ stroke: "rgba(255, 255, 255, 0.1)" }}
+            axisLine={{ stroke: "rgba(28, 25, 23, 0.2)" }}
             tickFormatter={(val) => val.charAt(0).toUpperCase() + val.slice(1)}
           />
           <YAxis
-            stroke="#8B93B0"
+            stroke="#6B6257"
             fontSize={11}
             tickLine={false}
             axisLine={false}
@@ -110,7 +110,7 @@ export const VehicleClassBarChart: React.FC<VehicleClassBarChartProps> = ({
               const color =
                 entry.color ||
                 DEFAULT_COLORS[entry.name.toLowerCase()] ||
-                "#00D9A8";
+                "#C2410C";
               return <Cell key={`cell-${index}`} fill={color} />;
             })}
           </Bar>

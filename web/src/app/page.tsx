@@ -85,21 +85,21 @@ const ARCHITECTURE_STACK = [
     role: "Web Application & App Router",
     spec: "React 19, TypeScript, Tailwind CSS v4",
     status: "Live",
-    statusVariant: "teal" as const,
+    statusVariant: "signal" as const,
   },
   {
     name: "FastAPI",
     role: "Backend API & Inference Gateway",
     spec: "Python async microservice framework",
     status: "Live",
-    statusVariant: "teal" as const,
+    statusVariant: "signal" as const,
   },
   {
     name: "PostgreSQL",
     role: "Relational & Spatial Database",
     spec: "ACID storage with PostGIS geographic support",
     status: "Live",
-    statusVariant: "teal" as const,
+    statusVariant: "signal" as const,
   },
   {
     name: "Redis",
@@ -113,7 +113,7 @@ const ARCHITECTURE_STACK = [
     role: "Real-time Telemetry Pipeline",
     spec: "Bidirectional high-frequency sensor streams",
     status: "Live",
-    statusVariant: "teal" as const,
+    statusVariant: "signal" as const,
   },
 ];
 
@@ -129,16 +129,12 @@ export default function HomePage() {
   }, [isLoading, user, router]);
 
   return (
-    <div className="flex flex-col min-h-screen bg-ink text-text">
+    <div className="flex flex-col min-h-screen bg-paper text-text">
       <Navbar />
 
       <main className="flex-1">
         {/* HERO SECTION */}
-        <section className="relative overflow-hidden pt-20 pb-16 sm:pt-28 sm:pb-24 border-b border-white/5">
-          {/* Subtle background glow */}
-          <div className="pointer-events-none absolute -top-40 left-1/2 -translate-x-1/2 w-[600px] h-[350px] bg-accent/10 blur-[130px] rounded-full" />
-          <div className="pointer-events-none absolute top-1/2 -left-40 w-[400px] h-[400px] bg-surface blur-[140px] rounded-full" />
-
+        <section className="relative overflow-hidden pt-20 pb-16 sm:pt-28 sm:pb-24 border-b border-line bg-grid-civic">
           <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <motion.div
               initial={{ opacity: 0, y: 16 }}
@@ -146,16 +142,16 @@ export default function HomePage() {
               transition={{ duration: 0.5 }}
               className="text-center max-w-3xl mx-auto"
             >
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-surface/90 border border-white/10 text-xs text-muted mb-6">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-md bg-surface border border-line text-xs text-muted mb-6 shadow-sm">
                 <span className="w-2 h-2 rounded-full bg-accent" />
                 <span className="text-text font-medium">AI TrafficOS v1.0</span>
-                <span className="text-white/20">•</span>
+                <span className="text-faint">•</span>
                 <span>Live in Production</span>
               </div>
 
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-display font-extrabold text-text tracking-tight leading-[1.15]">
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-display font-semibold text-text tracking-tight leading-[1.08]">
                 AI TrafficOS
-                <span className="block mt-2 text-2xl sm:text-3xl lg:text-4xl font-normal text-muted">
+                <span className="block mt-3 text-2xl sm:text-3xl lg:text-4xl font-normal italic text-muted">
                   The intelligent operating system for urban traffic
                 </span>
               </h1>
@@ -211,7 +207,7 @@ export default function HomePage() {
         </section>
 
         {/* LIVE CAPABILITY GRID */}
-        <section className="py-20 sm:py-24 border-b border-white/5 relative">
+        <section className="py-20 sm:py-24 border-b border-line relative">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <SectionHeading
               eyebrow="Live Capabilities"
@@ -234,12 +230,14 @@ export default function HomePage() {
                   >
                     <div>
                       <div className="flex items-center justify-between gap-3 mb-4">
-                        <div className="w-10 h-10 rounded-xl bg-ink/70 border border-white/10 flex items-center justify-center text-xl">
+                        <div className="w-10 h-10 rounded-lg bg-cream/70 border border-line flex items-center justify-center text-xl">
                           <span role="img" aria-label={feat.name}>
                             {feat.emoji}
                           </span>
                         </div>
-                        <Badge variant="teal">{feat.badge}</Badge>
+                        <span className="font-display italic text-lg text-faint tnum">
+                          {String(idx + 1).padStart(2, "0")}
+                        </span>
                       </div>
                       <h3 className="font-display font-semibold text-lg text-text">
                         {feat.name}
@@ -249,9 +247,9 @@ export default function HomePage() {
                       </p>
                     </div>
 
-                    <div className="mt-5 pt-4 border-t border-white/5 flex items-center justify-between text-xs text-muted/80">
-                      <span>Status</span>
-                      <span className="font-mono text-accent">Live in production</span>
+                    <div className="mt-5 pt-4 border-t border-line flex items-center justify-between text-xs">
+                      <span className="text-muted">Status</span>
+                      <Badge variant="signal" className="text-[10px]">{feat.badge}</Badge>
                     </div>
                   </Card>
                 </motion.div>
@@ -261,7 +259,7 @@ export default function HomePage() {
         </section>
 
         {/* ARCHITECTURE STRIP */}
-        <section className="py-20 sm:py-24 bg-surface/30 border-b border-white/5">
+        <section className="py-20 sm:py-24 bg-cream/40 border-y border-line">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <SectionHeading
               eyebrow="System Design"
@@ -289,7 +287,7 @@ export default function HomePage() {
                         {tech.status}
                       </Badge>
                     </div>
-                    <div className="text-xs font-semibold text-accent">
+                    <div className="text-xs font-semibold text-accent-deep">
                       {tech.role}
                     </div>
                     <p className="mt-2 text-xs text-muted leading-normal">
@@ -297,7 +295,7 @@ export default function HomePage() {
                     </p>
                   </div>
 
-                  <div className="mt-4 pt-3 border-t border-white/5 text-[11px] text-muted/70 font-mono">
+                  <div className="mt-4 pt-3 border-t border-line text-[11px] text-muted/70 font-mono">
                     Tier: Production
                   </div>
                 </Card>
@@ -309,30 +307,31 @@ export default function HomePage() {
         {/* CTA SECTION */}
         <section className="py-20 sm:py-24 relative overflow-hidden">
           <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <Card className="p-8 sm:p-12 relative overflow-hidden border-accent/20 bg-gradient-to-b from-surface to-ink">
-              <div className="pointer-events-none absolute -bottom-24 left-1/2 -translate-x-1/2 w-[400px] h-[200px] bg-accent/15 blur-[90px] rounded-full" />
-
-              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-display font-bold text-text">
+            <div className="p-8 sm:p-12 relative overflow-hidden rounded-[10px] bg-pine-deep bg-grid-civic-light border border-pine-ink/50 shadow-[0_8px_30px_rgba(13,58,32,0.25)]">
+              <p className="text-[11px] uppercase tracking-[0.2em] font-semibold text-paper/60 mb-4">
+                Municipal Deployment
+              </p>
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-display font-semibold text-paper tracking-tight">
                 Ready to explore the live AI TrafficOS platform?
               </h2>
-              <p className="mt-4 text-sm sm:text-base text-muted max-w-xl mx-auto leading-relaxed">
+              <p className="mt-4 text-sm sm:text-base text-paper/70 max-w-xl mx-auto leading-relaxed">
                 Open the live operations dashboard or browse the open-source repository for technical documentation and system design.
               </p>
 
               <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
-                <Button href="/dashboard" variant="primary" size="md">
+                <Button href="/dashboard" variant="terracotta" size="md">
                   Open Live Dashboard
                 </Button>
-                <Button
+                <a
                   href={docsUrl}
-                  external
-                  variant="secondary"
-                  size="md"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center rounded-lg px-6 py-3.5 gap-2 text-base font-medium text-paper border border-paper/30 hover:bg-paper/10 transition-all"
                 >
                   View on GitHub
-                </Button>
+                </a>
               </div>
-            </Card>
+            </div>
           </div>
         </section>
       </main>

@@ -180,13 +180,13 @@ export const EventDemandForecast: React.FC<EventDemandForecastProps> = ({
   return (
     <Card className={`p-6 sm:p-8 space-y-8 ${className}`}>
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/10">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-line">
         <div>
           <div className="flex items-center gap-2 mb-1.5">
-            <Badge variant="teal" dot>
+            <Badge variant="signal" dot>
               Parametric Heuristic
             </Badge>
-            <span className="text-white/20">•</span>
+            <span className="text-ink/20">•</span>
             <span className="text-xs text-muted font-mono">
               Event Uplift Gravity Model
             </span>
@@ -217,7 +217,7 @@ export const EventDemandForecast: React.FC<EventDemandForecastProps> = ({
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. City Marathon"
               required
-              className="w-full bg-ink/70 border border-white/10 rounded-xl px-3 py-2 text-xs sm:text-sm text-text placeholder-muted/60 focus:outline-none focus:border-accent"
+              className="w-full bg-surface border border-line rounded-xl px-3 py-2 text-xs sm:text-sm text-text placeholder-muted/60 focus:outline-none focus:border-accent"
             />
           </div>
 
@@ -232,7 +232,7 @@ export const EventDemandForecast: React.FC<EventDemandForecastProps> = ({
               onChange={(e) => setJunctionId(e.target.value)}
               disabled={junctionsLoading}
               required
-              className="w-full bg-ink/70 border border-white/10 rounded-xl px-3 py-2 text-xs sm:text-sm text-text focus:outline-none focus:border-accent"
+              className="w-full bg-surface border border-line rounded-xl px-3 py-2 text-xs sm:text-sm text-text focus:outline-none focus:border-accent"
             >
               <option value="">
                 {junctionsLoading ? "Loading junctions..." : "Select junction..."}
@@ -256,7 +256,7 @@ export const EventDemandForecast: React.FC<EventDemandForecastProps> = ({
               value={startsAt}
               onChange={(e) => setStartsAt(e.target.value)}
               required
-              className="w-full bg-ink/70 border border-white/10 rounded-xl px-3 py-2 text-xs sm:text-sm text-text focus:outline-none focus:border-accent"
+              className="w-full bg-surface border border-line rounded-xl px-3 py-2 text-xs sm:text-sm text-text focus:outline-none focus:border-accent"
             />
           </div>
 
@@ -273,7 +273,7 @@ export const EventDemandForecast: React.FC<EventDemandForecastProps> = ({
               value={attendance}
               onChange={(e) => setAttendance(Math.max(1, parseInt(e.target.value, 10) || 0))}
               required
-              className="w-full bg-ink/70 border border-white/10 rounded-xl px-3 py-2 text-xs sm:text-sm text-text font-mono focus:outline-none focus:border-accent"
+              className="w-full bg-surface border border-line rounded-xl px-3 py-2 text-xs sm:text-sm text-text font-mono focus:outline-none focus:border-accent"
             />
           </div>
         </div>
@@ -288,7 +288,7 @@ export const EventDemandForecast: React.FC<EventDemandForecastProps> = ({
             <select
               value={kNearest}
               onChange={(e) => setKNearest(parseInt(e.target.value, 10))}
-              className="bg-ink/70 border border-white/10 rounded-lg px-2.5 py-1 text-xs text-text font-mono focus:outline-none focus:border-accent"
+              className="bg-surface border border-line rounded-lg px-2.5 py-1 text-xs text-text font-mono focus:outline-none focus:border-accent"
             >
               <option value="2">2 Junctions</option>
               <option value="3">3 Junctions (Default)</option>
@@ -335,20 +335,20 @@ export const EventDemandForecast: React.FC<EventDemandForecastProps> = ({
 
       {/* Results View */}
       {results && (
-        <div className="space-y-6 pt-6 border-t border-white/10">
+        <div className="space-y-6 pt-6 border-t border-line">
           {/* Results Summary Header */}
-          <div className="p-5 rounded-2xl bg-ink/60 border border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="p-5 rounded-2xl bg-paper border border-line flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
               <div className="flex items-center gap-2 flex-wrap mb-1">
-                <Badge variant="teal" dot>
+                <Badge variant="signal" dot>
                   {results.provenance}
                 </Badge>
-                <span className="text-white/20">•</span>
+                <span className="text-ink/20">•</span>
                 <span className="text-xs text-muted font-mono flex items-center gap-1">
                   <Clock className="w-3 h-3" />
                   Starts: {formatDateTime(results.starts_at)}
                 </span>
-                <span className="text-white/20">•</span>
+                <span className="text-ink/20">•</span>
                 <span className="text-xs text-muted font-mono">
                   Attendance: {formatNumber(results.expected_attendance)}
                 </span>
@@ -361,7 +361,7 @@ export const EventDemandForecast: React.FC<EventDemandForecastProps> = ({
 
             {/* Total Peak Arrivals Metrics */}
             <div className="flex items-center gap-3 shrink-0">
-              <div className="p-2.5 px-3 rounded-xl bg-surface/80 border border-white/10 text-center">
+              <div className="p-2.5 px-3 rounded-xl bg-surface/80 border border-line text-center">
                 <div className="text-[10px] text-muted uppercase font-medium">Low Peak</div>
                 <div className="text-sm sm:text-base font-bold font-mono text-text">
                   +{formatNumber(results.total_peak_vehicles.low)} <span className="text-[10px] text-muted">veh</span>
@@ -399,10 +399,10 @@ export const EventDemandForecast: React.FC<EventDemandForecastProps> = ({
                 return (
                   <div
                     key={j.junction_id}
-                    className="p-5 rounded-2xl bg-surface/50 border border-white/10 space-y-4"
+                    className="p-5 rounded-2xl bg-surface/50 border border-line space-y-4"
                   >
                     {/* Junction Title & Meta */}
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-white/5">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-line">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="font-display font-semibold text-text text-sm sm:text-base">
                           #{j.junction_id} — {j.junction_name}
@@ -420,7 +420,7 @@ export const EventDemandForecast: React.FC<EventDemandForecastProps> = ({
 
                       <div className="flex items-center gap-2">
                         {j.baseline_status === "observed" ? (
-                          <Badge variant="teal" className="text-[10px]">
+                          <Badge variant="signal" className="text-[10px]">
                             Observed Baseline: {baseFlow} veh/hr
                           </Badge>
                         ) : (
@@ -442,7 +442,7 @@ export const EventDemandForecast: React.FC<EventDemandForecastProps> = ({
                     {/* Scenario Bars Grid */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                       {/* Low Scenario */}
-                      <div className="p-3 rounded-xl bg-ink/40 border border-white/5 space-y-1.5">
+                      <div className="p-3 rounded-xl bg-cream/70 border border-line space-y-1.5">
                         <div className="text-[11px] text-muted uppercase font-medium flex items-center justify-between">
                           <span>Conservative (Low)</span>
                           <span className="font-mono text-text">
@@ -532,7 +532,7 @@ export const EventDemandForecast: React.FC<EventDemandForecastProps> = ({
             </button>
 
             {showAssumptions && (
-              <div className="p-4 rounded-2xl bg-ink/70 border border-white/10 space-y-3">
+              <div className="p-4 rounded-2xl bg-surface border border-line space-y-3">
                 <div className="text-xs text-muted leading-relaxed">
                   {results.documentation}
                 </div>
@@ -540,16 +540,16 @@ export const EventDemandForecast: React.FC<EventDemandForecastProps> = ({
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-xs">
                     <thead>
-                      <tr className="border-b border-white/10 text-muted uppercase text-[10px] font-mono">
+                      <tr className="border-b border-line text-muted uppercase text-[10px] font-mono">
                         <th className="pb-2">Parameter</th>
                         <th className="pb-2">Description</th>
                         <th className="pb-2">Scenario Range</th>
                         <th className="pb-2">Mathematical Formulation</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-white/5 font-mono">
+                    <tbody className="divide-y divide-line font-mono">
                       {results.assumptions.map((item) => (
-                        <tr key={item.parameter} className="hover:bg-white/5">
+                        <tr key={item.parameter} className="hover:bg-ink/5">
                           <td className="py-2.5 font-bold text-accent pr-3">
                             {item.parameter}
                           </td>

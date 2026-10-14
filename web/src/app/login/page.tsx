@@ -56,7 +56,7 @@ function LoginForm() {
   };
 
   return (
-    <div className="w-full max-w-md p-6 sm:p-8 rounded-2xl bg-surface/80 border border-white/10 shadow-2xl backdrop-blur-md">
+    <div className="w-full max-w-md p-6 sm:p-8 rounded-[10px] bg-surface border border-line shadow-[0_4px_16px_rgba(28,25,23,0.08)]">
       {/* Brand & Title */}
       <div className="text-center mb-8">
         <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-accent/15 border border-accent/40 text-accent mb-4 shadow-sm">
@@ -102,7 +102,7 @@ function LoginForm() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="officer@trafficos.internal"
-              className="w-full pl-10 pr-4 py-2.5 bg-ink/70 border border-white/10 rounded-xl text-sm text-text placeholder:text-muted/80 focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent transition-all"
+              className="w-full pl-10 pr-4 py-2.5 bg-surface border border-line rounded-xl text-sm text-text placeholder:text-muted/80 focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent transition-all"
             />
           </div>
         </div>
@@ -128,7 +128,7 @@ function LoginForm() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••••••"
-              className="w-full pl-10 pr-10 py-2.5 bg-ink/70 border border-white/10 rounded-xl text-sm text-text placeholder:text-muted/80 focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent transition-all"
+              className="w-full pl-10 pr-10 py-2.5 bg-surface border border-line rounded-xl text-sm text-text placeholder:text-muted/80 focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent transition-all"
             />
             <button
               type="button"
@@ -167,7 +167,7 @@ function LoginForm() {
       </form>
 
       {/* Footer Links */}
-      <div className="mt-8 pt-6 border-t border-white/10 text-center space-y-3">
+      <div className="mt-8 pt-6 border-t border-line text-center space-y-3">
         <p className="text-xs text-muted">
           Need an analyst account?{" "}
           <Link
@@ -193,7 +193,7 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen bg-ink text-text flex items-center justify-center p-4 sm:p-6 relative">
+    <div className="min-h-screen bg-paper text-text flex items-center justify-center p-4 sm:p-6 relative bg-grid-civic">
       <Suspense fallback={<LoadingSpinner size="lg" fullPage label="Loading login interface..." />}>
         <LoginForm />
       </Suspense>

@@ -207,17 +207,17 @@ describe("TrafficMap Component", () => {
 
   describe("Feature 2: Richer Road Detail & Derived Corridors", () => {
     it("correctly maps corridor polyline colors based on endpoint congestion averages", () => {
-      // Low congestion (< 40%) -> #00D9A8
-      expect(getCorridorColor(20, 30)).toBe("#00D9A8");
-      expect(getCorridorColor(0, 39)).toBe("#00D9A8");
+      // Low congestion (< 40%) -> #15803D
+      expect(getCorridorColor(20, 30)).toBe("#15803D");
+      expect(getCorridorColor(0, 39)).toBe("#15803D");
 
-      // Moderate congestion (40% - 69%) -> #FFB800
-      expect(getCorridorColor(40, 60)).toBe("#FFB800");
-      expect(getCorridorColor(30, 60)).toBe("#FFB800"); // avg 45
+      // Moderate congestion (40% - 69%) -> #B45309
+      expect(getCorridorColor(40, 60)).toBe("#B45309");
+      expect(getCorridorColor(30, 60)).toBe("#B45309"); // avg 45
 
-      // High congestion (>= 70%) -> #FF4D6D
-      expect(getCorridorColor(70, 80)).toBe("#FF4D6D");
-      expect(getCorridorColor(60, 90)).toBe("#FF4D6D"); // avg 75
+      // High congestion (>= 70%) -> #B91C1C
+      expect(getCorridorColor(70, 80)).toBe("#B91C1C");
+      expect(getCorridorColor(60, 90)).toBe("#B91C1C"); // avg 75
 
       // Fallback neutral #3B4763 when either endpoint is null, undefined, or NaN
       expect(getCorridorColor(null, 50)).toBe(NEUTRAL_CORRIDOR_COLOR);
@@ -265,7 +265,7 @@ describe("TrafficMap Component", () => {
       expect(corridors).toHaveLength(1);
       expect(corridors[0].fromJunctionId).toBe(1);
       expect(corridors[0].toJunctionId).toBe(2);
-      expect(corridors[0].color).toBe("#00D9A8");
+      expect(corridors[0].color).toBe("#15803D");
 
       // Even if duplicated junction entries exist in the array, pair is deduped
       const duplicated = [...junctions, junctions[0]];
@@ -307,10 +307,10 @@ describe("TrafficMap Component", () => {
         screen.getByText("Corridor (derived from junction network)")
       ).toBeInTheDocument();
 
-      // Verify Polyline was called with high congestion color (#FF4D6D)
+      // Verify Polyline was called with high congestion color (#B91C1C)
       expect(mockPolyline).toHaveBeenCalledTimes(1);
       const polylineProps = mockPolyline.mock.calls[0][0];
-      expect(polylineProps.pathOptions.color).toBe("#FF4D6D");
+      expect(polylineProps.pathOptions.color).toBe("#B91C1C");
       expect(polylineProps.positions).toEqual([
         [28.61, 77.2],
         [28.62, 77.2],

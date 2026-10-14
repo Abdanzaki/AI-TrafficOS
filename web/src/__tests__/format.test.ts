@@ -162,7 +162,7 @@ describe("format helpers", () => {
       expect(getCongestionStatus(NaN).level).toBe("low");
       expect(getCongestionStatus(20).level).toBe("low");
       expect(getCongestionStatus(20).label).toBe("Smooth");
-      expect(getCongestionStatus(20).badgeVariant).toBe("teal");
+      expect(getCongestionStatus(20).badgeVariant).toBe("signal");
     });
 
     it("returns medium/moderate status for 40-69", () => {
@@ -185,7 +185,7 @@ describe("format helpers", () => {
       expect(getSeverityBadgeVariant("critical")).toBe("danger");
       expect(getSeverityBadgeVariant("high")).toBe("danger");
       expect(getSeverityBadgeVariant("medium")).toBe("amber");
-      expect(getSeverityBadgeVariant("low")).toBe("teal");
+      expect(getSeverityBadgeVariant("low")).toBe("signal");
       expect(getSeverityBadgeVariant("unknown")).toBe("muted");
       expect(getSeverityBadgeVariant(null)).toBe("muted");
       expect(getSeverityBadgeVariant(undefined)).toBe("muted");

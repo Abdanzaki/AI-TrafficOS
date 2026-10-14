@@ -146,7 +146,7 @@ function getPriorityBadge(priority: number): {
     case 2:
       return { variant: "amber", label: "P2 — High" };
     case 3:
-      return { variant: "teal", label: "P3 — Medium" };
+      return { variant: "signal", label: "P3 — Medium" };
     case 4:
       return { variant: "muted", label: "P4 — Low" };
     case 5:
@@ -164,9 +164,9 @@ function getStatusBadge(status: string): {
     case "active":
       return { variant: "amber", label: "Active" };
     case "dispatched":
-      return { variant: "teal", label: "Dispatched" };
+      return { variant: "signal", label: "Dispatched" };
     case "on_scene":
-      return { variant: "teal", label: "On Scene" };
+      return { variant: "signal", label: "On Scene" };
     case "resolved":
       return { variant: "success", label: "Resolved" };
     default:
@@ -595,7 +595,7 @@ export default function EmergencyPage() {
 
       {/* Overview Stat Counters */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-        <Card className="p-4 bg-surface/70 border-white/10">
+        <Card className="p-4 bg-surface/70 border-line">
           <div className="text-[11px] font-medium text-amber uppercase tracking-wider">
             Active Calls
           </div>
@@ -605,7 +605,7 @@ export default function EmergencyPage() {
           <div className="text-[10px] text-muted mt-0.5">Pending preemption wave</div>
         </Card>
 
-        <Card className="p-4 bg-surface/70 border-white/10">
+        <Card className="p-4 bg-surface/70 border-line">
           <div className="text-[11px] font-medium text-accent uppercase tracking-wider">
             Dispatched Waves
           </div>
@@ -615,7 +615,7 @@ export default function EmergencyPage() {
           <div className="text-[10px] text-muted mt-0.5">Corridor preemption active</div>
         </Card>
 
-        <Card className="p-4 bg-surface/70 border-white/10">
+        <Card className="p-4 bg-surface/70 border-line">
           <div className="text-[11px] font-medium text-text uppercase tracking-wider">
             On Scene
           </div>
@@ -625,7 +625,7 @@ export default function EmergencyPage() {
           <div className="text-[10px] text-muted mt-0.5">Units arrived at target</div>
         </Card>
 
-        <Card className="p-4 bg-surface/70 border-white/10">
+        <Card className="p-4 bg-surface/70 border-line">
           <div className="text-[11px] font-medium text-success uppercase tracking-wider">
             Resolved
           </div>
@@ -639,7 +639,7 @@ export default function EmergencyPage() {
       {/* STANDALONE CORRIDOR SIMULATION / PLANNER ACCORDION */}
       {isPlannerOpen && (
         <Card className="p-5 border-accent/30 bg-surface/80 space-y-4 animate-in slide-in-from-top-3">
-          <div className="flex items-center justify-between border-b border-white/10 pb-3">
+          <div className="flex items-center justify-between border-b border-line pb-3">
             <div className="flex items-center gap-2">
               <Compass className="w-5 h-5 text-accent" />
               <h2 className="font-display font-semibold text-text text-base">
@@ -664,7 +664,7 @@ export default function EmergencyPage() {
               <select
                 value={planFromId}
                 onChange={(e) => setPlanFromId(e.target.value)}
-                className="w-full bg-ink border border-white/15 rounded-xl px-3 py-2 text-text text-xs focus:outline-none focus:border-accent"
+                className="w-full bg-surface border border-line rounded-xl px-3 py-2 text-text text-xs focus:outline-none focus:border-accent"
               >
                 <option value="">Select Origin...</option>
                 {junctionsData?.items?.map((j) => (
@@ -680,7 +680,7 @@ export default function EmergencyPage() {
               <select
                 value={planToId}
                 onChange={(e) => setPlanToId(e.target.value)}
-                className="w-full bg-ink border border-white/15 rounded-xl px-3 py-2 text-text text-xs focus:outline-none focus:border-accent"
+                className="w-full bg-surface border border-line rounded-xl px-3 py-2 text-text text-xs focus:outline-none focus:border-accent"
               >
                 <option value="">Select Destination...</option>
                 {junctionsData?.items?.map((j) => (
@@ -699,7 +699,7 @@ export default function EmergencyPage() {
                 max={120}
                 value={planSpeed}
                 onChange={(e) => setPlanSpeed(Number(e.target.value))}
-                className="w-full bg-ink border border-white/15 rounded-xl px-3 py-2 text-text text-xs focus:outline-none focus:border-accent font-mono"
+                className="w-full bg-surface border border-line rounded-xl px-3 py-2 text-text text-xs focus:outline-none focus:border-accent font-mono"
               />
             </div>
 
@@ -721,7 +721,7 @@ export default function EmergencyPage() {
       {/* ACTIVE GREEN CORRIDOR ROUTE VISUALIZATION */}
       {activeCorridorPlan && (
         <Card className="p-5 sm:p-6 border-accent/40 bg-accent/5 space-y-5 animate-in fade-in">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-line pb-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-accent/20 border border-accent/40 flex items-center justify-center text-accent shrink-0">
                 <Zap className="w-5 h-5" />
@@ -731,7 +731,7 @@ export default function EmergencyPage() {
                   <h2 className="font-display font-bold text-text text-base sm:text-lg">
                     Green-Corridor Route: {activeCorridorPlan.corridor_id}
                   </h2>
-                  <Badge variant="teal" dot>
+                  <Badge variant="signal" dot>
                     Active Wave
                   </Badge>
                   {activeCorridorSourceEventId && (
@@ -768,7 +768,7 @@ export default function EmergencyPage() {
                   setActiveCorridorPlan(null);
                   setActiveCorridorSourceEventId(null);
                 }}
-                className="w-8 h-8 rounded-lg bg-surface border border-white/10 flex items-center justify-center text-muted hover:text-text"
+                className="w-8 h-8 rounded-lg bg-surface border border-line flex items-center justify-center text-muted hover:text-text"
                 title="Dismiss Corridor View"
               >
                 <X className="w-4 h-4" />
@@ -800,12 +800,12 @@ export default function EmergencyPage() {
                         ? "border-amber/40 bg-amber/5"
                         : isDest
                         ? "border-success/40 bg-success/5"
-                        : "border-white/10 bg-surface/70"
+                        : "border-line bg-surface/70"
                     } relative overflow-hidden`}
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex items-center gap-2">
-                        <span className="w-6 h-6 rounded-full bg-ink/70 border border-white/10 flex items-center justify-center text-xs font-mono font-bold text-accent">
+                        <span className="w-6 h-6 rounded-full bg-surface border border-line flex items-center justify-center text-xs font-mono font-bold text-accent">
                           {idx + 1}
                         </span>
                         <div>
@@ -832,7 +832,7 @@ export default function EmergencyPage() {
 
                     {/* Preemption Directive */}
                     {action && (
-                      <div className="mt-2.5 pt-2 border-t border-white/5 space-y-1 text-[11px]">
+                      <div className="mt-2.5 pt-2 border-t border-line space-y-1 text-[11px]">
                         <div className="flex items-center justify-between">
                           <span className="text-muted font-medium">Directive:</span>
                           <span className="font-mono text-accent font-semibold uppercase">
@@ -859,7 +859,7 @@ export default function EmergencyPage() {
       )}
 
       {/* FILTER CONTROLS BAR */}
-      <div className="bg-surface/60 p-4 rounded-2xl border border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-3 flex-wrap">
+      <div className="bg-surface/60 p-4 rounded-2xl border border-line flex flex-col md:flex-row md:items-center justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-2 text-xs font-medium text-muted uppercase tracking-wider">
           <Activity className="w-3.5 h-3.5 text-accent" />
           <span>Filter Events:</span>
@@ -870,7 +870,7 @@ export default function EmergencyPage() {
           <select
             value={statusFilter}
             onChange={(e) => handleFilterChange(setStatusFilter, e.target.value)}
-            className="bg-ink/80 border border-white/15 rounded-xl px-3 py-1.5 text-xs font-medium text-text focus:outline-none focus:border-accent"
+            className="bg-ink/80 border border-line rounded-xl px-3 py-1.5 text-xs font-medium text-text focus:outline-none focus:border-accent"
           >
             <option value="all">All Statuses</option>
             <option value="active">Active</option>
@@ -883,7 +883,7 @@ export default function EmergencyPage() {
           <select
             value={priorityFilter}
             onChange={(e) => handleFilterChange(setPriorityFilter, e.target.value)}
-            className="bg-ink/80 border border-white/15 rounded-xl px-3 py-1.5 text-xs font-medium text-text focus:outline-none focus:border-accent"
+            className="bg-ink/80 border border-line rounded-xl px-3 py-1.5 text-xs font-medium text-text focus:outline-none focus:border-accent"
           >
             <option value="all">All Priorities</option>
             <option value="1">Priority 1 (Critical)</option>
@@ -896,7 +896,7 @@ export default function EmergencyPage() {
           {hasActiveFilters && (
             <button
               onClick={handleResetFilters}
-              className="text-xs text-muted hover:text-text flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-white/10 hover:bg-white/5 transition-colors cursor-pointer"
+              className="text-xs text-muted hover:text-text flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-line hover:bg-ink/5 transition-colors cursor-pointer"
             >
               <RotateCcw className="w-3 h-3" />
               <span>Reset</span>
@@ -940,11 +940,11 @@ export default function EmergencyPage() {
           }
         />
       ) : (
-        <Card className="border-white/10 bg-surface/70 overflow-hidden">
+        <Card className="border-line bg-surface/70 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead>
-                <tr className="border-b border-white/10 bg-ink/40 text-muted uppercase tracking-wider text-[11px]">
+                <tr className="border-b border-line bg-cream/70 text-muted uppercase tracking-wider text-[11px]">
                   <th className="py-3 px-3.5">ID / Detected</th>
                   <th className="py-3 px-3.5">Vehicle Type</th>
                   <th className="py-3 px-3.5">Priority</th>
@@ -955,7 +955,7 @@ export default function EmergencyPage() {
                   <th className="py-3 px-3.5 text-right">Preemption Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/5">
+              <tbody className="divide-y divide-line">
                 {items.map((event) => {
                   const prioBadge = getPriorityBadge(event.priority);
                   const statBadge = getStatusBadge(event.status);
@@ -966,7 +966,7 @@ export default function EmergencyPage() {
                   return (
                     <tr
                       key={event.id}
-                      className="hover:bg-white/5 transition-colors group"
+                      className="hover:bg-ink/5 transition-colors group"
                     >
                       {/* ID / Detected */}
                       <td className="py-3 px-3.5 align-top">
@@ -985,7 +985,7 @@ export default function EmergencyPage() {
                       {/* Vehicle Type */}
                       <td className="py-3 px-3.5 align-top">
                         <div className="flex items-center gap-2">
-                          <div className="w-7 h-7 rounded-lg bg-surface/90 border border-white/10 flex items-center justify-center shrink-0">
+                          <div className="w-7 h-7 rounded-lg bg-surface/90 border border-line flex items-center justify-center shrink-0">
                             {getVehicleIcon(event.vehicle_type)}
                           </div>
                           <div>
@@ -1093,7 +1093,7 @@ export default function EmergencyPage() {
                                 <button
                                   type="button"
                                   onClick={() => updateEventMutation.mutate({ id: event.id, data: { status: "dispatched" } })}
-                                  className="px-2 py-1 rounded bg-white/5 hover:bg-white/10 text-muted hover:text-text text-[10px]"
+                                  className="px-2 py-1 rounded bg-ink/5 hover:bg-ink/5 text-muted hover:text-text text-[10px]"
                                   title="Mark Dispatched"
                                 >
                                   Dispatched
@@ -1104,7 +1104,7 @@ export default function EmergencyPage() {
                                 <button
                                   type="button"
                                   onClick={() => updateEventMutation.mutate({ id: event.id, data: { status: "on_scene" } })}
-                                  className="px-2 py-1 rounded bg-white/5 hover:bg-white/10 text-muted hover:text-text text-[10px]"
+                                  className="px-2 py-1 rounded bg-ink/5 hover:bg-ink/5 text-muted hover:text-text text-[10px]"
                                   title="Mark On Scene"
                                 >
                                   On Scene
@@ -1162,8 +1162,8 @@ export default function EmergencyPage() {
             className="fixed inset-0 bg-black/75 backdrop-blur-sm transition-opacity"
           />
 
-          <div className="relative w-full max-w-lg bg-surface border border-white/15 rounded-2xl shadow-2xl p-6 z-10 space-y-5 animate-in zoom-in-95 duration-150">
-            <div className="flex items-center justify-between border-b border-white/10 pb-4">
+          <div className="relative w-full max-w-lg bg-surface border border-line rounded-2xl shadow-2xl p-6 z-10 space-y-5 animate-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between border-b border-line pb-4">
               <div>
                 <h2 className="text-lg font-display font-bold text-text">
                   Dispatch Emergency Vehicle
@@ -1175,7 +1175,7 @@ export default function EmergencyPage() {
               <button
                 type="button"
                 onClick={() => setIsDispatchModalOpen(false)}
-                className="w-8 h-8 rounded-lg bg-ink hover:bg-white/10 border border-white/10 flex items-center justify-center text-muted hover:text-text cursor-pointer"
+                className="w-8 h-8 rounded-lg bg-ink hover:bg-ink/5 border border-line flex items-center justify-center text-muted hover:text-text cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -1198,7 +1198,7 @@ export default function EmergencyPage() {
                   <select
                     value={newVehicleType}
                     onChange={(e) => setNewVehicleType(e.target.value)}
-                    className="w-full bg-ink border border-white/15 rounded-xl px-3 py-2 text-text text-xs focus:outline-none focus:border-accent"
+                    className="w-full bg-surface border border-line rounded-xl px-3 py-2 text-text text-xs focus:outline-none focus:border-accent"
                   >
                     <option value="Ambulance">Ambulance</option>
                     <option value="Fire Engine">Fire Engine</option>
@@ -1216,7 +1216,7 @@ export default function EmergencyPage() {
                   <select
                     value={newPriority}
                     onChange={(e) => setNewPriority(Number(e.target.value))}
-                    className="w-full bg-ink border border-white/15 rounded-xl px-3 py-2 text-text text-xs focus:outline-none focus:border-accent"
+                    className="w-full bg-surface border border-line rounded-xl px-3 py-2 text-text text-xs focus:outline-none focus:border-accent"
                   >
                     <option value={1}>1 — Critical Emergency</option>
                     <option value={2}>2 — High Priority</option>
@@ -1235,7 +1235,7 @@ export default function EmergencyPage() {
                 <select
                   value={newIntersectionId}
                   onChange={(e) => setNewIntersectionId(e.target.value)}
-                  className="w-full bg-ink border border-white/15 rounded-xl px-3 py-2 text-text text-xs focus:outline-none focus:border-accent"
+                  className="w-full bg-surface border border-line rounded-xl px-3 py-2 text-text text-xs focus:outline-none focus:border-accent"
                 >
                   <option value="">None / Open Roadway</option>
                   {junctionsData?.items?.map((j) => (
@@ -1257,7 +1257,7 @@ export default function EmergencyPage() {
                     value={newIncidentId}
                     onChange={(e) => setNewIncidentId(e.target.value)}
                     placeholder="e.g. 1"
-                    className="w-full bg-ink border border-white/15 rounded-xl px-3 py-2 text-text text-xs focus:outline-none focus:border-accent font-mono placeholder:text-muted/60"
+                    className="w-full bg-surface border border-line rounded-xl px-3 py-2 text-text text-xs focus:outline-none focus:border-accent font-mono placeholder:text-muted/60"
                   />
                 </div>
 
@@ -1269,7 +1269,7 @@ export default function EmergencyPage() {
                   <select
                     value={newStatus}
                     onChange={(e) => setNewStatus(e.target.value)}
-                    className="w-full bg-ink border border-white/15 rounded-xl px-3 py-2 text-text text-xs focus:outline-none focus:border-accent"
+                    className="w-full bg-surface border border-line rounded-xl px-3 py-2 text-text text-xs focus:outline-none focus:border-accent"
                   >
                     <option value="active">Active</option>
                     <option value="dispatched">Dispatched</option>
@@ -1277,7 +1277,7 @@ export default function EmergencyPage() {
                 </div>
               </div>
 
-              <div className="pt-3 border-t border-white/10 flex items-center justify-end gap-2.5">
+              <div className="pt-3 border-t border-line flex items-center justify-end gap-2.5">
                 <Button
                   type="button"
                   variant="ghost"
@@ -1313,7 +1313,7 @@ export default function EmergencyPage() {
           />
 
           <div className="relative w-full max-w-lg bg-surface border border-accent/40 rounded-2xl shadow-2xl p-6 z-10 space-y-5 animate-in zoom-in-95 duration-150">
-            <div className="flex items-center justify-between border-b border-white/10 pb-4">
+            <div className="flex items-center justify-between border-b border-line pb-4">
               <div>
                 <div className="flex items-center gap-2">
                   <Zap className="w-5 h-5 text-accent" />
@@ -1328,13 +1328,13 @@ export default function EmergencyPage() {
               <button
                 type="button"
                 onClick={() => setPrioritizeEvent(null)}
-                className="w-8 h-8 rounded-lg bg-ink hover:bg-white/10 border border-white/10 flex items-center justify-center text-muted hover:text-text cursor-pointer"
+                className="w-8 h-8 rounded-lg bg-ink hover:bg-ink/5 border border-line flex items-center justify-center text-muted hover:text-text cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="p-3.5 rounded-xl bg-ink/70 border border-white/5 space-y-2 text-xs">
+            <div className="p-3.5 rounded-xl bg-surface border border-line space-y-2 text-xs">
               <div className="flex items-center justify-between">
                 <span className="text-muted">Origin Intersection:</span>
                 <span className="font-medium text-text">
@@ -1369,7 +1369,7 @@ export default function EmergencyPage() {
                 <select
                   value={selectedDestinationId}
                   onChange={(e) => setSelectedDestinationId(e.target.value)}
-                  className="w-full bg-ink border border-white/15 rounded-xl px-3 py-2 text-text text-xs focus:outline-none focus:border-accent"
+                  className="w-full bg-surface border border-line rounded-xl px-3 py-2 text-text text-xs focus:outline-none focus:border-accent"
                 >
                   <option value="">Select Destination Junction...</option>
                   {junctionsData?.items?.map((j) => (
@@ -1380,12 +1380,12 @@ export default function EmergencyPage() {
                 </select>
               </div>
 
-              <div className="p-3 rounded-lg bg-surface/90 border border-white/10 text-muted text-[11px] leading-relaxed">
+              <div className="p-3 rounded-lg bg-surface/90 border border-line text-muted text-[11px] leading-relaxed">
                 <span className="text-accent font-semibold block mb-0.5">NTCIP Preemption Guarantee:</span>
                 Actuates supervisory green splits along intermediate controllers while preserving authoritative minimum pedestrian and clearance safe bounds.
               </div>
 
-              <div className="pt-3 border-t border-white/10 flex items-center justify-end gap-2.5">
+              <div className="pt-3 border-t border-line flex items-center justify-end gap-2.5">
                 <Button
                   type="button"
                   variant="ghost"

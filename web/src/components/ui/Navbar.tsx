@@ -19,15 +19,15 @@ export const Navbar: React.FC = () => {
   const docsUrl = "https://github.com/Abdanzaki/AI-TrafficOS";
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-ink/80 backdrop-blur-md">
+    <header className="sticky top-0 z-50 w-full border-b border-line bg-paper/90 backdrop-blur-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link
             href="/"
-            className="flex items-center gap-2.5 text-text hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-ink rounded-lg"
+            className="flex items-center gap-2.5 text-text hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-paper rounded-lg"
           >
-            <div className="w-8 h-8 rounded-lg bg-accent/15 border border-accent/40 flex items-center justify-center text-accent">
+            <div className="w-8 h-8 rounded-lg bg-pine border border-pine-deep/50 flex items-center justify-center text-paper">
               <svg
                 className="w-4 h-4 fill-current"
                 viewBox="0 0 24 24"
@@ -36,10 +36,10 @@ export const Navbar: React.FC = () => {
                 <path d="M12 2L4 7v10l8 5 8-5V7l-8-5zm0 2.2L18 8l-6 3.75L6 8l6-3.8zM5.5 8.95l5.5 3.44v6.86l-5.5-3.44V8.95zm7.5 10.3v-6.86l5.5-3.44v6.86l-5.5-3.44z" />
               </svg>
             </div>
-            <span className="font-display font-bold text-lg tracking-tight text-text">
+            <span className="font-display font-semibold text-xl tracking-tight text-text">
               AI TrafficOS
             </span>
-            <span className="hidden sm:inline-block text-[10px] font-semibold tracking-wider uppercase px-2 py-0.5 rounded-full bg-accent/10 text-accent border border-accent/20">
+            <span className="hidden sm:inline-block text-[10px] font-semibold tracking-wider uppercase px-2 py-0.5 rounded-md bg-accent-tint text-accent-deep border border-accent/25">
               Live
             </span>
           </Link>
@@ -52,10 +52,10 @@ export const Navbar: React.FC = () => {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`px-3.5 py-1.5 rounded-full text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
+                  className={`px-3.5 py-1.5 rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
                     isActive
-                      ? "text-accent bg-accent/10"
-                      : "text-muted hover:text-text hover:bg-surface/50"
+                      ? "text-pine-deep bg-pine-tint font-semibold"
+                      : "text-muted hover:text-text hover:bg-ink/5"
                   }`}
                 >
                   {link.label}
@@ -66,7 +66,7 @@ export const Navbar: React.FC = () => {
               href={docsUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="px-3.5 py-1.5 rounded-full text-sm font-medium text-muted hover:text-text hover:bg-surface/50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent flex items-center gap-1"
+              className="px-3.5 py-1.5 rounded-md text-sm font-medium text-muted hover:text-text hover:bg-ink/5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent flex items-center gap-1"
             >
               Docs
               <svg
@@ -146,7 +146,7 @@ export const Navbar: React.FC = () => {
 
       {/* Mobile Menu Dropdown */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-b border-white/10 bg-surface/95 backdrop-blur-lg px-4 pt-2 pb-6 space-y-2">
+        <div className="md:hidden border-b border-line bg-surface/95 backdrop-blur-lg px-4 pt-2 pb-6 space-y-2">
           {navLinks.map((link) => (
             <Link
               key={link.href}

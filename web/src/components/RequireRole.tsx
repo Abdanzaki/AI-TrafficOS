@@ -57,7 +57,7 @@ export const RequireRole: React.FC<RequireRoleProps> = ({
             ) does not have sufficient clearance to access this control surface.
           </p>
 
-          <div className="mt-4 p-3 rounded-lg bg-ink/60 border border-white/5 w-full text-xs text-muted flex items-center justify-between">
+          <div className="mt-4 p-3 rounded-lg bg-paper border border-line w-full text-xs text-muted flex items-center justify-between">
             <span>Required Clearance:</span>
             <span className="font-mono text-accent font-medium">
               {allowedRoles.join(" | ")}

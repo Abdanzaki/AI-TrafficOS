@@ -251,7 +251,7 @@ export default function HealthPage() {
   return (
     <div className="max-w-7xl mx-auto space-y-8">
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 rounded-2xl bg-surface/70 border border-white/10 backdrop-blur-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 rounded-2xl bg-surface/70 border border-line backdrop-blur-sm">
         <div>
           <div className="flex items-center gap-2 mb-1.5">
             <h1 className="text-2xl sm:text-3xl font-display font-bold text-text tracking-tight">
@@ -284,7 +284,7 @@ export default function HealthPage() {
       ) : (
         <div className="space-y-6">
           {/* Main Status Hero Card */}
-          <Card className="p-6 border-white/10 relative overflow-hidden">
+          <Card className="p-6 border-line relative overflow-hidden">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="flex items-start gap-4">
                 <div
@@ -316,10 +316,10 @@ export default function HealthPage() {
               </div>
 
               <div className="flex items-center gap-3 self-end md:self-auto font-mono text-xs">
-                <div className="px-3 py-1.5 rounded-lg bg-ink/60 border border-white/10 text-muted">
+                <div className="px-3 py-1.5 rounded-lg bg-paper border border-line text-muted">
                   Service: <span className="text-text font-bold">{gatewayData?.service || "ai-trafficos"}</span>
                 </div>
-                <div className="px-3 py-1.5 rounded-lg bg-ink/60 border border-white/10 text-muted">
+                <div className="px-3 py-1.5 rounded-lg bg-paper border border-line text-muted">
                   Version: <span className="text-accent font-bold">v{versionData?.version || gatewayData?.version || "0.1.0"}</span>
                 </div>
               </div>
@@ -352,24 +352,24 @@ export default function HealthPage() {
                 </div>
 
                 <div className="space-y-2 text-xs font-mono">
-                  <div className="flex items-center justify-between p-2 rounded-lg bg-ink/40 border border-white/5">
+                  <div className="flex items-center justify-between p-2 rounded-lg bg-cream/70 border border-line">
                     <span className="text-muted">Route:</span>
                     <span className="text-text font-semibold">/api/v1/health</span>
                   </div>
-                  <div className="flex items-center justify-between p-2 rounded-lg bg-ink/40 border border-white/5">
+                  <div className="flex items-center justify-between p-2 rounded-lg bg-cream/70 border border-line">
                     <span className="text-muted">Reported Status:</span>
                     <span className="text-accent uppercase font-semibold">
                       {gatewayData?.status || "error"}
                     </span>
                   </div>
-                  <div className="flex items-center justify-between p-2 rounded-lg bg-ink/40 border border-white/5">
+                  <div className="flex items-center justify-between p-2 rounded-lg bg-cream/70 border border-line">
                     <span className="text-muted">Protocol:</span>
                     <span className="text-text">HTTP / REST + WebSocket</span>
                   </div>
                 </div>
               </div>
 
-              <div className="pt-3 mt-4 border-t border-white/5 text-[10px] text-muted flex items-center justify-between">
+              <div className="pt-3 mt-4 border-t border-line text-[10px] text-muted flex items-center justify-between">
                 <span>Polling Interval:</span>
                 <span className="font-mono text-accent">60s</span>
               </div>
@@ -399,19 +399,19 @@ export default function HealthPage() {
                 </div>
 
                 <div className="space-y-2 text-xs font-mono">
-                  <div className="flex items-center justify-between p-2 rounded-lg bg-ink/40 border border-white/5">
+                  <div className="flex items-center justify-between p-2 rounded-lg bg-cream/70 border border-line">
                     <span className="text-muted">Intersections:</span>
                     <span className="text-text font-bold">
                       {dbJunctions ? formatNumber(dbJunctions.total) : "—"}
                     </span>
                   </div>
-                  <div className="flex items-center justify-between p-2 rounded-lg bg-ink/40 border border-white/5">
+                  <div className="flex items-center justify-between p-2 rounded-lg bg-cream/70 border border-line">
                     <span className="text-muted">Signal Heads:</span>
                     <span className="text-text font-bold">
                       {dbSignals ? formatNumber(dbSignals.total) : "—"}
                     </span>
                   </div>
-                  <div className="flex items-center justify-between p-2 rounded-lg bg-ink/40 border border-white/5">
+                  <div className="flex items-center justify-between p-2 rounded-lg bg-cream/70 border border-line">
                     <span className="text-muted">Telemetry Records:</span>
                     <span className="text-text font-bold">
                       {telemetryRecords ? formatNumber(telemetryRecords.total) : "—"}
@@ -420,7 +420,7 @@ export default function HealthPage() {
                 </div>
               </div>
 
-              <div className="pt-3 mt-4 border-t border-white/5 text-[10px] text-muted flex items-center justify-between">
+              <div className="pt-3 mt-4 border-t border-line text-[10px] text-muted flex items-center justify-between">
                 <span>Health Probe:</span>
                 <span className="font-mono text-accent">GET /junctions</span>
               </div>
@@ -443,7 +443,7 @@ export default function HealthPage() {
                   </div>
 
                   {latestModel ? (
-                    <Badge variant="teal" dot>Model Ready</Badge>
+                    <Badge variant="signal" dot>Model Ready</Badge>
                   ) : (
                     <Badge variant="muted">Standby</Badge>
                   )}
@@ -451,15 +451,15 @@ export default function HealthPage() {
 
                 {latestModel ? (
                   <div className="space-y-2 text-xs font-mono">
-                    <div className="flex items-center justify-between p-2 rounded-lg bg-ink/40 border border-white/5">
+                    <div className="flex items-center justify-between p-2 rounded-lg bg-cream/70 border border-line">
                       <span className="text-muted">Active Model:</span>
                       <span className="text-accent font-semibold">{latestModel.version}</span>
                     </div>
-                    <div className="flex items-center justify-between p-2 rounded-lg bg-ink/40 border border-white/5">
+                    <div className="flex items-center justify-between p-2 rounded-lg bg-cream/70 border border-line">
                       <span className="text-muted">Horizon Steps:</span>
                       <span className="text-text">{latestModel.horizon_steps ?? 6} steps (30 min)</span>
                     </div>
-                    <div className="flex items-center justify-between p-2 rounded-lg bg-ink/40 border border-white/5">
+                    <div className="flex items-center justify-between p-2 rounded-lg bg-cream/70 border border-line">
                       <span className="text-muted">Evaluation MAE:</span>
                       <span className="text-text">
                         {latestModel.metrics?.mae != null
@@ -469,13 +469,13 @@ export default function HealthPage() {
                     </div>
                   </div>
                 ) : (
-                  <div className="p-3 rounded-lg bg-ink/30 border border-white/5 text-center text-xs text-muted font-mono">
+                  <div className="p-3 rounded-lg bg-cream/60 border border-line text-center text-xs text-muted font-mono">
                     No trained model registered yet. Ready for training via POST /forecasting/train.
                   </div>
                 )}
               </div>
 
-              <div className="pt-3 mt-4 border-t border-white/5 text-[10px] text-muted flex items-center justify-between">
+              <div className="pt-3 mt-4 border-t border-line text-[10px] text-muted flex items-center justify-between">
                 <span>Registered Models:</span>
                 <span className="font-mono text-accent">
                   {modelsList ? modelsList.length : 0} versions
@@ -499,28 +499,28 @@ export default function HealthPage() {
                     </div>
                   </div>
 
-                  <Badge variant="teal" dot>Active Feed</Badge>
+                  <Badge variant="signal" dot>Active Feed</Badge>
                 </div>
 
                 <div className="space-y-2 text-xs font-mono">
-                  <div className="flex items-center justify-between p-2 rounded-lg bg-ink/40 border border-white/5">
+                  <div className="flex items-center justify-between p-2 rounded-lg bg-cream/70 border border-line">
                     <span className="text-muted">Event Pipeline:</span>
                     <span className="text-text">/api/v1/vehicle-events</span>
                   </div>
-                  <div className="flex items-center justify-between p-2 rounded-lg bg-ink/40 border border-white/5">
+                  <div className="flex items-center justify-between p-2 rounded-lg bg-cream/70 border border-line">
                     <span className="text-muted">Captured Events:</span>
                     <span className="text-accent font-bold">
                       {vehicleEvents ? formatNumber(vehicleEvents.total) : "—"}
                     </span>
                   </div>
-                  <div className="flex items-center justify-between p-2 rounded-lg bg-ink/40 border border-white/5">
+                  <div className="flex items-center justify-between p-2 rounded-lg bg-cream/70 border border-line">
                     <span className="text-muted">Inference Latency:</span>
                     <span className="text-text">&lt; 45ms per frame</span>
                   </div>
                 </div>
               </div>
 
-              <div className="pt-3 mt-4 border-t border-white/5 text-[10px] text-muted flex items-center justify-between">
+              <div className="pt-3 mt-4 border-t border-line text-[10px] text-muted flex items-center justify-between">
                 <span>Detection Status:</span>
                 <span className="font-mono text-accent">Streaming</span>
               </div>
@@ -542,28 +542,28 @@ export default function HealthPage() {
                     </div>
                   </div>
 
-                  <Badge variant="teal" dot>Synchronized</Badge>
+                  <Badge variant="signal" dot>Synchronized</Badge>
                 </div>
 
                 <div className="space-y-2 text-xs font-mono">
-                  <div className="flex items-center justify-between p-2 rounded-lg bg-ink/40 border border-white/5">
+                  <div className="flex items-center justify-between p-2 rounded-lg bg-cream/70 border border-line">
                     <span className="text-muted">Control Endpoint:</span>
                     <span className="text-text">/api/v1/control</span>
                   </div>
-                  <div className="flex items-center justify-between p-2 rounded-lg bg-ink/40 border border-white/5">
+                  <div className="flex items-center justify-between p-2 rounded-lg bg-cream/70 border border-line">
                     <span className="text-muted">Controllers Online:</span>
                     <span className="text-text font-bold">
                       {dbSignals ? formatNumber(dbSignals.total) : "—"}
                     </span>
                   </div>
-                  <div className="flex items-center justify-between p-2 rounded-lg bg-ink/40 border border-white/5">
+                  <div className="flex items-center justify-between p-2 rounded-lg bg-cream/70 border border-line">
                     <span className="text-muted">Override Clearance:</span>
                     <span className="text-amber">Officer / Admin</span>
                   </div>
                 </div>
               </div>
 
-              <div className="pt-3 mt-4 border-t border-white/5 text-[10px] text-muted flex items-center justify-between">
+              <div className="pt-3 mt-4 border-t border-line text-[10px] text-muted flex items-center justify-between">
                 <span>State Telemetry:</span>
                 <span className="font-mono text-accent">Verified</span>
               </div>
@@ -585,26 +585,26 @@ export default function HealthPage() {
                     </div>
                   </div>
 
-                  <Badge variant="teal" dot>Enforced</Badge>
+                  <Badge variant="signal" dot>Enforced</Badge>
                 </div>
 
                 <div className="space-y-2 text-xs font-mono">
-                  <div className="flex items-center justify-between p-2 rounded-lg bg-ink/40 border border-white/5">
+                  <div className="flex items-center justify-between p-2 rounded-lg bg-cream/70 border border-line">
                     <span className="text-muted">Auth Scheme:</span>
                     <span className="text-text">HS256 JWT Token</span>
                   </div>
-                  <div className="flex items-center justify-between p-2 rounded-lg bg-ink/40 border border-white/5">
+                  <div className="flex items-center justify-between p-2 rounded-lg bg-cream/70 border border-line">
                     <span className="text-muted">Audit Endpoint:</span>
                     <span className="text-text">/api/v1/audit-logs</span>
                   </div>
-                  <div className="flex items-center justify-between p-2 rounded-lg bg-ink/40 border border-white/5">
+                  <div className="flex items-center justify-between p-2 rounded-lg bg-cream/70 border border-line">
                     <span className="text-muted">Access Control:</span>
                     <span className="text-accent">RBAC Active</span>
                   </div>
                 </div>
               </div>
 
-              <div className="pt-3 mt-4 border-t border-white/5 text-[10px] text-muted flex items-center justify-between">
+              <div className="pt-3 mt-4 border-t border-line text-[10px] text-muted flex items-center justify-between">
                 <span>Ledger Integrity:</span>
                 <span className="font-mono text-accent">Append-Only</span>
               </div>

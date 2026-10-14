@@ -368,11 +368,11 @@ export default function TrafficPage() {
     }
 
     const chartData: VehicleClassItem[] = [
-      { name: "Car", count: counts.car || 0, color: "#00D9A8" },
-      { name: "Truck", count: counts.truck || 0, color: "#FFB800" },
-      { name: "Bus", count: counts.bus || 0, color: "#38BDF8" },
-      { name: "Motorcycle", count: counts.motorcycle || 0, color: "#A855F7" },
-      { name: "Bicycle", count: counts.bicycle || 0, color: "#22C55E" },
+      { name: "Car", count: counts.car || 0, color: "#C2410C" },
+      { name: "Truck", count: counts.truck || 0, color: "#B45309" },
+      { name: "Bus", count: counts.bus || 0, color: "#14532D" },
+      { name: "Motorcycle", count: counts.motorcycle || 0, color: "#6B6257" },
+      { name: "Bicycle", count: counts.bicycle || 0, color: "#15803D" },
     ];
 
     return {
@@ -489,13 +489,13 @@ export default function TrafficPage() {
   return (
     <div className="max-w-7xl mx-auto space-y-8">
       {/* Page Header & Filtering Controls */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-6 rounded-2xl bg-surface/70 border border-white/10 backdrop-blur-sm">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-6 rounded-2xl bg-surface/70 border border-line backdrop-blur-sm">
         <div>
           <div className="flex items-center gap-2 mb-1.5">
             <h1 className="text-2xl sm:text-3xl font-display font-bold text-text tracking-tight">
               Traffic Perception & Telemetry
             </h1>
-            <Badge variant="teal" dot>
+            <Badge variant="signal" dot>
               Telemetry Live
             </Badge>
           </div>
@@ -506,7 +506,7 @@ export default function TrafficPage() {
 
         <div className="flex flex-wrap items-center gap-3">
           {/* Intersection Selector */}
-          <div className="flex items-center gap-2 bg-ink/60 border border-white/10 rounded-xl px-3 py-1.5 text-xs text-muted">
+          <div className="flex items-center gap-2 bg-paper border border-line rounded-xl px-3 py-1.5 text-xs text-muted">
             <MapPin className="w-3.5 h-3.5 text-accent shrink-0" />
             <select
               value={selectedJunctionId}
@@ -519,11 +519,11 @@ export default function TrafficPage() {
               className="bg-transparent text-text border-none focus:outline-none cursor-pointer pr-2"
               aria-label="Filter by intersection"
             >
-              <option value="all" className="bg-ink text-text">
+              <option value="all" className="bg-surface text-text">
                 All Intersections ({junctionsData?.total ?? 0})
               </option>
               {junctionsData?.items.map((j) => (
-                <option key={j.id} value={j.id} className="bg-ink text-text">
+                <option key={j.id} value={j.id} className="bg-surface text-text">
                   {j.name} ({j.code})
                 </option>
               ))}
@@ -532,7 +532,7 @@ export default function TrafficPage() {
 
           {/* Time Range Selector (only in overview tab) */}
           {activeTab === "overview" && (
-            <div className="flex items-center bg-ink/60 border border-white/10 rounded-xl p-1 text-xs">
+            <div className="flex items-center bg-paper border border-line rounded-xl p-1 text-xs">
               {(["1h", "6h", "24h", "7d"] as TimeRange[]).map((range) => {
                 const active = timeRange === range;
                 return (
@@ -542,8 +542,8 @@ export default function TrafficPage() {
                     onClick={() => setTimeRange(range)}
                     className={`px-3 py-1 rounded-lg font-medium transition-all cursor-pointer ${
                       active
-                        ? "bg-accent text-ink font-semibold shadow-sm"
-                        : "text-muted hover:text-text hover:bg-white/5"
+                        ? "bg-accent text-paper font-semibold shadow-sm"
+                        : "text-muted hover:text-text hover:bg-ink/5"
                     }`}
                   >
                     {range}
@@ -601,7 +601,7 @@ export default function TrafficPage() {
       </div>
 
       {/* Navigation Tabs: Overview vs Records Ledger */}
-      <div className="flex items-center gap-3 border-b border-white/10 pb-3">
+      <div className="flex items-center gap-3 border-b border-line pb-3">
         <button
           type="button"
           onClick={() => setActiveTab("overview")}
@@ -637,11 +637,11 @@ export default function TrafficPage() {
       {/* Ingest Modal */}
       {showIngestModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-ink/80 backdrop-blur-sm animate-in fade-in">
-          <Card className="w-full max-w-lg p-6 bg-surface/95 border-white/20 shadow-2xl relative">
+          <Card className="w-full max-w-lg p-6 bg-surface/95 border-line shadow-2xl relative">
             <button
               type="button"
               onClick={() => setShowIngestModal(false)}
-              className="absolute top-4 right-4 p-1.5 rounded-lg text-muted hover:text-text hover:bg-white/5"
+              className="absolute top-4 right-4 p-1.5 rounded-lg text-muted hover:text-text hover:bg-ink/5"
             >
               <X className="w-4 h-4" />
             </button>
@@ -679,7 +679,7 @@ export default function TrafficPage() {
                   value={ingestIntersectionId}
                   onChange={(e) => setIngestIntersectionId(Number(e.target.value))}
                   required
-                  className="w-full px-3 py-2 bg-ink/70 border border-white/10 rounded-xl text-xs text-text focus:outline-none focus:border-accent"
+                  className="w-full px-3 py-2 bg-surface border border-line rounded-xl text-xs text-text focus:outline-none focus:border-accent"
                 >
                   <option value="" disabled>
                     Select an intersection
@@ -703,7 +703,7 @@ export default function TrafficPage() {
                     required
                     value={ingestVehicleCount}
                     onChange={(e) => setIngestVehicleCount(Number(e.target.value))}
-                    className="w-full px-3 py-2 bg-ink/70 border border-white/10 rounded-xl text-xs text-text focus:outline-none focus:border-accent"
+                    className="w-full px-3 py-2 bg-surface border border-line rounded-xl text-xs text-text focus:outline-none focus:border-accent"
                   />
                 </div>
 
@@ -719,7 +719,7 @@ export default function TrafficPage() {
                     required
                     value={ingestAvgSpeed}
                     onChange={(e) => setIngestAvgSpeed(Number(e.target.value))}
-                    className="w-full px-3 py-2 bg-ink/70 border border-white/10 rounded-xl text-xs text-text focus:outline-none focus:border-accent"
+                    className="w-full px-3 py-2 bg-surface border border-line rounded-xl text-xs text-text focus:outline-none focus:border-accent"
                   />
                 </div>
               </div>
@@ -737,7 +737,7 @@ export default function TrafficPage() {
                     required
                     value={ingestCongestion}
                     onChange={(e) => setIngestCongestion(Number(e.target.value))}
-                    className="w-full px-3 py-2 bg-ink/70 border border-white/10 rounded-xl text-xs text-text focus:outline-none focus:border-accent"
+                    className="w-full px-3 py-2 bg-surface border border-line rounded-xl text-xs text-text focus:outline-none focus:border-accent"
                   />
                 </div>
 
@@ -748,7 +748,7 @@ export default function TrafficPage() {
                   <select
                     value={ingestSource}
                     onChange={(e) => setIngestSource(e.target.value)}
-                    className="w-full px-3 py-2 bg-ink/70 border border-white/10 rounded-xl text-xs text-text focus:outline-none focus:border-accent"
+                    className="w-full px-3 py-2 bg-surface border border-line rounded-xl text-xs text-text focus:outline-none focus:border-accent"
                   >
                     <option value="sensor">Sensor</option>
                     <option value="camera">Camera</option>
@@ -863,7 +863,7 @@ export default function TrafficPage() {
                           </p>
                         </div>
                       </div>
-                      <Badge variant="teal">Vision Inference</Badge>
+                      <Badge variant="signal">Vision Inference</Badge>
                     </div>
 
                     <div className="pt-2">
@@ -875,8 +875,8 @@ export default function TrafficPage() {
                   </div>
 
                   {/* Class Pills */}
-                  <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 pt-4 mt-4 border-t border-white/5 text-xs font-mono">
-                    <div className="bg-ink/50 p-2 rounded-lg border border-white/5 flex items-center gap-2">
+                  <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 pt-4 mt-4 border-t border-line text-xs font-mono">
+                    <div className="bg-cream p-2 rounded-lg border border-line flex items-center gap-2">
                       <Car className="w-3.5 h-3.5 text-accent shrink-0" />
                       <div>
                         <span className="text-muted block text-[10px]">Cars</span>
@@ -884,7 +884,7 @@ export default function TrafficPage() {
                       </div>
                     </div>
 
-                    <div className="bg-ink/50 p-2 rounded-lg border border-white/5 flex items-center gap-2">
+                    <div className="bg-cream p-2 rounded-lg border border-line flex items-center gap-2">
                       <Truck className="w-3.5 h-3.5 text-amber shrink-0" />
                       <div>
                         <span className="text-muted block text-[10px]">Trucks</span>
@@ -892,24 +892,24 @@ export default function TrafficPage() {
                       </div>
                     </div>
 
-                    <div className="bg-ink/50 p-2 rounded-lg border border-white/5 flex items-center gap-2">
-                      <Bus className="w-3.5 h-3.5 text-[#38BDF8] shrink-0" />
+                    <div className="bg-cream p-2 rounded-lg border border-line flex items-center gap-2">
+                      <Bus className="w-3.5 h-3.5 text-[#14532D] shrink-0" />
                       <div>
                         <span className="text-muted block text-[10px]">Buses</span>
                         <span className="text-text font-bold">{classBreakdown.bus || 0}</span>
                       </div>
                     </div>
 
-                    <div className="bg-ink/50 p-2 rounded-lg border border-white/5 flex items-center gap-2">
-                      <Activity className="w-3.5 h-3.5 text-[#A855F7] shrink-0" />
+                    <div className="bg-cream p-2 rounded-lg border border-line flex items-center gap-2">
+                      <Activity className="w-3.5 h-3.5 text-[#6B6257] shrink-0" />
                       <div>
                         <span className="text-muted block text-[10px]">M-Cycles</span>
                         <span className="text-text font-bold">{classBreakdown.motorcycle || 0}</span>
                       </div>
                     </div>
 
-                    <div className="bg-ink/50 p-2 rounded-lg border border-white/5 flex items-center gap-2">
-                      <Bike className="w-3.5 h-3.5 text-[#22C55E] shrink-0" />
+                    <div className="bg-cream p-2 rounded-lg border border-line flex items-center gap-2">
+                      <Bike className="w-3.5 h-3.5 text-[#15803D] shrink-0" />
                       <div>
                         <span className="text-muted block text-[10px]">Bicycles</span>
                         <span className="text-text font-bold">{classBreakdown.bicycle || 0}</span>
@@ -945,7 +945,7 @@ export default function TrafficPage() {
                           return (
                             <div
                               key={hotspot.intersection_id}
-                              className="p-3 rounded-xl bg-ink/40 border border-white/5 flex items-center justify-between gap-3 hover:border-white/20 transition-colors"
+                              className="p-3 rounded-xl bg-cream/70 border border-line flex items-center justify-between gap-3 hover:border-line transition-colors"
                             >
                               <div className="min-w-0">
                                 <div className="flex items-center gap-2">
@@ -976,14 +976,14 @@ export default function TrafficPage() {
                           );
                         })
                       ) : (
-                        <div className="p-8 text-center text-xs text-muted font-mono bg-ink/30 rounded-xl border border-white/5">
+                        <div className="p-8 text-center text-xs text-muted font-mono bg-cream/60 rounded-xl border border-line">
                           No hotspots detected in this interval
                         </div>
                       )}
                     </div>
                   </div>
 
-                  <div className="pt-4 mt-4 border-t border-white/5 text-[11px] text-muted flex items-center justify-between">
+                  <div className="pt-4 mt-4 border-t border-line text-[11px] text-muted flex items-center justify-between">
                     <span>Polling cadence:</span>
                     <span className="font-mono text-accent">30 seconds</span>
                   </div>
@@ -1030,7 +1030,7 @@ export default function TrafficPage() {
                         </p>
                       </div>
                     </div>
-                    <Badge variant="teal">Volumetric Flow</Badge>
+                    <Badge variant="signal">Volumetric Flow</Badge>
                   </div>
 
                   <AreaTrafficChart
@@ -1052,7 +1052,7 @@ export default function TrafficPage() {
                       Recent vision detections ingested from camera sensors (/vehicle-events)
                     </p>
                   </div>
-                  <Badge variant="teal" dot>
+                  <Badge variant="signal" dot>
                     {eventsData?.total ?? 0} Events in Window
                   </Badge>
                 </div>
@@ -1061,7 +1061,7 @@ export default function TrafficPage() {
                   <div className="overflow-x-auto">
                     <table className="w-full min-w-[600px] text-left text-xs">
                       <thead>
-                        <tr className="border-b border-white/10 text-muted font-mono uppercase text-[11px]">
+                        <tr className="border-b border-line text-muted font-mono uppercase text-[11px]">
                           <th className="py-2.5 px-3">Timestamp</th>
                           <th className="py-2.5 px-3">Chassis Class</th>
                           <th className="py-2.5 px-3">Speed</th>
@@ -1070,11 +1070,11 @@ export default function TrafficPage() {
                           <th className="py-2.5 px-3 text-right">Event ID</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-white/5 font-mono">
+                      <tbody className="divide-y divide-line font-mono">
                         {eventsData.items.slice(0, 10).map((event) => (
                           <tr
                             key={event.id}
-                            className="hover:bg-white/[0.02] transition-colors"
+                            className="hover:bg-ink/[0.03] transition-colors"
                           >
                             <td className="py-2.5 px-3 text-muted">
                               {formatDateTime(event.detected_at)}
@@ -1110,7 +1110,7 @@ export default function TrafficPage() {
                     </table>
                   </div>
                 ) : (
-                  <div className="p-8 text-center text-xs text-muted font-mono bg-ink/30 rounded-xl border border-white/5">
+                  <div className="p-8 text-center text-xs text-muted font-mono bg-cream/60 rounded-xl border border-line">
                     No recent vehicle detection events captured
                   </div>
                 )}
@@ -1134,7 +1134,7 @@ export default function TrafficPage() {
             </div>
 
             <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2 bg-ink/60 border border-white/10 rounded-xl px-3 py-1.5 text-xs text-muted">
+              <div className="flex items-center gap-2 bg-paper border border-line rounded-xl px-3 py-1.5 text-xs text-muted">
                 <Filter className="w-3.5 h-3.5 text-accent shrink-0" />
                 <select
                   value={recordSourceFilter}
@@ -1145,15 +1145,15 @@ export default function TrafficPage() {
                   className="bg-transparent text-text border-none focus:outline-none cursor-pointer"
                   aria-label="Filter records by source"
                 >
-                  <option value="all" className="bg-ink text-text">All Sources</option>
-                  <option value="sensor" className="bg-ink text-text">Sensor</option>
-                  <option value="camera" className="bg-ink text-text">Camera</option>
-                  <option value="ai" className="bg-ink text-text">AI Vision</option>
-                  <option value="manual" className="bg-ink text-text">Manual</option>
+                  <option value="all" className="bg-surface text-text">All Sources</option>
+                  <option value="sensor" className="bg-surface text-text">Sensor</option>
+                  <option value="camera" className="bg-surface text-text">Camera</option>
+                  <option value="ai" className="bg-surface text-text">AI Vision</option>
+                  <option value="manual" className="bg-surface text-text">Manual</option>
                 </select>
               </div>
 
-              <div className="text-xs text-muted font-mono bg-surface/80 px-3 py-1.5 rounded-lg border border-white/10">
+              <div className="text-xs text-muted font-mono bg-surface/80 px-3 py-1.5 rounded-lg border border-line">
                 Total: {recordsData?.total ?? "..."}
               </div>
             </div>
@@ -1176,11 +1176,11 @@ export default function TrafficPage() {
               description="No telemetry records match the current intersection and source filters."
             />
           ) : (
-            <Card className="overflow-hidden border-white/10">
+            <Card className="overflow-hidden border-line">
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[760px] text-left border-collapse text-xs sm:text-sm">
                   <thead>
-                    <tr className="border-b border-white/10 bg-surface/60 text-muted uppercase text-[11px] font-semibold tracking-wider font-mono">
+                    <tr className="border-b border-line bg-surface/60 text-muted uppercase text-[11px] font-semibold tracking-wider font-mono">
                       <th className="py-3 px-4">Recorded At</th>
                       <th className="py-3 px-4">Intersection</th>
                       <th className="py-3 px-4">Vehicles</th>
@@ -1190,11 +1190,11 @@ export default function TrafficPage() {
                       <th className="py-3 px-4 text-right">ID</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-white/5 font-mono text-xs">
+                  <tbody className="divide-y divide-line font-mono text-xs">
                     {recordsData.items.map((r) => {
                       const congStatus = getCongestionStatus(r.congestion_level);
                       return (
-                        <tr key={r.id} className="hover:bg-white/[0.02] transition-colors">
+                        <tr key={r.id} className="hover:bg-ink/[0.03] transition-colors">
                           <td className="py-3 px-4 text-muted">
                             {formatDateTime(r.recorded_at)}
                           </td>

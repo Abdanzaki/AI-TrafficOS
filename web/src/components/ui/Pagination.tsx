@@ -31,7 +31,7 @@ export const Pagination: React.FC<PaginationProps> = ({
 
   return (
     <div
-      className={`p-4 border-t border-white/5 bg-ink/30 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs ${className}`}
+      className={`p-4 border-t border-line bg-cream/60 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs ${className}`}
     >
       <div className="text-muted">
         {totalRecords !== undefined ? (
@@ -67,7 +67,7 @@ export const Pagination: React.FC<PaginationProps> = ({
           <span>Prev</span>
         </Button>
 
-        <span className="px-3 py-1 font-mono text-text text-xs bg-ink/60 rounded-md border border-white/5">
+        <span className="px-3 py-1 font-mono text-text text-xs bg-paper rounded-md border border-line">
           Page {page} of {Math.max(1, totalPages)}
         </span>
 

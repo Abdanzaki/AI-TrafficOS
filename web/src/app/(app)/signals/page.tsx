@@ -134,7 +134,7 @@ function getPhaseColorStyles(state: string) {
   switch (norm) {
     case "green":
       return {
-        pill: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30 ring-emerald-500/20",
+        pill: "bg-emerald-500/15 text-emerald-400 border-success/30 ring-emerald-500/20",
         dot: "bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]",
         badgeVariant: "success" as BadgeVariant,
         text: "Green Phase",
@@ -142,21 +142,21 @@ function getPhaseColorStyles(state: string) {
     case "yellow":
     case "amber":
       return {
-        pill: "bg-amber-500/15 text-amber-400 border-amber-500/30 ring-amber-500/20",
-        dot: "bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.8)]",
+        pill: "bg-amber/15 text-amber border-amber/30 ring-amber/20",
+        dot: "bg-amber shadow-[0_0_8px_rgba(251,191,36,0.8)]",
         badgeVariant: "amber" as BadgeVariant,
         text: "Yellow Change",
       };
     case "red":
       return {
-        pill: "bg-rose-500/15 text-rose-400 border-rose-500/30 ring-rose-500/20",
+        pill: "bg-danger/15 text-rose-400 border-danger/30 ring-danger/20",
         dot: "bg-rose-400 shadow-[0_0_8px_rgba(244,63,94,0.8)]",
         badgeVariant: "danger" as BadgeVariant,
         text: "Red Clearance",
       };
     default:
       return {
-        pill: "bg-white/10 text-muted border-white/15 ring-white/10",
+        pill: "bg-ink/5 text-muted border-line ring-line",
         dot: "bg-muted",
         badgeVariant: "muted" as BadgeVariant,
         text: "Unknown",
@@ -452,13 +452,13 @@ function SignalsPageContent() {
   return (
     <div className="max-w-7xl mx-auto space-y-6 pb-12">
       {/* --- Page Header --- */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-line pb-5">
         <div>
           <div className="flex flex-wrap items-center gap-2 mb-1">
             <h1 className="text-2xl sm:text-3xl font-display font-bold text-text tracking-tight">
               Signal Status & Control
             </h1>
-            <Badge variant="teal" dot>
+            <Badge variant="signal" dot>
               Live Telemetry
             </Badge>
             <Badge variant="muted">NTCIP 1202</Badge>
@@ -513,7 +513,7 @@ function SignalsPageContent() {
       )}
 
       {/* --- Junction Selector & Telemetry Bar --- */}
-      <Card className="p-4 sm:p-5 bg-surface/90 border-white/10">
+      <Card className="p-4 sm:p-5 bg-surface/90 border-line">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex-1 min-w-0">
             <label
@@ -524,7 +524,7 @@ function SignalsPageContent() {
             </label>
             <div className="relative max-w-xl">
               {junctionsLoading ? (
-                <div className="h-10 rounded-xl bg-ink/60 border border-white/10 flex items-center px-3 gap-2 text-xs text-muted">
+                <div className="h-10 rounded-xl bg-paper border border-line flex items-center px-3 gap-2 text-xs text-muted">
                   <LoadingSpinner size="sm" />
                   <span>Loading network junctions...</span>
                 </div>
@@ -538,10 +538,10 @@ function SignalsPageContent() {
                       setSelectedJunctionId(id);
                       setSelectedPhaseId(null);
                     }}
-                    className="w-full h-11 pl-3.5 pr-10 rounded-xl bg-ink/80 border border-white/15 text-text text-sm font-medium focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent appearance-none transition-colors cursor-pointer"
+                    className="w-full h-11 pl-3.5 pr-10 rounded-xl bg-ink/80 border border-line text-text text-sm font-medium focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent appearance-none transition-colors cursor-pointer"
                   >
                     {junctionsData?.items.map((j) => (
-                      <option key={j.id} value={j.id} className="bg-ink text-text">
+                      <option key={j.id} value={j.id} className="bg-surface text-text">
                         [{j.code}] {j.name} {j.zone ? `— ${j.zone}` : ""} ({j.status})
                       </option>
                     ))}
@@ -553,20 +553,20 @@ function SignalsPageContent() {
           </div>
 
           {selectedJunction && (
-            <div className="flex flex-wrap items-center gap-3 pt-2 md:pt-0 border-t md:border-t-0 border-white/10 text-xs">
-              <div className="px-3 py-1.5 rounded-lg bg-ink/50 border border-white/5">
+            <div className="flex flex-wrap items-center gap-3 pt-2 md:pt-0 border-t md:border-t-0 border-line text-xs">
+              <div className="px-3 py-1.5 rounded-lg bg-cream border border-line">
                 <span className="text-muted block text-[10px] uppercase font-mono">Status</span>
                 <span className="font-semibold text-text capitalize">{selectedJunction.status}</span>
               </div>
-              <div className="px-3 py-1.5 rounded-lg bg-ink/50 border border-white/5">
+              <div className="px-3 py-1.5 rounded-lg bg-cream border border-line">
                 <span className="text-muted block text-[10px] uppercase font-mono">Zone</span>
                 <span className="font-semibold text-text">{selectedJunction.zone || "Central"}</span>
               </div>
-              <div className="px-3 py-1.5 rounded-lg bg-ink/50 border border-white/5">
+              <div className="px-3 py-1.5 rounded-lg bg-cream border border-line">
                 <span className="text-muted block text-[10px] uppercase font-mono">City</span>
                 <span className="font-semibold text-text">{selectedJunction.city || "Metropolis"}</span>
               </div>
-              <div className="px-3 py-1.5 rounded-lg bg-ink/50 border border-white/5">
+              <div className="px-3 py-1.5 rounded-lg bg-cream border border-line">
                 <span className="text-muted block text-[10px] uppercase font-mono">Controllers</span>
                 <span className="font-semibold text-accent font-mono">
                   {signalsData?.items.length ?? 0} Unit(s)
@@ -585,8 +585,8 @@ function SignalsPageContent() {
         {/* Left Column (8 cols): Hardware Controllers, Live Phases, and Manual Controls */}
         <div className="lg:col-span-8 space-y-6">
           {/* Signal Controller Selection & Overview */}
-          <Card className="p-5 sm:p-6 bg-surface border-white/10">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-4 mb-5">
+          <Card className="p-5 sm:p-6 bg-surface border-line">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-line pb-4 mb-5">
               <div>
                 <div className="flex items-center gap-2">
                   <Radio className="w-5 h-5 text-accent" />
@@ -601,15 +601,15 @@ function SignalsPageContent() {
 
               {/* Multiple Controller Switcher if junction has > 1 */}
               {signalsData?.items && signalsData.items.length > 1 && (
-                <div className="flex items-center gap-1.5 bg-ink/60 p-1 rounded-xl border border-white/10">
+                <div className="flex items-center gap-1.5 bg-paper p-1 rounded-xl border border-line">
                   {signalsData.items.map((sig) => (
                     <button
                       key={sig.id}
                       onClick={() => setSelectedSignalId(sig.id)}
                       className={`px-2.5 py-1 rounded-lg text-xs font-mono font-medium transition-colors cursor-pointer ${
                         selectedSignalId === sig.id
-                          ? "bg-accent text-ink"
-                          : "text-muted hover:text-text hover:bg-white/5"
+                          ? "bg-accent text-paper"
+                          : "text-muted hover:text-text hover:bg-ink/5"
                       }`}
                     >
                       {sig.code}
@@ -639,7 +639,7 @@ function SignalsPageContent() {
               <div className="space-y-6">
                 {/* Controller Meta Banner */}
                 {signalDetail && (
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3.5 rounded-xl bg-ink/60 border border-white/10 text-xs">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3.5 rounded-xl bg-paper border border-line text-xs">
                     <div>
                       <span className="text-muted block text-[10px] uppercase font-mono">Controller Code</span>
                       <span className="font-mono font-semibold text-text">{signalDetail.code}</span>
@@ -678,7 +678,7 @@ function SignalsPageContent() {
                         Total {cycleTotalSeconds}s
                       </span>
                     </div>
-                    <div className="h-3 rounded-full bg-ink/80 overflow-hidden flex border border-white/10">
+                    <div className="h-3 rounded-full bg-ink/80 overflow-hidden flex border border-line">
                       {activePhases.map((phase) => {
                         const pct = (phase.duration_seconds / cycleTotalSeconds) * 100;
                         const isGreen = phase.state.toLowerCase() === "green";
@@ -686,8 +686,8 @@ function SignalsPageContent() {
                         const bg = isGreen
                           ? "bg-emerald-500"
                           : isYellow
-                          ? "bg-amber-400"
-                          : "bg-rose-500";
+                          ? "bg-amber"
+                          : "bg-danger";
                         return (
                           <div
                             key={phase.id}
@@ -719,7 +719,7 @@ function SignalsPageContent() {
                   </div>
 
                   {activePhases.length === 0 ? (
-                    <div className="p-6 rounded-xl bg-ink/40 border border-white/5 text-center text-xs text-muted">
+                    <div className="p-6 rounded-xl bg-cream/70 border border-line text-center text-xs text-muted">
                       No phases configured for this signal controller.
                     </div>
                   ) : (
@@ -735,12 +735,12 @@ function SignalsPageContent() {
                             className={`p-4 rounded-xl border transition-all cursor-pointer relative ${
                               phase.is_active
                                 ? "bg-surface/90 border-accent/40 shadow-lg shadow-accent/5 ring-1 ring-accent/30"
-                                : "bg-ink/60 border-white/10 hover:border-white/20"
+                                : "bg-paper border-line hover:border-line"
                             } ${isSelected ? "ring-2 ring-accent" : ""}`}
                           >
                             <div className="flex items-start justify-between gap-2 mb-2">
                               <div className="flex items-center gap-2">
-                                <span className="font-mono text-xs font-bold text-muted bg-white/5 px-2 py-0.5 rounded">
+                                <span className="font-mono text-xs font-bold text-muted bg-ink/5 px-2 py-0.5 rounded">
                                   #{phase.phase_order}
                                 </span>
                                 <h4 className="text-sm font-semibold text-text truncate max-w-[150px] sm:max-w-[180px]">
@@ -757,7 +757,7 @@ function SignalsPageContent() {
                               </span>
                             </div>
 
-                            <div className="flex items-center justify-between text-xs text-muted pt-2 border-t border-white/5">
+                            <div className="flex items-center justify-between text-xs text-muted pt-2 border-t border-line">
                               <div className="flex items-center gap-1.5 font-mono">
                                 <Clock className="w-3.5 h-3.5 text-accent" />
                                 <span className="text-text font-semibold">
@@ -788,8 +788,8 @@ function SignalsPageContent() {
           </Card>
 
           {/* Manual Override & Phase Control Controls */}
-          <Card className="p-5 sm:p-6 bg-surface border-white/10">
-            <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-5">
+          <Card className="p-5 sm:p-6 bg-surface border-line">
+            <div className="flex items-center justify-between border-b border-line pb-4 mb-5">
               <div className="flex items-center gap-2.5">
                 <div className="w-9 h-9 rounded-xl bg-amber/15 border border-amber/30 text-amber flex items-center justify-center">
                   <Settings2 className="w-5 h-5" />
@@ -812,7 +812,7 @@ function SignalsPageContent() {
             <RequireRole
               allowedRoles={["admin", "traffic_officer"]}
               fallback={
-                <div className="p-5 rounded-xl bg-ink/60 border border-amber/30 flex items-start gap-3.5">
+                <div className="p-5 rounded-xl bg-paper border border-amber/30 flex items-start gap-3.5">
                   <div className="w-8 h-8 rounded-lg bg-amber/15 text-amber flex items-center justify-center shrink-0 mt-0.5">
                     <ShieldAlert className="w-4 h-4" />
                   </div>
@@ -831,8 +831,8 @@ function SignalsPageContent() {
               <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Action 1: Adjust Selected Phase Interval (PATCH) */}
-                  <div className="p-4 rounded-xl bg-ink/60 border border-white/10 space-y-4">
-                    <div className="flex items-center justify-between border-b border-white/5 pb-2">
+                  <div className="p-4 rounded-xl bg-paper border border-line space-y-4">
+                    <div className="flex items-center justify-between border-b border-line pb-2">
                       <span className="text-xs font-mono font-semibold text-text flex items-center gap-1.5">
                         <Sliders className="w-3.5 h-3.5 text-accent" />
                         Modify Phase Interval (PATCH)
@@ -863,11 +863,11 @@ function SignalsPageContent() {
                                 className={`py-1.5 text-xs font-mono font-medium uppercase rounded-lg border transition-all cursor-pointer ${
                                   editState === st
                                     ? st === "green"
-                                      ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/50 shadow-sm"
+                                      ? "bg-emerald-500/20 text-emerald-400 border-success/50 shadow-sm"
                                       : st === "yellow"
-                                      ? "bg-amber-500/20 text-amber-400 border-amber-500/50 shadow-sm"
-                                      : "bg-rose-500/20 text-rose-400 border-rose-500/50 shadow-sm"
-                                    : "bg-surface/60 text-muted border-white/5 hover:bg-surface hover:text-text"
+                                      ? "bg-amber/20 text-amber border-amber/50 shadow-sm"
+                                      : "bg-danger/20 text-rose-400 border-danger/50 shadow-sm"
+                                    : "bg-surface/60 text-muted border-line hover:bg-surface hover:text-text"
                                 }`}
                               >
                                 {st}
@@ -887,27 +887,27 @@ function SignalsPageContent() {
                               max={300}
                               value={editDuration}
                               onChange={(e) => setEditDuration(Math.max(1, Number(e.target.value)))}
-                              className="w-24 h-9 px-2.5 rounded-lg bg-surface border border-white/15 text-text font-mono text-xs focus:ring-2 focus:ring-accent focus:border-accent"
+                              className="w-24 h-9 px-2.5 rounded-lg bg-surface border border-line text-text font-mono text-xs focus:ring-2 focus:ring-accent focus:border-accent"
                             />
                             <div className="flex items-center gap-1">
                               <button
                                 type="button"
                                 onClick={() => setEditDuration((prev) => Math.max(5, prev - 5))}
-                                className="px-2 py-1 text-xs font-mono rounded bg-white/5 hover:bg-white/10 text-muted hover:text-text border border-white/5 cursor-pointer"
+                                className="px-2 py-1 text-xs font-mono rounded bg-ink/5 hover:bg-ink/5 text-muted hover:text-text border border-line cursor-pointer"
                               >
                                 -5s
                               </button>
                               <button
                                 type="button"
                                 onClick={() => setEditDuration((prev) => prev + 5)}
-                                className="px-2 py-1 text-xs font-mono rounded bg-white/5 hover:bg-white/10 text-muted hover:text-text border border-white/5 cursor-pointer"
+                                className="px-2 py-1 text-xs font-mono rounded bg-ink/5 hover:bg-ink/5 text-muted hover:text-text border border-line cursor-pointer"
                               >
                                 +5s
                               </button>
                               <button
                                 type="button"
                                 onClick={() => setEditDuration((prev) => prev + 15)}
-                                className="px-2 py-1 text-xs font-mono rounded bg-white/5 hover:bg-white/10 text-muted hover:text-text border border-white/5 cursor-pointer"
+                                className="px-2 py-1 text-xs font-mono rounded bg-ink/5 hover:bg-ink/5 text-muted hover:text-text border border-line cursor-pointer"
                               >
                                 +15s
                               </button>
@@ -921,7 +921,7 @@ function SignalsPageContent() {
                             id="edit-is-active"
                             checked={editIsActive}
                             onChange={(e) => setEditIsActive(e.target.checked)}
-                            className="rounded bg-surface border-white/20 text-accent focus:ring-accent"
+                            className="rounded bg-surface border-line text-accent focus:ring-accent"
                           />
                           <label
                             htmlFor="edit-is-active"
@@ -952,8 +952,8 @@ function SignalsPageContent() {
                   </div>
 
                   {/* Action 2: Manual Signal Override (POST) */}
-                  <div className="p-4 rounded-xl bg-ink/60 border border-amber/20 space-y-4">
-                    <div className="flex items-center justify-between border-b border-white/5 pb-2">
+                  <div className="p-4 rounded-xl bg-paper border border-amber/20 space-y-4">
+                    <div className="flex items-center justify-between border-b border-line pb-2">
                       <span className="text-xs font-mono font-semibold text-amber flex items-center gap-1.5">
                         <Zap className="w-3.5 h-3.5 text-amber" />
                         Direct State Override (POST)
@@ -971,7 +971,7 @@ function SignalsPageContent() {
                         <select
                           value={overrideState}
                           onChange={(e) => setOverrideState(e.target.value)}
-                          className="w-full h-9 px-2.5 rounded-lg bg-surface border border-white/15 text-text font-mono text-xs focus:ring-2 focus:ring-amber focus:border-amber cursor-pointer"
+                          className="w-full h-9 px-2.5 rounded-lg bg-surface border border-line text-text font-mono text-xs focus:ring-2 focus:ring-amber focus:border-amber cursor-pointer"
                         >
                           <option value="green">GREEN (Force Green Light)</option>
                           <option value="yellow">YELLOW (Force Caution Clearance)</option>
@@ -988,7 +988,7 @@ function SignalsPageContent() {
                           value={overrideReason}
                           onChange={(e) => setOverrideReason(e.target.value)}
                           placeholder="e.g. Incident clearance, arterial hold, or emergency escort..."
-                          className="w-full p-2.5 rounded-lg bg-surface border border-white/15 text-text text-xs focus:ring-2 focus:ring-amber focus:border-amber resize-none"
+                          className="w-full p-2.5 rounded-lg bg-surface border border-line text-text text-xs focus:ring-2 focus:ring-amber focus:border-amber resize-none"
                         />
                       </div>
 
@@ -1018,8 +1018,8 @@ function SignalsPageContent() {
 
         {/* Right Column (4 cols): Vision Optical State Observations */}
         <div className="lg:col-span-4 space-y-6">
-          <Card className="p-5 sm:p-6 bg-surface border-white/10">
-            <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-4">
+          <Card className="p-5 sm:p-6 bg-surface border-line">
+            <div className="flex items-center justify-between border-b border-line pb-4 mb-4">
               <div>
                 <div className="flex items-center gap-2">
                   <Camera className="w-5 h-5 text-accent" />
@@ -1031,7 +1031,7 @@ function SignalsPageContent() {
                   Camera-observed physical lamp states from CV detectors.
                 </p>
               </div>
-              <Badge variant="teal" dot>
+              <Badge variant="signal" dot>
                 Vision AI
               </Badge>
             </div>
@@ -1074,7 +1074,7 @@ function SignalsPageContent() {
                   return (
                     <div
                       key={obs.signal_id + (obs.observed_at || "")}
-                      className="p-3.5 rounded-xl bg-ink/60 border border-white/10 space-y-2 hover:border-white/20 transition-colors"
+                      className="p-3.5 rounded-xl bg-paper border border-line space-y-2 hover:border-line transition-colors"
                     >
                       <div className="flex items-start justify-between gap-2">
                         <div>
@@ -1101,7 +1101,7 @@ function SignalsPageContent() {
                           <span className="text-muted">Model Confidence</span>
                           <span className="text-accent font-medium">{confPct}%</span>
                         </div>
-                        <div className="h-1.5 rounded-full bg-ink overflow-hidden border border-white/5">
+                        <div className="h-1.5 rounded-full bg-cream overflow-hidden border border-line">
                           <div
                             style={{ width: `${confPct}%` }}
                             className="h-full bg-accent transition-all rounded-full"
@@ -1109,7 +1109,7 @@ function SignalsPageContent() {
                         </div>
                       </div>
 
-                      <div className="flex items-center justify-between text-[10px] text-muted font-mono pt-1 border-t border-white/5">
+                      <div className="flex items-center justify-between text-[10px] text-muted font-mono pt-1 border-t border-line">
                         <span>Capture Time:</span>
                         <span>{formatDateTime(obs.observed_at)}</span>
                       </div>
@@ -1132,7 +1132,7 @@ function SignalsPageContent() {
           </Card>
 
           {/* Quick Guidance Box */}
-          <Card className="p-4 bg-surface/50 border-white/5 text-xs text-muted space-y-2 leading-relaxed">
+          <Card className="p-4 bg-surface/50 border-line text-xs text-muted space-y-2 leading-relaxed">
             <div className="flex items-center gap-2 text-text font-semibold">
               <Info className="w-4 h-4 text-accent" />
               <span>NTCIP Operational Guidance</span>

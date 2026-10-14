@@ -46,7 +46,7 @@ export const SystemStatus: React.FC = () => {
     <div
       role="region"
       aria-label="Backend system status"
-      className="inline-flex flex-col sm:flex-row items-center gap-3 p-3.5 px-5 rounded-[14px] bg-surface/80 border border-white/10 shadow-md backdrop-blur-sm"
+      className="inline-flex flex-col sm:flex-row items-center gap-3 p-3.5 px-5 rounded-[10px] bg-surface border border-line shadow-sm"
     >
       <div className="flex items-center gap-2.5">
         <span className="relative flex h-3 w-3">
@@ -83,7 +83,7 @@ export const SystemStatus: React.FC = () => {
       </div>
 
       <div className="flex items-center gap-2 text-xs text-muted">
-        <span className="hidden sm:inline text-white/20">•</span>
+        <span className="hidden sm:inline text-ink/20">•</span>
         <span className="font-mono text-[11px] text-muted/80">{API_BASE}</span>
         <button
           type="button"

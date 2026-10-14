@@ -1,7 +1,7 @@
 import React from "react";
 import Link from "next/link";
 
-export type ButtonVariant = "primary" | "secondary" | "ghost";
+export type ButtonVariant = "primary" | "secondary" | "ghost" | "terracotta";
 export type ButtonSize = "sm" | "md" | "lg";
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -15,11 +15,13 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 
 const variantStyles: Record<ButtonVariant, string> = {
   primary:
-    "bg-accent text-ink font-semibold hover:bg-[#1ae4b7] active:scale-[0.98] shadow-md shadow-accent/20 border border-accent",
+    "bg-pine text-paper font-semibold hover:bg-pine-deep active:scale-[0.98] shadow-sm border border-pine-deep/40",
+  terracotta:
+    "bg-accent text-paper font-semibold hover:bg-accent-deep active:scale-[0.98] shadow-sm border border-accent-deep/40",
   secondary:
-    "bg-surface/70 text-text font-medium border border-white/15 hover:bg-surface hover:border-accent/40 active:scale-[0.98]",
+    "bg-surface text-text font-medium border border-line hover:border-pine/40 hover:bg-cream/50 active:scale-[0.98]",
   ghost:
-    "bg-transparent text-muted font-medium hover:text-text hover:bg-surface/60 active:scale-[0.98] border border-transparent",
+    "bg-transparent text-muted font-medium hover:text-text hover:bg-ink/5 active:scale-[0.98] border border-transparent",
 };
 
 const sizeStyles: Record<ButtonSize, string> = {
@@ -32,14 +34,14 @@ export const Button: React.FC<ButtonProps> = ({
   variant = "primary",
   size = "md",
   href,
-  external = false,
+  external,
   children,
   className = "",
   disabled,
   ...props
 }) => {
   const baseStyles =
-    "inline-flex items-center justify-center rounded-full transition-all duration-200 select-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-ink disabled:opacity-50 disabled:pointer-events-none disabled:cursor-not-allowed";
+    "inline-flex items-center justify-center rounded-lg transition-all duration-200 select-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-paper disabled:opacity-50 disabled:pointer-events-none disabled:cursor-not-allowed";
 
   const combinedStyles = `${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${className}`;
 

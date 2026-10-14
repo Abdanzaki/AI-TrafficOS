@@ -148,7 +148,7 @@ export interface CongestionStatus {
   colorClass: string;
   bgClass: string;
   hex: string;
-  badgeVariant: "teal" | "amber" | "danger";
+  badgeVariant: "signal" | "amber" | "danger";
 }
 
 export function getCongestionStatus(percent: number | null | undefined): CongestionStatus {
@@ -158,8 +158,8 @@ export function getCongestionStatus(percent: number | null | undefined): Congest
       label: "Smooth",
       colorClass: "text-accent",
       bgClass: "bg-accent/15 border-accent/30",
-      hex: "#00D9A8",
-      badgeVariant: "teal",
+      hex: "#15803D",
+      badgeVariant: "signal",
     };
   }
   if (percent < 70) {
@@ -168,7 +168,7 @@ export function getCongestionStatus(percent: number | null | undefined): Congest
       label: "Moderate",
       colorClass: "text-amber",
       bgClass: "bg-amber/15 border-amber/30",
-      hex: "#FFB800",
+      hex: "#B45309",
       badgeVariant: "amber",
     };
   }
@@ -177,14 +177,14 @@ export function getCongestionStatus(percent: number | null | undefined): Congest
     label: "Congested",
     colorClass: "text-danger",
     bgClass: "bg-danger/15 border-danger/30",
-    hex: "#FF4D6D",
+    hex: "#B91C1C",
     badgeVariant: "danger",
   };
 }
 
 export function getSeverityBadgeVariant(
   severity: string | null | undefined
-): "teal" | "amber" | "danger" | "muted" {
+): "signal" | "amber" | "danger" | "muted" {
   switch (severity?.toLowerCase()) {
     case "critical":
     case "high":
@@ -192,7 +192,7 @@ export function getSeverityBadgeVariant(
     case "medium":
       return "amber";
     case "low":
-      return "teal";
+      return "signal";
     default:
       return "muted";
   }

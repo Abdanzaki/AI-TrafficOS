@@ -179,7 +179,7 @@ function UsersContent() {
   const getRoleVariant = (role: string): BadgeVariant => {
     switch (role) {
       case "admin":
-        return "teal";
+        return "signal";
       case "traffic_officer":
         return "amber";
       default:
@@ -205,13 +205,13 @@ function UsersContent() {
   return (
     <div className="max-w-7xl mx-auto space-y-6">
       {/* Header Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 rounded-2xl bg-surface/70 border border-white/10 backdrop-blur-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 rounded-2xl bg-surface/70 border border-line backdrop-blur-sm">
         <div>
           <div className="flex items-center gap-2 mb-1">
             <h1 className="text-2xl font-display font-bold text-text">
               User Management
             </h1>
-            <Badge variant="teal">Admin Clearance</Badge>
+            <Badge variant="signal">Admin Clearance</Badge>
           </div>
           <p className="text-xs sm:text-sm text-muted">
             Provision accounts, assign operational role privileges, and toggle active status per /api/v1/users.
@@ -219,7 +219,7 @@ function UsersContent() {
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          <div className="text-xs text-muted font-mono bg-ink/60 px-3 py-1.5 rounded-lg border border-white/10">
+          <div className="text-xs text-muted font-mono bg-paper px-3 py-1.5 rounded-lg border border-line">
             Total Accounts: {data?.total ?? "..."}
           </div>
 
@@ -239,8 +239,8 @@ function UsersContent() {
       </div>
 
       {/* Filter & Search Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl bg-surface/40 border border-white/5">
-        <div className="flex items-center gap-2 w-full sm:w-72 bg-ink/60 border border-white/10 rounded-xl px-3 py-1.5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl bg-surface/40 border border-line">
+        <div className="flex items-center gap-2 w-full sm:w-72 bg-paper border border-line rounded-xl px-3 py-1.5">
           <Search className="w-4 h-4 text-muted shrink-0" />
           <input
             type="text"
@@ -257,7 +257,7 @@ function UsersContent() {
           <select
             value={roleFilter}
             onChange={(e) => setRoleFilter(e.target.value)}
-            className="bg-ink/60 border border-white/10 rounded-lg px-2.5 py-1 text-xs text-text focus:outline-none"
+            className="bg-paper border border-line rounded-lg px-2.5 py-1 text-xs text-text focus:outline-none"
           >
             <option value="all">All Roles</option>
             <option value="admin">Admin</option>
@@ -270,11 +270,11 @@ function UsersContent() {
       {/* Create User Modal */}
       {showCreateModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-ink/80 backdrop-blur-sm animate-in fade-in">
-          <Card className="w-full max-w-md p-6 bg-surface/95 border-white/20 shadow-2xl relative">
+          <Card className="w-full max-w-md p-6 bg-surface/95 border-line shadow-2xl relative">
             <button
               type="button"
               onClick={() => setShowCreateModal(false)}
-              className="absolute top-4 right-4 p-1.5 rounded-lg text-muted hover:text-text hover:bg-white/5"
+              className="absolute top-4 right-4 p-1.5 rounded-lg text-muted hover:text-text hover:bg-ink/5"
             >
               <X className="w-4 h-4" />
             </button>
@@ -314,7 +314,7 @@ function UsersContent() {
                   placeholder="Officer Jane Doe"
                   value={formFullName}
                   onChange={(e) => setFormFullName(e.target.value)}
-                  className="w-full px-3 py-2 bg-ink/70 border border-white/10 rounded-xl text-xs text-text focus:outline-none focus:border-accent"
+                  className="w-full px-3 py-2 bg-surface border border-line rounded-xl text-xs text-text focus:outline-none focus:border-accent"
                 />
               </div>
 
@@ -328,7 +328,7 @@ function UsersContent() {
                   placeholder="jane.doe@trafficos.internal"
                   value={formEmail}
                   onChange={(e) => setFormEmail(e.target.value)}
-                  className="w-full px-3 py-2 bg-ink/70 border border-white/10 rounded-xl text-xs text-text focus:outline-none focus:border-accent"
+                  className="w-full px-3 py-2 bg-surface border border-line rounded-xl text-xs text-text focus:outline-none focus:border-accent"
                 />
               </div>
 
@@ -343,7 +343,7 @@ function UsersContent() {
                   placeholder="••••••••••••"
                   value={formPassword}
                   onChange={(e) => setFormPassword(e.target.value)}
-                  className="w-full px-3 py-2 bg-ink/70 border border-white/10 rounded-xl text-xs text-text focus:outline-none focus:border-accent"
+                  className="w-full px-3 py-2 bg-surface border border-line rounded-xl text-xs text-text focus:outline-none focus:border-accent"
                 />
               </div>
 
@@ -354,7 +354,7 @@ function UsersContent() {
                 <select
                   value={formRole}
                   onChange={(e) => setFormRole(e.target.value)}
-                  className="w-full px-3 py-2 bg-ink/70 border border-white/10 rounded-xl text-xs text-text focus:outline-none focus:border-accent"
+                  className="w-full px-3 py-2 bg-surface border border-line rounded-xl text-xs text-text focus:outline-none focus:border-accent"
                 >
                   <option value="analyst">Analyst (Read-Only Telemetry)</option>
                   <option value="traffic_officer">Traffic Officer (Signals & Control)</option>
@@ -403,11 +403,11 @@ function UsersContent() {
           description="There are currently no registered users in the database."
         />
       ) : (
-        <Card className="overflow-hidden border-white/10">
+        <Card className="overflow-hidden border-line">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-xs sm:text-sm">
               <thead>
-                <tr className="border-b border-white/10 bg-surface/60 text-muted uppercase text-[11px] font-semibold tracking-wider font-mono">
+                <tr className="border-b border-line bg-surface/60 text-muted uppercase text-[11px] font-semibold tracking-wider font-mono">
                   <th className="py-3 px-4">User</th>
                   <th className="py-3 px-4">Role Clearance</th>
                   <th className="py-3 px-4">Status</th>
@@ -415,9 +415,9 @@ function UsersContent() {
                   <th className="py-3 px-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/5">
+              <tbody className="divide-y divide-line">
                 {filteredUsers.map((item) => (
-                  <tr key={item.id} className="hover:bg-white/[0.02] transition-colors">
+                  <tr key={item.id} className="hover:bg-ink/[0.03] transition-colors">
                     <td className="py-3 px-4">
                       <div className="font-medium text-text">{item.full_name || "—"}</div>
                       <div className="text-xs text-muted font-mono flex items-center gap-1.5 mt-0.5">
@@ -437,7 +437,7 @@ function UsersContent() {
                           value={item.role_name}
                           disabled={actionLoadingId === item.id}
                           onChange={(e) => handleRoleChange(item.id, e.target.value)}
-                          className="bg-ink/50 border border-white/10 rounded px-1.5 py-0.5 text-[11px] text-muted hover:text-text focus:outline-none cursor-pointer"
+                          className="bg-cream border border-line rounded px-1.5 py-0.5 text-[11px] text-muted hover:text-text focus:outline-none cursor-pointer"
                           aria-label={`Change role for ${item.email}`}
                         >
                           <option value="analyst">analyst</option>

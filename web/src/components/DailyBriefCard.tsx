@@ -109,7 +109,7 @@ export const DailyBriefCard: React.FC<DailyBriefCardProps> = ({
   if (isLoading) {
     return (
       <Card className={`p-6 sm:p-8 ${className}`}>
-        <div className="flex items-center justify-between pb-4 border-b border-white/10 mb-6">
+        <div className="flex items-center justify-between pb-4 border-b border-line mb-6">
           <div className="flex items-center gap-2">
             <Calendar className="w-5 h-5 text-accent" />
             <h2 className="text-base sm:text-lg font-display font-bold text-text">
@@ -140,18 +140,18 @@ export const DailyBriefCard: React.FC<DailyBriefCardProps> = ({
   return (
     <Card className={`p-6 sm:p-8 space-y-6 ${className}`}>
       {/* Header with Title, Timestamp, Provenance, & Actions */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/10">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-line">
         <div>
           <div className="flex items-center gap-2 flex-wrap mb-1.5">
-            <Badge variant="teal" dot>
+            <Badge variant="signal" dot>
               Morning Brief
             </Badge>
-            <span className="text-white/20">•</span>
+            <span className="text-ink/20">•</span>
             <span className="text-xs text-muted font-mono flex items-center gap-1">
               <Calendar className="w-3.5 h-3.5" />
               Target: {brief.date}
             </span>
-            <span className="text-white/20">•</span>
+            <span className="text-ink/20">•</span>
             <span className="text-[11px] text-muted font-mono flex items-center gap-1">
               <Clock className="w-3 h-3" />
               Generated: {formatDateTime(brief.generated_at)}
@@ -176,7 +176,7 @@ export const DailyBriefCard: React.FC<DailyBriefCardProps> = ({
             className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all flex items-center gap-1.5 cursor-pointer border ${
               rephrase
                 ? "bg-amber/15 text-amber border-amber/30 shadow-sm"
-                : "bg-surface/80 text-muted hover:text-text border-white/10"
+                : "bg-surface/80 text-muted hover:text-text border-line"
             }`}
             title="Toggle grounded conversational rendering via GeminiProvider"
           >
@@ -200,14 +200,14 @@ export const DailyBriefCard: React.FC<DailyBriefCardProps> = ({
       {/* 4 Core Sections Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Section 1: Observed Incidents */}
-        <div className="p-4 rounded-xl bg-ink/50 border border-white/5 flex flex-col justify-between">
+        <div className="p-4 rounded-xl bg-cream border border-line flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-medium text-muted uppercase tracking-wider flex items-center gap-1.5">
                 <AlertTriangle className="w-3.5 h-3.5 text-danger" />
                 Observed Incidents
               </span>
-              <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-white/5 text-muted border border-white/10">
+              <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-ink/5 text-muted border border-line">
                 {brief.incidents.provenance}
               </span>
             </div>
@@ -242,20 +242,20 @@ export const DailyBriefCard: React.FC<DailyBriefCardProps> = ({
             )}
           </div>
 
-          <div className="mt-3 pt-2 border-t border-white/5 text-[11px] text-muted font-mono">
+          <div className="mt-3 pt-2 border-t border-line text-[11px] text-muted font-mono">
             Window: Yesterday
           </div>
         </div>
 
         {/* Section 2: Observed Violations */}
-        <div className="p-4 rounded-xl bg-ink/50 border border-white/5 flex flex-col justify-between">
+        <div className="p-4 rounded-xl bg-cream border border-line flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-medium text-muted uppercase tracking-wider flex items-center gap-1.5">
                 <ShieldAlert className="w-3.5 h-3.5 text-amber" />
                 Observed Violations
               </span>
-              <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-white/5 text-muted border border-white/10">
+              <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-ink/5 text-muted border border-line">
                 {brief.violations.provenance}
               </span>
             </div>
@@ -282,13 +282,13 @@ export const DailyBriefCard: React.FC<DailyBriefCardProps> = ({
             )}
           </div>
 
-          <div className="mt-3 pt-2 border-t border-white/5 text-[11px] text-muted font-mono">
+          <div className="mt-3 pt-2 border-t border-line text-[11px] text-muted font-mono">
             Edge perception query
           </div>
         </div>
 
         {/* Section 3: Forecasted Hotspots */}
-        <div className="p-4 rounded-xl bg-ink/50 border border-white/5 flex flex-col justify-between">
+        <div className="p-4 rounded-xl bg-cream border border-line flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-medium text-muted uppercase tracking-wider flex items-center gap-1.5">
@@ -329,20 +329,20 @@ export const DailyBriefCard: React.FC<DailyBriefCardProps> = ({
             )}
           </div>
 
-          <div className="mt-3 pt-2 border-t border-white/5 text-[11px] text-muted font-mono">
+          <div className="mt-3 pt-2 border-t border-line text-[11px] text-muted font-mono">
             Model: AI Forecaster
           </div>
         </div>
 
         {/* Section 4: Operational Trends & Deltas */}
-        <div className="p-4 rounded-xl bg-ink/50 border border-white/5 flex flex-col justify-between">
+        <div className="p-4 rounded-xl bg-cream border border-line flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-medium text-muted uppercase tracking-wider flex items-center gap-1.5">
                 <TrendingUp className="w-3.5 h-3.5 text-accent" />
                 Day-over-Day Trends
               </span>
-              <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-white/5 text-muted border border-white/10">
+              <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-ink/5 text-muted border border-line">
                 {brief.trends.provenance}
               </span>
             </div>
@@ -407,7 +407,7 @@ export const DailyBriefCard: React.FC<DailyBriefCardProps> = ({
             )}
           </div>
 
-          <div className="mt-3 pt-2 border-t border-white/5 text-[11px] text-muted font-mono">
+          <div className="mt-3 pt-2 border-t border-line text-[11px] text-muted font-mono">
             History: {brief.trends.has_sufficient_history ? ">= 2 days verified" : "< 2 days recorded"}
           </div>
         </div>
@@ -424,7 +424,7 @@ export const DailyBriefCard: React.FC<DailyBriefCardProps> = ({
         </button>
 
         {showNarrative && (
-          <div className="mt-3 p-4 rounded-xl bg-ink/70 border border-white/10 text-xs text-text/90 font-mono whitespace-pre-wrap leading-relaxed max-h-64 overflow-y-auto">
+          <div className="mt-3 p-4 rounded-xl bg-surface border border-line text-xs text-text/90 font-mono whitespace-pre-wrap leading-relaxed max-h-64 overflow-y-auto">
             {brief.summary_text}
           </div>
         )}

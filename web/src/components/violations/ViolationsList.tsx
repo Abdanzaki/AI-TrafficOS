@@ -90,7 +90,7 @@ function getStatusBadge(status: string): {
     case "recorded":
       return { variant: "amber", label: "Recorded" };
     case "reviewed":
-      return { variant: "teal", label: "Reviewed" };
+      return { variant: "signal", label: "Reviewed" };
     case "escalated":
       return { variant: "danger", label: "Escalated" };
     case "dismissed":
@@ -198,7 +198,7 @@ export function ViolationsList() {
   return (
     <div className="space-y-6" data-testid="violations-panel">
       {/* Top Banner / Disclaimer */}
-      <div className="p-3.5 rounded-xl bg-ink-raised border border-white/10 text-xs text-muted flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+      <div className="p-3.5 rounded-xl bg-ink-raised border border-line text-xs text-muted flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
         <div className="flex items-center gap-2">
           <Camera className="w-4 h-4 text-accent shrink-0" />
           <span>
@@ -262,7 +262,7 @@ export function ViolationsList() {
                   setTypeFilter(e.target.value);
                   setPage(1);
                 }}
-                className="w-full bg-ink border border-white/10 rounded-lg px-3 py-1.5 text-xs text-text focus:outline-none focus:border-accent"
+                className="w-full bg-surface border border-line rounded-lg px-3 py-1.5 text-xs text-text focus:outline-none focus:border-accent"
                 data-testid="filter-violation-type"
               >
                 <option value="all">All Types</option>
@@ -283,7 +283,7 @@ export function ViolationsList() {
                   setJunctionFilter(e.target.value);
                   setPage(1);
                 }}
-                className="w-full bg-ink border border-white/10 rounded-lg px-3 py-1.5 text-xs text-text focus:outline-none focus:border-accent"
+                className="w-full bg-surface border border-line rounded-lg px-3 py-1.5 text-xs text-text focus:outline-none focus:border-accent"
                 data-testid="filter-junction"
               >
                 <option value="all">All Junctions</option>
@@ -306,7 +306,7 @@ export function ViolationsList() {
                   setStatusFilter(e.target.value);
                   setPage(1);
                 }}
-                className="w-full bg-ink border border-white/10 rounded-lg px-3 py-1.5 text-xs text-text focus:outline-none focus:border-accent"
+                className="w-full bg-surface border border-line rounded-lg px-3 py-1.5 text-xs text-text focus:outline-none focus:border-accent"
                 data-testid="filter-status"
               >
                 <option value="all">All Statuses</option>
@@ -379,7 +379,7 @@ export function ViolationsList() {
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="border-b border-white/10 bg-white/[0.02] text-muted uppercase text-[10px] tracking-wider font-semibold">
+                <tr className="border-b border-line bg-ink/[0.03] text-muted uppercase text-[10px] tracking-wider font-semibold">
                   <th className="py-3 px-4">Violation ID</th>
                   <th className="py-3 px-4">Type</th>
                   <th className="py-3 px-4">Detected At</th>
@@ -390,7 +390,7 @@ export function ViolationsList() {
                   <th className="py-3 px-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/5">
+              <tbody className="divide-y divide-line">
                 {items.map((v) => {
                   const typeBadge = getViolationTypeBadge(v.violation_type);
                   const statusBadge = getStatusBadge(v.status);
@@ -401,7 +401,7 @@ export function ViolationsList() {
                   return (
                     <tr
                       key={v.id}
-                      className="hover:bg-white/[0.02] transition-colors"
+                      className="hover:bg-ink/[0.03] transition-colors"
                       data-testid={`violation-row-${v.id}`}
                     >
                       {/* ID */}
@@ -447,13 +447,13 @@ export function ViolationsList() {
                       {/* Confidence */}
                       <td className="py-3 px-4">
                         <div className="flex items-center gap-2">
-                          <div className="w-12 bg-white/10 rounded-full h-1.5 overflow-hidden">
+                          <div className="w-12 bg-ink/5 rounded-full h-1.5 overflow-hidden">
                             <div
                               className={`h-full rounded-full ${
                                 confPct >= 80
                                   ? "bg-accent"
                                   : confPct >= 60
-                                  ? "bg-amber-400"
+                                  ? "bg-amber"
                                   : "bg-muted"
                               }`}
                               style={{ width: `${confPct}%` }}
@@ -540,7 +540,7 @@ export function ViolationsList() {
       {/* Details Drawer / Modal */}
       {selectedViolation && (
         <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in">
-          <Card className="w-full max-w-lg p-6 space-y-4 max-h-[90vh] overflow-y-auto border border-white/10 shadow-2xl">
+          <Card className="w-full max-w-lg p-6 space-y-4 max-h-[90vh] overflow-y-auto border border-line shadow-2xl">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <div className="flex items-center gap-2">
@@ -566,7 +566,7 @@ export function ViolationsList() {
             </div>
 
             {/* Quick Metrics */}
-            <div className="grid grid-cols-2 gap-3 p-3 rounded-lg bg-ink/40 border border-white/5 text-xs">
+            <div className="grid grid-cols-2 gap-3 p-3 rounded-lg bg-cream/70 border border-line text-xs">
               <div>
                 <span className="text-muted block text-[10px] uppercase tracking-wider">
                   Confidence
@@ -610,7 +610,7 @@ export function ViolationsList() {
                 <span className="text-xs font-semibold text-text uppercase tracking-wider">
                   CV Diagnostic Telemetry
                 </span>
-                <pre className="p-3 rounded-lg bg-ink border border-white/5 text-[11px] font-mono text-text/80 overflow-x-auto max-h-48">
+                <pre className="p-3 rounded-lg bg-surface border border-line text-[11px] font-mono text-text/80 overflow-x-auto max-h-48">
                   {JSON.stringify(selectedViolation.details, null, 2)}
                 </pre>
               </div>
@@ -618,7 +618,7 @@ export function ViolationsList() {
 
             {/* Officer Actions */}
             {canWrite() && (
-              <div className="flex items-center justify-end gap-2 pt-2 border-t border-white/10">
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-line">
                 {selectedViolation.status === "recorded" && (
                   <Button
                     variant="primary"

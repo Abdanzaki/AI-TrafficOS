@@ -107,7 +107,7 @@ function getNotificationSeverityConfig(severity: string): {
     default:
       return {
         icon: <Info className="w-4 h-4 text-accent" />,
-        badgeVariant: "teal",
+        badgeVariant: "signal",
         textColor: "text-accent",
         borderClass: "border-accent/30",
         bgClass: "bg-accent/5",
@@ -310,7 +310,7 @@ export default function NotificationsPage() {
             <h1 className="text-2xl sm:text-3xl font-display font-bold text-text tracking-tight">
               Notifications & Operator Alerts
             </h1>
-            <Badge variant="teal" dot>
+            <Badge variant="signal" dot>
               Event Bus
             </Badge>
             <span className="text-xs text-muted font-mono">
@@ -399,7 +399,7 @@ export default function NotificationsPage() {
 
       {/* Overview Stat Counters */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-        <Card className="p-4 bg-surface/70 border-white/10">
+        <Card className="p-4 bg-surface/70 border-line">
           <div className="text-[11px] font-medium text-muted uppercase tracking-wider">
             Total Indexed
           </div>
@@ -409,7 +409,7 @@ export default function NotificationsPage() {
           <div className="text-[10px] text-muted mt-0.5">Matching current filters</div>
         </Card>
 
-        <Card className="p-4 bg-surface/70 border-white/10">
+        <Card className="p-4 bg-surface/70 border-line">
           <div className="text-[11px] font-medium text-amber uppercase tracking-wider">
             Unread Alerts
           </div>
@@ -419,7 +419,7 @@ export default function NotificationsPage() {
           <div className="text-[10px] text-muted mt-0.5">Pending operator review</div>
         </Card>
 
-        <Card className="p-4 bg-surface/70 border-white/10">
+        <Card className="p-4 bg-surface/70 border-line">
           <div className="text-[11px] font-medium text-danger uppercase tracking-wider">
             Critical Alarms
           </div>
@@ -429,7 +429,7 @@ export default function NotificationsPage() {
           <div className="text-[10px] text-muted mt-0.5">Urgent priority events</div>
         </Card>
 
-        <Card className="p-4 bg-surface/70 border-white/10">
+        <Card className="p-4 bg-surface/70 border-line">
           <div className="text-[11px] font-medium text-accent uppercase tracking-wider">
             System Broadcasts
           </div>
@@ -441,7 +441,7 @@ export default function NotificationsPage() {
       </div>
 
       {/* FILTER CONTROLS BAR */}
-      <div className="bg-surface/60 p-4 rounded-2xl border border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-3 flex-wrap">
+      <div className="bg-surface/60 p-4 rounded-2xl border border-line flex flex-col md:flex-row md:items-center justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-2 text-xs font-medium text-muted uppercase tracking-wider">
           <Filter className="w-3.5 h-3.5 text-accent" />
           <span>Filter Stream:</span>
@@ -452,7 +452,7 @@ export default function NotificationsPage() {
           <select
             value={readFilter}
             onChange={(e) => handleFilterChange(setReadFilter, e.target.value)}
-            className="bg-ink/80 border border-white/15 rounded-xl px-3 py-1.5 text-xs font-medium text-text focus:outline-none focus:border-accent"
+            className="bg-ink/80 border border-line rounded-xl px-3 py-1.5 text-xs font-medium text-text focus:outline-none focus:border-accent"
           >
             <option value="all">All Read States</option>
             <option value="unread">Unread Only</option>
@@ -463,7 +463,7 @@ export default function NotificationsPage() {
           <select
             value={severityFilter}
             onChange={(e) => handleFilterChange(setSeverityFilter, e.target.value)}
-            className="bg-ink/80 border border-white/15 rounded-xl px-3 py-1.5 text-xs font-medium text-text focus:outline-none focus:border-accent"
+            className="bg-ink/80 border border-line rounded-xl px-3 py-1.5 text-xs font-medium text-text focus:outline-none focus:border-accent"
           >
             <option value="all">All Severities</option>
             <option value="critical">Critical</option>
@@ -475,7 +475,7 @@ export default function NotificationsPage() {
           {hasActiveFilters && (
             <button
               onClick={handleResetFilters}
-              className="text-xs text-muted hover:text-text flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-white/10 hover:bg-white/5 transition-colors cursor-pointer"
+              className="text-xs text-muted hover:text-text flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-line hover:bg-ink/5 transition-colors cursor-pointer"
             >
               <RotateCcw className="w-3 h-3" />
               <span>Reset</span>
@@ -524,14 +524,14 @@ export default function NotificationsPage() {
                 key={notif.id}
                 className={`p-4 sm:p-5 border transition-all ${
                   notif.is_read
-                    ? "bg-surface/50 border-white/5 opacity-85"
+                    ? "bg-surface/50 border-line opacity-85"
                     : `${config.bgClass} ${config.borderClass} shadow-md`
                 } relative`}
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-start gap-3.5 flex-1">
                     {/* Severity Icon */}
-                    <div className="w-9 h-9 rounded-xl bg-ink/70 border border-white/10 flex items-center justify-center shrink-0 mt-0.5">
+                    <div className="w-9 h-9 rounded-xl bg-surface border border-line flex items-center justify-center shrink-0 mt-0.5">
                       {config.icon}
                     </div>
 
@@ -547,7 +547,7 @@ export default function NotificationsPage() {
                         </Badge>
 
                         {isBroadcast && (
-                          <Badge variant="teal" className="text-[10px]">
+                          <Badge variant="signal" className="text-[10px]">
                             Broadcast
                           </Badge>
                         )}
@@ -570,7 +570,7 @@ export default function NotificationsPage() {
                         </div>
 
                         {notif.entity_type && (
-                          <div className="flex items-center gap-1 px-2 py-0.5 rounded bg-ink/60 border border-white/5 font-mono text-[10px] text-text">
+                          <div className="flex items-center gap-1 px-2 py-0.5 rounded bg-paper border border-line font-mono text-[10px] text-text">
                             <Layers className="w-2.5 h-2.5 text-accent" />
                             <span>{notif.entity_type} #{notif.entity_id ?? "—"}</span>
                           </div>
@@ -587,7 +587,7 @@ export default function NotificationsPage() {
                         size="sm"
                         onClick={() => markReadMutation.mutate({ id: notif.id })}
                         disabled={markReadMutation.isPending}
-                        className="text-xs px-3 py-1.5 border-white/15 hover:border-accent/40"
+                        className="text-xs px-3 py-1.5 border-line hover:border-accent/40"
                         title="Mark as Read"
                       >
                         <Check className="w-3.5 h-3.5 mr-1 text-accent" />
@@ -606,7 +606,7 @@ export default function NotificationsPage() {
           })}
 
           {/* Pagination Footer */}
-          <Card className="p-4 border-white/10 bg-surface/70 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+          <Card className="p-4 border-line bg-surface/70 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
             <div className="text-muted">
               Showing{" "}
               <span className="font-mono text-text font-medium">
@@ -631,7 +631,7 @@ export default function NotificationsPage() {
                 <span>Prev</span>
               </Button>
 
-              <span className="px-3 py-1 font-mono text-text text-xs bg-ink/60 rounded-md border border-white/5">
+              <span className="px-3 py-1 font-mono text-text text-xs bg-paper rounded-md border border-line">
                 Page {page} of {totalPages}
               </span>
 
@@ -663,7 +663,7 @@ export default function NotificationsPage() {
           />
 
           <div className="relative w-full max-w-lg bg-surface border border-accent/40 rounded-2xl shadow-2xl p-6 z-10 space-y-5 animate-in zoom-in-95 duration-150">
-            <div className="flex items-center justify-between border-b border-white/10 pb-4">
+            <div className="flex items-center justify-between border-b border-line pb-4">
               <div>
                 <div className="flex items-center gap-2">
                   <Send className="w-5 h-5 text-accent" />
@@ -678,7 +678,7 @@ export default function NotificationsPage() {
               <button
                 type="button"
                 onClick={() => setIsBroadcastModalOpen(false)}
-                className="w-8 h-8 rounded-lg bg-ink hover:bg-white/10 border border-white/10 flex items-center justify-center text-muted hover:text-text cursor-pointer"
+                className="w-8 h-8 rounded-lg bg-ink hover:bg-ink/5 border border-line flex items-center justify-center text-muted hover:text-text cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -702,7 +702,7 @@ export default function NotificationsPage() {
                   value={broadcastTitle}
                   onChange={(e) => setBroadcastTitle(e.target.value)}
                   placeholder="e.g. Critical Sensor Gateway Maintenance"
-                  className="w-full bg-ink border border-white/15 rounded-xl px-3 py-2 text-text text-xs focus:outline-none focus:border-accent"
+                  className="w-full bg-surface border border-line rounded-xl px-3 py-2 text-text text-xs focus:outline-none focus:border-accent"
                 />
               </div>
 
@@ -713,7 +713,7 @@ export default function NotificationsPage() {
                 <select
                   value={broadcastSeverity}
                   onChange={(e) => setBroadcastSeverity(e.target.value)}
-                  className="w-full bg-ink border border-white/15 rounded-xl px-3 py-2 text-text text-xs focus:outline-none focus:border-accent"
+                  className="w-full bg-surface border border-line rounded-xl px-3 py-2 text-text text-xs focus:outline-none focus:border-accent"
                 >
                   <option value="info">Info</option>
                   <option value="warning">Warning</option>
@@ -731,7 +731,7 @@ export default function NotificationsPage() {
                   value={broadcastMessage}
                   onChange={(e) => setBroadcastMessage(e.target.value)}
                   placeholder="Detailed operational notice broadcasted to all active console users..."
-                  className="w-full bg-ink border border-white/15 rounded-xl p-3 text-text text-xs focus:outline-none focus:border-accent placeholder:text-muted/60"
+                  className="w-full bg-surface border border-line rounded-xl p-3 text-text text-xs focus:outline-none focus:border-accent placeholder:text-muted/60"
                 />
               </div>
 
@@ -745,7 +745,7 @@ export default function NotificationsPage() {
                     value={broadcastEntityType}
                     onChange={(e) => setBroadcastEntityType(e.target.value)}
                     placeholder="e.g. intersection, signal"
-                    className="w-full bg-ink border border-white/15 rounded-xl px-3 py-2 text-text text-xs focus:outline-none focus:border-accent"
+                    className="w-full bg-surface border border-line rounded-xl px-3 py-2 text-text text-xs focus:outline-none focus:border-accent"
                   />
                 </div>
 
@@ -758,12 +758,12 @@ export default function NotificationsPage() {
                     value={broadcastEntityId}
                     onChange={(e) => setBroadcastEntityId(e.target.value)}
                     placeholder="e.g. 5"
-                    className="w-full bg-ink border border-white/15 rounded-xl px-3 py-2 text-text text-xs focus:outline-none focus:border-accent font-mono"
+                    className="w-full bg-surface border border-line rounded-xl px-3 py-2 text-text text-xs focus:outline-none focus:border-accent font-mono"
                   />
                 </div>
               </div>
 
-              <div className="pt-3 border-t border-white/10 flex items-center justify-end gap-2.5">
+              <div className="pt-3 border-t border-line flex items-center justify-end gap-2.5">
                 <Button
                   type="button"
                   variant="ghost"

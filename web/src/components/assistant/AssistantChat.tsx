@@ -326,17 +326,17 @@ export const AssistantChat: React.FC<AssistantChatProps> = ({ className = "" }) 
   return (
     <div
       data-testid="assistant-chat-panel"
-      className={`flex h-full w-full bg-[#0B1020] text-text overflow-hidden rounded-2xl border border-white/10 shadow-2xl ${className}`}
+      className={`flex h-full w-full bg-[#1C1917] text-text overflow-hidden rounded-2xl border border-line shadow-2xl ${className}`}
     >
       {/* SIDEBAR: Recent Conversations */}
       <div
-        className={`fixed inset-y-0 left-0 z-40 w-64 bg-[#0B1020]/95 backdrop-blur-md border-r border-white/10 flex flex-col transition-transform duration-300 md:static md:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-40 w-64 bg-[#1C1917]/95 backdrop-blur-md border-r border-line flex flex-col transition-transform duration-300 md:static md:translate-x-0 ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         }`}
       >
-        <div className="p-4 border-b border-white/10 flex items-center justify-between">
+        <div className="p-4 border-b border-line flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-[#00D9A8]" />
+            <Sparkles className="w-5 h-5 text-[#C2410C]" />
             <h2 className="font-display font-semibold text-sm tracking-tight text-text">
               Conversations
             </h2>
@@ -356,7 +356,7 @@ export const AssistantChat: React.FC<AssistantChatProps> = ({ className = "" }) 
             type="button"
             data-testid="new-conversation-button"
             onClick={handleNewConversation}
-            className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-[#00D9A8]/10 hover:bg-[#00D9A8]/20 text-[#00D9A8] border border-[#00D9A8]/30 font-medium text-xs transition-colors shadow-sm"
+            className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-[#C2410C]/10 hover:bg-[#C2410C]/20 text-[#C2410C] border border-[#C2410C]/30 font-medium text-xs transition-colors shadow-sm"
           >
             <Plus className="w-4 h-4" />
             <span>New Conversation</span>
@@ -381,8 +381,8 @@ export const AssistantChat: React.FC<AssistantChatProps> = ({ className = "" }) 
                 }}
                 className={`group flex items-center justify-between px-3 py-2.5 rounded-xl text-xs cursor-pointer transition-colors ${
                   conv.id === activeConversationId
-                    ? "bg-white/10 text-text font-medium border border-white/10"
-                    : "text-muted hover:text-text hover:bg-white/5"
+                    ? "bg-ink/5 text-text font-medium border border-line"
+                    : "text-muted hover:text-text hover:bg-ink/5"
                 }`}
               >
                 <div className="truncate flex-1 mr-2">
@@ -397,7 +397,7 @@ export const AssistantChat: React.FC<AssistantChatProps> = ({ className = "" }) 
                   onClick={(e) => handleDeleteConversation(e, conv.id)}
                   title="Delete conversation"
                   aria-label="Delete conversation"
-                  className="opacity-0 group-hover:opacity-100 p-1 text-muted hover:text-[#FF4D6D] transition-opacity"
+                  className="opacity-0 group-hover:opacity-100 p-1 text-muted hover:text-[#B91C1C] transition-opacity"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                 </button>
@@ -406,7 +406,7 @@ export const AssistantChat: React.FC<AssistantChatProps> = ({ className = "" }) 
           )}
         </div>
 
-        <div className="p-3 border-t border-white/10 text-[10px] text-muted font-mono text-center">
+        <div className="p-3 border-t border-line text-[10px] text-muted font-mono text-center">
           Persisted locally • Role: {userRole}
         </div>
       </div>
@@ -423,18 +423,18 @@ export const AssistantChat: React.FC<AssistantChatProps> = ({ className = "" }) 
       {/* MAIN CHAT AREA */}
       <div className="flex-1 flex flex-col min-w-0 h-full">
         {/* Header Bar */}
-        <div className="h-14 px-4 border-b border-white/10 flex items-center justify-between bg-[#0B1020]/80 backdrop-blur-sm shrink-0">
+        <div className="h-14 px-4 border-b border-line flex items-center justify-between bg-[#1C1917]/80 backdrop-blur-sm shrink-0">
           <div className="flex items-center gap-3">
             <button
               type="button"
               onClick={() => setSidebarOpen(true)}
-              className="md:hidden p-1.5 rounded-lg text-muted hover:text-text hover:bg-white/5"
+              className="md:hidden p-1.5 rounded-lg text-muted hover:text-text hover:bg-ink/5"
               aria-label="Open conversation list"
             >
               <Menu className="w-5 h-5" />
             </button>
             <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-lg bg-[#00D9A8]/15 border border-[#00D9A8]/30 flex items-center justify-center text-[#00D9A8]">
+              <div className="w-7 h-7 rounded-lg bg-[#C2410C]/15 border border-[#C2410C]/30 flex items-center justify-center text-[#C2410C]">
                 <Sparkles className="w-4 h-4" />
               </div>
               <div>
@@ -452,7 +452,7 @@ export const AssistantChat: React.FC<AssistantChatProps> = ({ className = "" }) 
             <button
               type="button"
               onClick={handleNewConversation}
-              className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium text-muted hover:text-text bg-white/5 hover:bg-white/10 border border-white/10 transition-colors"
+              className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium text-muted hover:text-text bg-ink/5 hover:bg-ink/5 border border-line transition-colors"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>New</span>
@@ -467,7 +467,7 @@ export const AssistantChat: React.FC<AssistantChatProps> = ({ className = "" }) 
         >
           {messages.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-center max-w-md mx-auto py-12">
-              <div className="w-12 h-12 rounded-2xl bg-[#00D9A8]/10 border border-[#00D9A8]/30 flex items-center justify-center text-[#00D9A8] mb-4 shadow-sm">
+              <div className="w-12 h-12 rounded-2xl bg-[#C2410C]/10 border border-[#C2410C]/30 flex items-center justify-center text-[#C2410C] mb-4 shadow-sm">
                 <Sparkles className="w-6 h-6" />
               </div>
               <h3 className="font-display font-semibold text-base text-text">
@@ -489,7 +489,7 @@ export const AssistantChat: React.FC<AssistantChatProps> = ({ className = "" }) 
                     key={idx}
                     type="button"
                     onClick={() => handleSendMessage(sample)}
-                    className="p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-[#00D9A8]/40 text-xs text-text/80 transition-all text-left"
+                    className="p-3 rounded-xl bg-ink/5 hover:bg-ink/5 border border-line hover:border-[#C2410C]/40 text-xs text-text/80 transition-all text-left"
                   >
                     {sample}
                   </button>
@@ -505,7 +505,7 @@ export const AssistantChat: React.FC<AssistantChatProps> = ({ className = "" }) 
               >
                 {msg.role === "user" ? (
                   // USER MESSAGE
-                  <div className="max-w-[85%] sm:max-w-[75%] rounded-2xl rounded-tr-xs bg-[#00D9A8]/15 border border-[#00D9A8]/30 p-4 text-text shadow-sm">
+                  <div className="max-w-[85%] sm:max-w-[75%] rounded-2xl rounded-tr-xs bg-[#C2410C]/15 border border-[#C2410C]/30 p-4 text-text shadow-sm">
                     <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.content}</p>
                     <div className="mt-1.5 text-[10px] text-text/80 font-mono text-right">
                       {formatTime(msg.timestamp)}
@@ -513,11 +513,11 @@ export const AssistantChat: React.FC<AssistantChatProps> = ({ className = "" }) 
                   </div>
                 ) : (
                   // ASSISTANT MESSAGE
-                  <div className="max-w-[95%] sm:max-w-[85%] rounded-2xl rounded-tl-xs bg-white/5 border border-white/10 p-4 sm:p-5 text-text shadow-md space-y-3">
+                  <div className="max-w-[95%] sm:max-w-[85%] rounded-2xl rounded-tl-xs bg-ink/5 border border-line p-4 sm:p-5 text-text shadow-md space-y-3">
                     {/* Assistant Message Header */}
-                    <div className="flex items-center justify-between gap-2 pb-1 border-b border-white/5">
+                    <div className="flex items-center justify-between gap-2 pb-1 border-b border-line">
                       <div className="flex items-center gap-2">
-                        <Sparkles className="w-4 h-4 text-[#00D9A8]" />
+                        <Sparkles className="w-4 h-4 text-[#C2410C]" />
                         <span className="font-display font-medium text-xs text-text">
                           AI TrafficOS
                         </span>
@@ -525,14 +525,14 @@ export const AssistantChat: React.FC<AssistantChatProps> = ({ className = "" }) 
                         {msg.isCancelled || msg.errorType === "cancelled" ? (
                           <span
                             data-testid="ai-cancelled-badge"
-                            className="px-1.5 py-0.5 rounded text-[9px] font-mono font-medium border border-white/20 text-muted uppercase tracking-wider"
+                            className="px-1.5 py-0.5 rounded text-[9px] font-mono font-medium border border-line text-muted uppercase tracking-wider"
                           >
                             Cancelled
                           </span>
                         ) : (
                           <span
                             data-testid="ai-generated-badge"
-                            className="px-1.5 py-0.5 rounded text-[9px] font-mono font-medium border border-[#FFB800] text-[#FFB800] uppercase tracking-wider"
+                            className="px-1.5 py-0.5 rounded text-[9px] font-mono font-medium border border-[#B45309] text-[#B45309] uppercase tracking-wider"
                           >
                             AI-generated
                           </span>
@@ -547,7 +547,7 @@ export const AssistantChat: React.FC<AssistantChatProps> = ({ className = "" }) 
                     {msg.insufficientData && (
                       <div
                         data-testid="insufficient-data-banner"
-                        className="p-3 rounded-xl bg-[#FFB800]/10 border border-[#FFB800]/40 text-[#FFB800] text-xs flex items-start gap-2.5"
+                        className="p-3 rounded-xl bg-[#B45309]/10 border border-[#B45309]/40 text-[#B45309] text-xs flex items-start gap-2.5"
                       >
                         <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
                         <div>
@@ -565,7 +565,7 @@ export const AssistantChat: React.FC<AssistantChatProps> = ({ className = "" }) 
                     {msg.isCancelled || msg.errorType === "cancelled" ? (
                       <div
                         data-testid="assistant-cancelled-container"
-                        className="p-3.5 rounded-xl bg-white/5 border border-white/10 text-xs text-muted flex items-center justify-between gap-2"
+                        className="p-3.5 rounded-xl bg-ink/5 border border-line text-xs text-muted flex items-center justify-between gap-2"
                       >
                         <div className="flex items-center gap-2">
                           <span className="w-1.5 h-1.5 rounded-full bg-muted/80" />
@@ -581,10 +581,10 @@ export const AssistantChat: React.FC<AssistantChatProps> = ({ className = "" }) 
                         data-error-type={msg.errorType}
                         className={`p-3.5 rounded-xl border text-xs space-y-2.5 ${
                           msg.errorType === "auth"
-                            ? "bg-[#FFB800]/10 border-[#FFB800]/40 text-[#FFB800]"
+                            ? "bg-[#B45309]/10 border-[#B45309]/40 text-[#B45309]"
                             : msg.errorType === "forbidden"
-                            ? "bg-[#FF4D6D]/10 border-[#FF4D6D]/40 text-[#FF4D6D]"
-                            : "bg-[#FF4D6D]/10 border-[#FF4D6D]/40 text-[#FF4D6D]"
+                            ? "bg-[#B91C1C]/10 border-[#B91C1C]/40 text-[#B91C1C]"
+                            : "bg-[#B91C1C]/10 border-[#B91C1C]/40 text-[#B91C1C]"
                         }`}
                       >
                         <div className="flex items-start gap-2">
@@ -609,7 +609,7 @@ export const AssistantChat: React.FC<AssistantChatProps> = ({ className = "" }) 
                             <button
                               type="button"
                               onClick={() => logout()}
-                              className="px-3 py-1.5 rounded-lg bg-[#FFB800] text-black font-semibold text-xs hover:bg-[#FFB800]/90 transition-colors"
+                              className="px-3 py-1.5 rounded-lg bg-[#B45309] text-black font-semibold text-xs hover:bg-[#B45309]/90 transition-colors"
                             >
                               Sign In Again
                             </button>
@@ -628,7 +628,7 @@ export const AssistantChat: React.FC<AssistantChatProps> = ({ className = "" }) 
                               type="button"
                               data-testid="error-retry-button"
                               onClick={handleRetry}
-                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-text font-medium text-xs transition-colors border border-white/20"
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-ink/5 hover:bg-ink/10 text-text font-medium text-xs transition-colors border border-line"
                             >
                               <RefreshCw className="w-3.5 h-3.5" />
                               <span>Retry</span>
@@ -643,7 +643,7 @@ export const AssistantChat: React.FC<AssistantChatProps> = ({ className = "" }) 
                         {msg.elapsedSeconds !== undefined && (
                           <div
                             data-testid="assistant-elapsed-time"
-                            className="text-[10px] text-muted font-mono flex items-center gap-1.5 mt-2.5 pt-1.5 border-t border-white/5"
+                            className="text-[10px] text-muted font-mono flex items-center gap-1.5 mt-2.5 pt-1.5 border-t border-line"
                           >
                             <Clock className="w-3 h-3 text-muted" />
                             <span>Answered in {msg.elapsedSeconds.toFixed(1)}s</span>
@@ -657,10 +657,10 @@ export const AssistantChat: React.FC<AssistantChatProps> = ({ className = "" }) 
                       (msg.toolCalls && msg.toolCalls.length > 0)) && (
                       <div
                         data-testid="system-data-panel"
-                        className="mt-3 p-3.5 rounded-xl bg-[#00D9A8]/5 border border-[#00D9A8]/30 space-y-3"
+                        className="mt-3 p-3.5 rounded-xl bg-[#C2410C]/5 border border-[#C2410C]/30 space-y-3"
                       >
                         <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-1.5 text-xs font-semibold text-[#00D9A8] font-display">
+                          <div className="flex items-center gap-1.5 text-xs font-semibold text-[#C2410C] font-display">
                             <Database className="w-3.5 h-3.5" />
                             <span>System Data & Provenance</span>
                           </div>
@@ -676,9 +676,9 @@ export const AssistantChat: React.FC<AssistantChatProps> = ({ className = "" }) 
                               {msg.toolCalls.map((tc, idx) => (
                                 <div
                                   key={idx}
-                                  className="text-xs font-mono p-2 rounded-lg bg-black/40 border border-white/5 text-text/80"
+                                  className="text-xs font-mono p-2 rounded-lg bg-black/40 border border-line text-text/80"
                                 >
-                                  <div className="text-[#00D9A8] font-bold">{tc.tool}()</div>
+                                  <div className="text-[#C2410C] font-bold">{tc.tool}()</div>
                                   <div className="text-[11px] text-muted mt-0.5">
                                     {tc.result_summary}
                                   </div>
@@ -698,7 +698,7 @@ export const AssistantChat: React.FC<AssistantChatProps> = ({ className = "" }) 
                               {msg.provenance.map((p, idx) => (
                                 <div
                                   key={idx}
-                                  className="flex items-start justify-between gap-2 text-xs p-2 rounded-lg bg-black/30 border border-white/5"
+                                  className="flex items-start justify-between gap-2 text-xs p-2 rounded-lg bg-black/30 border border-line"
                                 >
                                   <span className="text-text/90 italic leading-relaxed">
                                     &ldquo;{p.segment}&rdquo;
@@ -706,7 +706,7 @@ export const AssistantChat: React.FC<AssistantChatProps> = ({ className = "" }) 
                                   {p.label === "observed" && (
                                     <span
                                       data-testid="provenance-chip-observed"
-                                      className="shrink-0 px-2 py-0.5 rounded-full text-[10px] font-mono font-medium bg-[#00D9A8]/15 text-[#00D9A8] border border-[#00D9A8]/30"
+                                      className="shrink-0 px-2 py-0.5 rounded-full text-[10px] font-mono font-medium bg-[#C2410C]/15 text-[#C2410C] border border-[#C2410C]/30"
                                     >
                                       Observed
                                     </span>
@@ -714,7 +714,7 @@ export const AssistantChat: React.FC<AssistantChatProps> = ({ className = "" }) 
                                   {p.label === "predicted" && (
                                     <span
                                       data-testid="provenance-chip-predicted"
-                                      className="shrink-0 px-2 py-0.5 rounded-full text-[10px] font-mono font-medium bg-[#FFB800]/15 text-[#FFB800] border border-[#FFB800]/30"
+                                      className="shrink-0 px-2 py-0.5 rounded-full text-[10px] font-mono font-medium bg-[#B45309]/15 text-[#B45309] border border-[#B45309]/30"
                                     >
                                       Predicted
                                     </span>
@@ -736,10 +736,10 @@ export const AssistantChat: React.FC<AssistantChatProps> = ({ className = "" }) 
                         {/* Mandatory Provenance Legend */}
                         <div
                           data-testid="provenance-legend"
-                          className="pt-2 border-t border-[#00D9A8]/20 text-[10px] font-mono text-muted/80 leading-relaxed"
+                          className="pt-2 border-t border-[#C2410C]/20 text-[10px] font-mono text-muted/80 leading-relaxed"
                         >
-                          <span className="text-[#00D9A8]">observed</span> = real DB/telemetry,{" "}
-                          <span className="text-[#FFB800]">predicted</span> = ML forecast,{" "}
+                          <span className="text-[#C2410C]">observed</span> = real DB/telemetry,{" "}
+                          <span className="text-[#B45309]">predicted</span> = ML forecast,{" "}
                           <span className="text-violet-300">recommended</span> = AI suggestion not a command
                         </div>
                       </div>
@@ -759,7 +759,7 @@ export const AssistantChat: React.FC<AssistantChatProps> = ({ className = "" }) 
                               data-testid={`suggested-followup-${idx}`}
                               disabled={isLoading}
                               onClick={() => handleSendMessage(followup)}
-                              className="px-2.5 py-1 rounded-xl text-xs bg-white/5 hover:bg-white/10 text-text/90 border border-white/10 hover:border-[#00D9A8]/40 transition-colors text-left disabled:opacity-50"
+                              className="px-2.5 py-1 rounded-xl text-xs bg-ink/5 hover:bg-ink/5 text-text/90 border border-line hover:border-[#C2410C]/40 transition-colors text-left disabled:opacity-50"
                             >
                               {followup}
                             </button>
@@ -779,13 +779,13 @@ export const AssistantChat: React.FC<AssistantChatProps> = ({ className = "" }) 
               data-testid="assistant-thinking-indicator"
               className="flex justify-start"
             >
-              <div className="rounded-2xl rounded-tl-xs bg-white/5 border border-white/10 p-4 flex items-center gap-3 text-xs text-text shadow-md">
-                <div className="w-2.5 h-2.5 rounded-full bg-[#00D9A8] animate-ping" />
+              <div className="rounded-2xl rounded-tl-xs bg-ink/5 border border-line p-4 flex items-center gap-3 text-xs text-text shadow-md">
+                <div className="w-2.5 h-2.5 rounded-full bg-[#C2410C] animate-ping" />
                 <span className="font-mono text-xs text-text/80">Thinking…</span>
                 <button
                   type="button"
                   onClick={handleCancelRequest}
-                  className="ml-2 text-[10px] font-mono text-muted hover:text-[#FF4D6D] underline underline-offset-2"
+                  className="ml-2 text-[10px] font-mono text-muted hover:text-[#B91C1C] underline underline-offset-2"
                 >
                   Cancel
                 </button>
@@ -797,7 +797,7 @@ export const AssistantChat: React.FC<AssistantChatProps> = ({ className = "" }) 
         </div>
 
         {/* Composer */}
-        <div className="p-3 sm:p-4 border-t border-white/10 bg-[#0B1020]/95 shrink-0">
+        <div className="p-3 sm:p-4 border-t border-line bg-[#1C1917]/95 shrink-0">
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -805,7 +805,7 @@ export const AssistantChat: React.FC<AssistantChatProps> = ({ className = "" }) 
             }}
             className="flex items-end gap-2 max-w-4xl mx-auto"
           >
-            <div className="flex-1 relative rounded-2xl bg-white/5 border border-white/10 focus-within:border-[#00D9A8]/50 focus-within:ring-1 focus-within:ring-[#00D9A8]/30 transition-all">
+            <div className="flex-1 relative rounded-2xl bg-ink/5 border border-line focus-within:border-[#C2410C]/50 focus-within:ring-1 focus-within:ring-[#C2410C]/30 transition-all">
               <textarea
                 ref={textareaRef}
                 data-testid="assistant-composer-textarea"
@@ -833,7 +833,7 @@ export const AssistantChat: React.FC<AssistantChatProps> = ({ className = "" }) 
               type="submit"
               data-testid="assistant-send-button"
               disabled={isLoading || !inputMessage.trim()}
-              className="h-11 w-11 rounded-xl bg-[#00D9A8] text-black flex items-center justify-center hover:bg-[#00D9A8]/90 disabled:opacity-30 disabled:hover:bg-[#00D9A8] transition-all shrink-0 font-semibold shadow-md cursor-pointer disabled:cursor-not-allowed"
+              className="h-11 w-11 rounded-xl bg-[#C2410C] text-black flex items-center justify-center hover:bg-[#C2410C]/90 disabled:opacity-30 disabled:hover:bg-[#C2410C] transition-all shrink-0 font-semibold shadow-md cursor-pointer disabled:cursor-not-allowed"
               aria-label="Send message"
             >
               <Send className="w-4 h-4" />

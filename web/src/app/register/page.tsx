@@ -74,7 +74,7 @@ function RegisterForm() {
   };
 
   return (
-    <div className="w-full max-w-md p-6 sm:p-8 rounded-2xl bg-surface/80 border border-white/10 shadow-2xl backdrop-blur-md">
+    <div className="w-full max-w-md p-6 sm:p-8 rounded-[10px] bg-surface border border-line shadow-[0_4px_16px_rgba(28,25,23,0.08)]">
       {/* Brand & Title */}
       <div className="text-center mb-6">
         <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-accent/15 border border-accent/40 text-accent mb-4 shadow-sm">
@@ -89,7 +89,7 @@ function RegisterForm() {
       </div>
 
       {/* Role explanation notice */}
-      <div className="mb-6 p-3 rounded-xl bg-ink/70 border border-white/10 flex items-start gap-2.5">
+      <div className="mb-6 p-3 rounded-xl bg-surface border border-line flex items-start gap-2.5">
         <ShieldCheck className="w-4 h-4 text-accent shrink-0 mt-0.5" />
         <div className="text-xs text-muted leading-relaxed">
           New accounts are provisioned with the{" "}
@@ -131,7 +131,7 @@ function RegisterForm() {
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
               placeholder="Alex Chen"
-              className="w-full pl-10 pr-4 py-2.5 bg-ink/70 border border-white/10 rounded-xl text-sm text-text placeholder:text-muted/50 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all"
+              className="w-full pl-10 pr-4 py-2.5 bg-surface border border-line rounded-xl text-sm text-text placeholder:text-muted/50 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all"
             />
           </div>
         </div>
@@ -155,7 +155,7 @@ function RegisterForm() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="alex.chen@trafficos.internal"
-              className="w-full pl-10 pr-4 py-2.5 bg-ink/70 border border-white/10 rounded-xl text-sm text-text placeholder:text-muted/50 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all"
+              className="w-full pl-10 pr-4 py-2.5 bg-surface border border-line rounded-xl text-sm text-text placeholder:text-muted/50 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all"
             />
           </div>
         </div>
@@ -180,7 +180,7 @@ function RegisterForm() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••••••"
-              className="w-full pl-10 pr-4 py-2.5 bg-ink/70 border border-white/10 rounded-xl text-sm text-text placeholder:text-muted/50 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all"
+              className="w-full pl-10 pr-4 py-2.5 bg-surface border border-line rounded-xl text-sm text-text placeholder:text-muted/50 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all"
             />
           </div>
         </div>
@@ -205,7 +205,7 @@ function RegisterForm() {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               placeholder="••••••••••••"
-              className="w-full pl-10 pr-4 py-2.5 bg-ink/70 border border-white/10 rounded-xl text-sm text-text placeholder:text-muted/50 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all"
+              className="w-full pl-10 pr-4 py-2.5 bg-surface border border-line rounded-xl text-sm text-text placeholder:text-muted/50 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all"
             />
           </div>
         </div>
@@ -232,7 +232,7 @@ function RegisterForm() {
       </form>
 
       {/* Footer Links */}
-      <div className="mt-8 pt-6 border-t border-white/10 text-center space-y-3">
+      <div className="mt-8 pt-6 border-t border-line text-center space-y-3">
         <p className="text-xs text-muted">
           Already have an account?{" "}
           <Link
@@ -258,7 +258,7 @@ function RegisterForm() {
 
 export default function RegisterPage() {
   return (
-    <div className="min-h-screen bg-ink text-text flex items-center justify-center p-4 sm:p-6 relative overflow-hidden">
+    <div className="min-h-screen bg-paper text-text flex items-center justify-center p-4 sm:p-6 relative overflow-hidden bg-grid-civic">
       {/* Background glow effects */}
       <div className="pointer-events-none absolute -top-40 left-1/2 -translate-x-1/2 w-[600px] h-[350px] bg-accent/10 blur-[140px] rounded-full" />
       <div className="pointer-events-none absolute bottom-0 right-0 w-[400px] h-[400px] bg-surface blur-[160px] rounded-full" />

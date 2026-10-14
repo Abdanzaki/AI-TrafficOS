@@ -23,7 +23,7 @@ export const RequireAuth: React.FC<RequireAuthProps> = ({ children }) => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-ink flex items-center justify-center p-6">
+      <div className="min-h-screen bg-paper flex items-center justify-center p-6">
         <LoadingSpinner size="lg" label="Authenticating session..." />
       </div>
     );
@@ -31,7 +31,7 @@ export const RequireAuth: React.FC<RequireAuthProps> = ({ children }) => {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-ink flex items-center justify-center p-6">
+      <div className="min-h-screen bg-paper flex items-center justify-center p-6">
         <LoadingSpinner size="md" label="Redirecting to login..." />
       </div>
     );

@@ -551,7 +551,7 @@ export default function PredictionsPage() {
             <h1 className="text-2xl sm:text-3xl font-display font-bold text-text tracking-tight">
               AI Traffic Flow Predictions
             </h1>
-            <Badge variant="teal" dot>
+            <Badge variant="signal" dot>
               Spatio-Temporal Pipeline
             </Badge>
             {modelData && (
@@ -660,7 +660,7 @@ export default function PredictionsPage() {
               </p>
               <div className="mt-3 flex items-center gap-2 text-xs font-mono text-muted">
                 <span>Training endpoint:</span>
-                <code className="text-accent bg-ink/50 px-2 py-0.5 rounded border border-white/5">
+                <code className="text-accent bg-cream px-2 py-0.5 rounded border border-line">
                   POST /api/v1/forecasting/train
                 </code>
               </div>
@@ -675,15 +675,15 @@ export default function PredictionsPage() {
           <LoadingSpinner size="md" label="Loading ML model registry metadata..." />
         </Card>
       ) : modelData ? (
-        <Card className="p-5 sm:p-6 border-white/10 bg-surface/70 space-y-5">
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-white/5 pb-4">
+        <Card className="p-5 sm:p-6 border-line bg-surface/70 space-y-5">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-line pb-4">
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <Cpu className="w-4 h-4 text-accent" />
                 <h2 className="font-display font-bold text-lg text-text">
                   Registered Forecaster Model
                 </h2>
-                <Badge variant="teal" className="font-mono text-xs">
+                <Badge variant="signal" className="font-mono text-xs">
                   {modelData.name} ({modelData.version})
                 </Badge>
                 {modelData.in_filesystem && (
@@ -699,7 +699,7 @@ export default function PredictionsPage() {
             </div>
 
             {/* Honest Data Provenance Labeling */}
-            <div className="flex items-center gap-3 bg-ink/60 p-2.5 rounded-xl border border-white/5">
+            <div className="flex items-center gap-3 bg-paper p-2.5 rounded-xl border border-line">
               <div
                 className={`w-2.5 h-2.5 rounded-full ${
                   provenanceInfo.isSynthetic ? "bg-amber animate-pulse" : "bg-accent"
@@ -709,7 +709,7 @@ export default function PredictionsPage() {
                 <div className="flex items-center gap-1.5">
                   <span className="font-medium text-text">Data Provenance:</span>
                   <Badge
-                    variant={provenanceInfo.isSynthetic ? "amber" : "teal"}
+                    variant={provenanceInfo.isSynthetic ? "amber" : "signal"}
                     className="text-[10px]"
                   >
                     {provenanceInfo.label}
@@ -724,7 +724,7 @@ export default function PredictionsPage() {
 
           {/* Model Metrics & Spec Grid */}
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
-            <div className="p-3 rounded-xl bg-ink/40 border border-white/5">
+            <div className="p-3 rounded-xl bg-cream/70 border border-line">
               <div className="text-[11px] text-muted uppercase font-medium tracking-wider mb-1">
                 Lookahead Horizon
               </div>
@@ -736,7 +736,7 @@ export default function PredictionsPage() {
               </div>
             </div>
 
-            <div className="p-3 rounded-xl bg-ink/40 border border-white/5">
+            <div className="p-3 rounded-xl bg-cream/70 border border-line">
               <div className="text-[11px] text-muted uppercase font-medium tracking-wider mb-1">
                 Volume Flow (R²)
               </div>
@@ -748,7 +748,7 @@ export default function PredictionsPage() {
               </div>
             </div>
 
-            <div className="p-3 rounded-xl bg-ink/40 border border-white/5">
+            <div className="p-3 rounded-xl bg-cream/70 border border-line">
               <div className="text-[11px] text-muted uppercase font-medium tracking-wider mb-1">
                 Congestion (R²)
               </div>
@@ -760,7 +760,7 @@ export default function PredictionsPage() {
               </div>
             </div>
 
-            <div className="p-3 rounded-xl bg-ink/40 border border-white/5">
+            <div className="p-3 rounded-xl bg-cream/70 border border-line">
               <div className="text-[11px] text-muted uppercase font-medium tracking-wider mb-1">
                 Stop-Bar Queue (R²)
               </div>
@@ -772,7 +772,7 @@ export default function PredictionsPage() {
               </div>
             </div>
 
-            <div className="p-3 rounded-xl bg-ink/40 border border-white/5">
+            <div className="p-3 rounded-xl bg-cream/70 border border-line">
               <div className="text-[11px] text-muted uppercase font-medium tracking-wider mb-1">
                 Training Dataset
               </div>
@@ -787,7 +787,7 @@ export default function PredictionsPage() {
               </div>
             </div>
 
-            <div className="p-3 rounded-xl bg-ink/40 border border-white/5">
+            <div className="p-3 rounded-xl bg-cream/70 border border-line">
               <div className="text-[11px] text-muted uppercase font-medium tracking-wider mb-1">
                 Registered Date
               </div>
@@ -803,7 +803,7 @@ export default function PredictionsPage() {
       ) : null}
 
       {/* Junction Selector & Target Filter Tabs */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-surface/50 p-4 rounded-2xl border border-white/10">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-surface/50 p-4 rounded-2xl border border-line">
         <div className="flex items-center gap-3">
           <label htmlFor="junction-select" className="text-xs font-medium text-muted uppercase tracking-wider flex items-center gap-1.5">
             <Sliders className="w-3.5 h-3.5 text-accent" />
@@ -814,7 +814,7 @@ export default function PredictionsPage() {
             value={selectedJunctionId}
             onChange={(e) => setSelectedJunctionId(e.target.value)}
             disabled={junctionsLoading}
-            className="bg-ink/80 border border-white/15 rounded-xl px-3 py-1.5 text-xs sm:text-sm font-medium text-text focus:outline-none focus:border-accent"
+            className="bg-ink/80 border border-line rounded-xl px-3 py-1.5 text-xs sm:text-sm font-medium text-text focus:outline-none focus:border-accent"
           >
             <option value="all">All Junctions ({junctionsData?.total ?? 0})</option>
             {junctionsData?.items?.map((j) => (
@@ -842,7 +842,7 @@ export default function PredictionsPage() {
               className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap cursor-pointer ${
                 activeTab === tab.id
                   ? "bg-accent/15 text-accent border border-accent/30 shadow-sm"
-                  : "text-muted hover:text-text hover:bg-white/5 border border-transparent"
+                  : "text-muted hover:text-text hover:bg-ink/5 border border-transparent"
               }`}
             >
               {tab.label}
@@ -869,10 +869,10 @@ export default function PredictionsPage() {
       {/* Forward Lookahead Summary KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* KPI 1: Flow Volume */}
-        <Card className="p-4 sm:p-5 border-white/10 bg-surface/70">
+        <Card className="p-4 sm:p-5 border-line bg-surface/70">
           <div className="flex items-center justify-between text-muted text-xs mb-1">
             <span className="uppercase font-medium tracking-wider">Forward Volume</span>
-            <Badge variant="teal" className="text-[10px]">y_volume</Badge>
+            <Badge variant="signal" className="text-[10px]">y_volume</Badge>
           </div>
           <div className="flex items-baseline gap-2 mt-2">
             <span className="text-2xl sm:text-3xl font-display font-bold text-accent font-mono">
@@ -880,7 +880,7 @@ export default function PredictionsPage() {
             </span>
             <span className="text-xs text-muted">veh / hr</span>
           </div>
-          <div className="mt-2 flex items-center justify-between text-[11px] text-muted border-t border-white/5 pt-2">
+          <div className="mt-2 flex items-center justify-between text-[11px] text-muted border-t border-line pt-2">
             <span>Model Confidence:</span>
             <span className="font-mono text-text font-medium">
               {latestSummary.volumeConf !== null
@@ -891,7 +891,7 @@ export default function PredictionsPage() {
         </Card>
 
         {/* KPI 2: Congestion Level */}
-        <Card className="p-4 sm:p-5 border-white/10 bg-surface/70">
+        <Card className="p-4 sm:p-5 border-line bg-surface/70">
           <div className="flex items-center justify-between text-muted text-xs mb-1">
             <span className="uppercase font-medium tracking-wider">Saturation Level</span>
             {latestSummary.congestion !== null ? (
@@ -910,7 +910,7 @@ export default function PredictionsPage() {
             </span>
             <span className="text-xs text-muted">corridor capacity</span>
           </div>
-          <div className="mt-2 flex items-center justify-between text-[11px] text-muted border-t border-white/5 pt-2">
+          <div className="mt-2 flex items-center justify-between text-[11px] text-muted border-t border-line pt-2">
             <span>Confidence:</span>
             <span className="font-mono text-text font-medium">
               {latestSummary.congestionConf !== null
@@ -921,7 +921,7 @@ export default function PredictionsPage() {
         </Card>
 
         {/* KPI 3: Stop-Bar Queue */}
-        <Card className="p-4 sm:p-5 border-white/10 bg-surface/70">
+        <Card className="p-4 sm:p-5 border-line bg-surface/70">
           <div className="flex items-center justify-between text-muted text-xs mb-1">
             <span className="uppercase font-medium tracking-wider">Queue Accumulation</span>
             <Badge variant="muted" className="text-[10px]">y_queue</Badge>
@@ -932,7 +932,7 @@ export default function PredictionsPage() {
             </span>
             <span className="text-xs text-muted">vehicles queued</span>
           </div>
-          <div className="mt-2 flex items-center justify-between text-[11px] text-muted border-t border-white/5 pt-2">
+          <div className="mt-2 flex items-center justify-between text-[11px] text-muted border-t border-line pt-2">
             <span>Dispersion Interval:</span>
             <span className="font-mono text-text font-medium">
               {latestSummary.queue !== null ? `± 1.8 veh` : "—"}
@@ -941,10 +941,10 @@ export default function PredictionsPage() {
         </Card>
 
         {/* KPI 4: Estimated Clearance / Wait Time */}
-        <Card className="p-4 sm:p-5 border-white/10 bg-surface/70">
+        <Card className="p-4 sm:p-5 border-line bg-surface/70">
           <div className="flex items-center justify-between text-muted text-xs mb-1">
             <span className="uppercase font-medium tracking-wider">Est. Approach Delay</span>
-            <Badge variant="teal" className="text-[10px]">3.5s / veh</Badge>
+            <Badge variant="signal" className="text-[10px]">3.5s / veh</Badge>
           </div>
           <div className="flex items-baseline gap-2 mt-2">
             <span className="text-2xl sm:text-3xl font-display font-bold text-accent font-mono">
@@ -952,7 +952,7 @@ export default function PredictionsPage() {
             </span>
             <span className="text-xs text-muted">stop-bar clearance</span>
           </div>
-          <div className="mt-2 flex items-center justify-between text-[11px] text-muted border-t border-white/5 pt-2">
+          <div className="mt-2 flex items-center justify-between text-[11px] text-muted border-t border-line pt-2">
             <span>Signal Cycle Impact:</span>
             <span className="font-mono text-text font-medium">
               {latestSummary.waitTime && latestSummary.waitTime > 60
@@ -989,8 +989,8 @@ export default function PredictionsPage() {
       ) : (
         <div className="space-y-6">
           {/* Main Visualizer */}
-          <Card className="p-5 sm:p-6 border-white/10 bg-surface/70 space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/5 pb-3">
+          <Card className="p-5 sm:p-6 border-line bg-surface/70 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-line pb-3">
               <div>
                 <h3 className="font-display font-semibold text-text text-base">
                   {activeTab === "all"
@@ -1019,7 +1019,7 @@ export default function PredictionsPage() {
                   Congestion Level
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded bg-white/20 border border-white/40" />
+                  <span className="w-2 h-2 rounded bg-white/20 border border-ink/25" />
                   Confidence Envelope
                 </span>
               </div>
@@ -1040,13 +1040,13 @@ export default function PredictionsPage() {
                     />
                     <XAxis
                       dataKey="time"
-                      stroke="#8B93B0"
+                      stroke="#6B6257"
                       fontSize={11}
                       tickLine={false}
                       axisLine={{ stroke: "rgba(255, 255, 255, 0.1)" }}
                     />
                     <YAxis
-                      stroke="#8B93B0"
+                      stroke="#6B6257"
                       fontSize={11}
                       domain={[0, 100]}
                       tickLine={false}
@@ -1058,8 +1058,8 @@ export default function PredictionsPage() {
                         if (!active || !payload?.length) return null;
                         const data = payload[0]?.payload;
                         return (
-                          <div className="rounded-xl bg-ink/95 border border-white/10 p-3 shadow-2xl backdrop-blur-md text-xs space-y-1.5 min-w-[180px]">
-                            <div className="font-mono text-muted border-b border-white/5 pb-1">
+                          <div className="rounded-xl bg-ink/95 border border-line p-3 shadow-2xl backdrop-blur-md text-xs space-y-1.5 min-w-[180px]">
+                            <div className="font-mono text-muted border-b border-line pb-1">
                               Forecast for {label}
                             </div>
                             <div className="flex justify-between">
@@ -1084,24 +1084,24 @@ export default function PredictionsPage() {
                     />
                     <ReferenceLine
                       y={40}
-                      stroke="#FFB800"
+                      stroke="#B45309"
                       strokeDasharray="3 3"
-                      label={{ value: "Moderate Threshold (40%)", fill: "#FFB800", fontSize: 10 }}
+                      label={{ value: "Moderate Threshold (40%)", fill: "#B45309", fontSize: 10 }}
                     />
                     <ReferenceLine
                       y={70}
-                      stroke="#FF4D6D"
+                      stroke="#B91C1C"
                       strokeDasharray="3 3"
-                      label={{ value: "Severe Saturation (70%)", fill: "#FF4D6D", fontSize: 10 }}
+                      label={{ value: "Severe Saturation (70%)", fill: "#B91C1C", fontSize: 10 }}
                     />
                     <Line
                       type="monotone"
                       dataKey="congestion"
                       name="Congestion"
-                      stroke="#FFB800"
+                      stroke="#B45309"
                       strokeWidth={2.5}
-                      dot={{ r: 3, fill: "#FFB800" }}
-                      activeDot={{ r: 6, stroke: "#FFB800" }}
+                      dot={{ r: 3, fill: "#B45309" }}
+                      activeDot={{ r: 6, stroke: "#B45309" }}
                     />
                   </LineChart>
                 ) : activeTab === "queue" || activeTab === "wait_time" ? (
@@ -1111,8 +1111,8 @@ export default function PredictionsPage() {
                   >
                     <defs>
                       <linearGradient id="queueGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#00D9A8" stopOpacity={0.4} />
-                        <stop offset="95%" stopColor="#00D9A8" stopOpacity={0.0} />
+                        <stop offset="5%" stopColor="#C2410C" stopOpacity={0.4} />
+                        <stop offset="95%" stopColor="#C2410C" stopOpacity={0.0} />
                       </linearGradient>
                     </defs>
                     <CartesianGrid
@@ -1122,13 +1122,13 @@ export default function PredictionsPage() {
                     />
                     <XAxis
                       dataKey="time"
-                      stroke="#8B93B0"
+                      stroke="#6B6257"
                       fontSize={11}
                       tickLine={false}
                       axisLine={{ stroke: "rgba(255, 255, 255, 0.1)" }}
                     />
                     <YAxis
-                      stroke="#8B93B0"
+                      stroke="#6B6257"
                       fontSize={11}
                       tickLine={false}
                       axisLine={false}
@@ -1139,8 +1139,8 @@ export default function PredictionsPage() {
                         if (!active || !payload?.length) return null;
                         const d = payload[0]?.payload;
                         return (
-                          <div className="rounded-xl bg-ink/95 border border-white/10 p-3 shadow-2xl backdrop-blur-md text-xs space-y-1.5 min-w-[180px]">
-                            <div className="font-mono text-muted border-b border-white/5 pb-1">
+                          <div className="rounded-xl bg-ink/95 border border-line p-3 shadow-2xl backdrop-blur-md text-xs space-y-1.5 min-w-[180px]">
+                            <div className="font-mono text-muted border-b border-line pb-1">
                               Forecast for {label}
                             </div>
                             <div className="flex justify-between">
@@ -1167,7 +1167,7 @@ export default function PredictionsPage() {
                       type="monotone"
                       dataKey={activeTab === "wait_time" ? "waitTime" : "queue"}
                       name={activeTab === "wait_time" ? "Clearance Delay" : "Queue Length"}
-                      stroke="#00D9A8"
+                      stroke="#C2410C"
                       strokeWidth={2}
                       fillOpacity={1}
                       fill="url(#queueGradient)"
@@ -1180,12 +1180,12 @@ export default function PredictionsPage() {
                   >
                     <defs>
                       <linearGradient id="volGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#00D9A8" stopOpacity={0.4} />
-                        <stop offset="95%" stopColor="#00D9A8" stopOpacity={0.0} />
+                        <stop offset="5%" stopColor="#C2410C" stopOpacity={0.4} />
+                        <stop offset="95%" stopColor="#C2410C" stopOpacity={0.0} />
                       </linearGradient>
                       <linearGradient id="congGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#FFB800" stopOpacity={0.35} />
-                        <stop offset="95%" stopColor="#FFB800" stopOpacity={0.0} />
+                        <stop offset="5%" stopColor="#B45309" stopOpacity={0.35} />
+                        <stop offset="95%" stopColor="#B45309" stopOpacity={0.0} />
                       </linearGradient>
                     </defs>
                     <CartesianGrid
@@ -1195,13 +1195,13 @@ export default function PredictionsPage() {
                     />
                     <XAxis
                       dataKey="time"
-                      stroke="#8B93B0"
+                      stroke="#6B6257"
                       fontSize={11}
                       tickLine={false}
                       axisLine={{ stroke: "rgba(255, 255, 255, 0.1)" }}
                     />
                     <YAxis
-                      stroke="#8B93B0"
+                      stroke="#6B6257"
                       fontSize={11}
                       tickLine={false}
                       axisLine={false}
@@ -1212,8 +1212,8 @@ export default function PredictionsPage() {
                         if (!active || !payload?.length) return null;
                         const d = payload[0]?.payload;
                         return (
-                          <div className="rounded-xl bg-ink/95 border border-white/10 p-3 shadow-2xl backdrop-blur-md text-xs space-y-1.5 min-w-[200px]">
-                            <div className="font-mono text-muted border-b border-white/5 pb-1">
+                          <div className="rounded-xl bg-ink/95 border border-line p-3 shadow-2xl backdrop-blur-md text-xs space-y-1.5 min-w-[200px]">
+                            <div className="font-mono text-muted border-b border-line pb-1">
                               Forecast for {label}
                             </div>
                             {d?.volume !== undefined && (
@@ -1240,7 +1240,7 @@ export default function PredictionsPage() {
                                 </span>
                               </div>
                             )}
-                            <div className="flex justify-between text-[11px] text-muted border-t border-white/5 pt-1">
+                            <div className="flex justify-between text-[11px] text-muted border-t border-line pt-1">
                               <span>Model Confidence:</span>
                               <span className="font-mono text-accent">{d?.confidence}%</span>
                             </div>
@@ -1252,7 +1252,7 @@ export default function PredictionsPage() {
                       type="monotone"
                       dataKey="volume"
                       name="Flow Volume"
-                      stroke="#00D9A8"
+                      stroke="#C2410C"
                       strokeWidth={2}
                       fillOpacity={1}
                       fill="url(#volGradient)"
@@ -1261,7 +1261,7 @@ export default function PredictionsPage() {
                       type="monotone"
                       dataKey="congestion"
                       name="Congestion %"
-                      stroke="#FFB800"
+                      stroke="#B45309"
                       strokeWidth={1.5}
                       fillOpacity={1}
                       fill="url(#congGradient)"
@@ -1284,18 +1284,18 @@ export default function PredictionsPage() {
               <h3 className="font-display font-bold text-text text-base">
                 Forecast Adapter Architecture (<code className="text-accent text-xs">apply_predictions_to_costs</code>)
               </h3>
-              <Badge variant="teal" className="text-[10px]">
+              <Badge variant="signal" className="text-[10px]">
                 Routing Integration
               </Badge>
             </div>
             <p className="text-xs text-muted leading-relaxed">
               Traffic predictions are bridged into network routing through an alpha-weighted
               convex combination (<code className="font-mono text-text">α = 0.5</code>):
-              <span className="block font-mono text-[11px] text-accent/90 bg-ink/50 p-2 rounded-lg my-1.5 border border-white/5">
+              <span className="block font-mono text-[11px] text-accent/90 bg-cream p-2 rounded-lg my-1.5 border border-line">
                 blended_congestion = (1.0 - α) × base_telemetry + α × predicted_congestion
               </span>
               Edge impedance in Dijkstra and A* pathfinding is dynamically scaled by:
-              <span className="block font-mono text-[11px] text-accent/90 bg-ink/50 p-2 rounded-lg my-1.5 border border-white/5">
+              <span className="block font-mono text-[11px] text-accent/90 bg-cream p-2 rounded-lg my-1.5 border border-line">
                 multiplier = 1.0 + (blended_congestion / 100.0) × 2.0
               </span>
               This prevents reactive oscillation and herds emergency corridors and high-priority
@@ -1318,8 +1318,8 @@ export default function PredictionsPage() {
       </Card>
 
       {/* RECENT PREDICTIONS AUDIT LOG */}
-      <Card className="p-5 sm:p-6 border-white/10 bg-surface/70 space-y-4">
-        <div className="flex items-center justify-between border-b border-white/5 pb-3">
+      <Card className="p-5 sm:p-6 border-line bg-surface/70 space-y-4">
+        <div className="flex items-center justify-between border-b border-line pb-3">
           <div>
             <h3 className="font-display font-semibold text-text text-base">
               Recent Stored Inferences (AIPrediction Log)
@@ -1338,7 +1338,7 @@ export default function PredictionsPage() {
             <div className="overflow-x-auto">
             <table className="w-full min-w-[750px] text-left text-xs">
               <thead>
-                <tr className="border-b border-white/10 text-muted uppercase tracking-wider text-[11px]">
+                <tr className="border-b border-line text-muted uppercase tracking-wider text-[11px]">
                   <th className="py-2.5 px-3">Prediction ID</th>
                   <th className="py-2.5 px-3">Junction</th>
                   <th className="py-2.5 px-3">Target Type</th>
@@ -1348,7 +1348,7 @@ export default function PredictionsPage() {
                   <th className="py-2.5 px-3">Model</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/5 font-mono">
+              <tbody className="divide-y divide-line font-mono">
                 {predictionsData.items.map((p) => {
                   const junc = p.intersection_id ? junctionMap.get(p.intersection_id) : null;
                   const isFlow = p.prediction_type === "flow";
@@ -1360,7 +1360,7 @@ export default function PredictionsPage() {
                       : "—";
 
                   return (
-                    <tr key={p.id} className="hover:bg-white/5 transition-colors">
+                    <tr key={p.id} className="hover:bg-ink/5 transition-colors">
                       <td className="py-2.5 px-3 text-muted">#{p.id}</td>
                       <td className="py-2.5 px-3 font-body">
                         {junc ? (
@@ -1378,7 +1378,7 @@ export default function PredictionsPage() {
                       </td>
                       <td className="py-2.5 px-3 font-body">
                         <Badge
-                          variant={isFlow ? "teal" : "amber"}
+                          variant={isFlow ? "signal" : "amber"}
                           className="text-[10px]"
                         >
                           {p.prediction_type}

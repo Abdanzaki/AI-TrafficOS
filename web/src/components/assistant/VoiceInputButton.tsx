@@ -63,11 +63,11 @@ export const VoiceInputButton: React.FC<VoiceInputButtonProps> = ({
       {isListening && (
         <div
           data-testid="voice-listening-popover"
-          className="absolute bottom-14 right-0 w-72 sm:w-80 p-3 rounded-2xl bg-[#0F172A] border border-cyan-500/40 shadow-2xl z-50 animate-in fade-in zoom-in-95 duration-150"
+          className="absolute bottom-14 right-0 w-72 sm:w-80 p-3 rounded-2xl bg-surface border border-line shadow-xl z-50 animate-in fade-in zoom-in-95 duration-150"
         >
-          <div className="flex items-center justify-between pb-2 mb-2 border-b border-white/10">
+          <div className="flex items-center justify-between pb-2 mb-2 border-b border-line">
             <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping" />
+              <span className="w-2.5 h-2.5 rounded-full bg-danger animate-ping" />
               <span
                 data-testid="voice-listening-indicator"
                 className="text-xs font-mono font-semibold text-rose-400"
@@ -78,7 +78,7 @@ export const VoiceInputButton: React.FC<VoiceInputButtonProps> = ({
             <button
               type="button"
               onClick={stopListening}
-              className="text-[10px] font-mono text-gray-400 hover:text-white px-2 py-0.5 rounded bg-white/5"
+              className="text-[10px] font-mono text-muted hover:text-ink px-2 py-0.5 rounded bg-ink/5"
             >
               Stop
             </button>
@@ -86,13 +86,13 @@ export const VoiceInputButton: React.FC<VoiceInputButtonProps> = ({
 
           <div
             data-testid="voice-interim-transcript"
-            className="text-xs text-gray-200 italic min-h-[32px] leading-relaxed break-words bg-black/30 p-2 rounded-lg"
+            className="text-xs text-text italic min-h-[32px] leading-relaxed break-words bg-cream/60 p-2 rounded-lg"
           >
             {interimTranscript || finalTranscript || "Speak now into microphone…"}
           </div>
 
-          <div className="mt-2 text-[10px] text-gray-400 font-mono flex items-center gap-1">
-            <Volume2 className="w-3 h-3 text-cyan-400 shrink-0" />
+          <div className="mt-2 text-[10px] text-muted font-mono flex items-center gap-1">
+            <Volume2 className="w-3 h-3 text-accent shrink-0" />
             <span>Browser Web Speech API • Speaks directly to assistant</span>
           </div>
         </div>
@@ -102,15 +102,15 @@ export const VoiceInputButton: React.FC<VoiceInputButtonProps> = ({
       {!isSupported && (
         <div
           data-testid="voice-unsupported-banner"
-          className="hidden group-hover:block absolute bottom-14 right-0 w-72 p-3 rounded-2xl bg-[#1A1F2C] border border-amber-500/30 text-amber-200 text-xs shadow-xl z-50 font-mono"
+          className="hidden group-hover:block absolute bottom-14 right-0 w-72 p-3 rounded-2xl bg-surface border border-amber/30 text-accent-deep text-xs shadow-xl z-50 font-mono"
         >
-          <div className="flex items-center gap-2 font-semibold text-amber-400 mb-1">
+          <div className="flex items-center gap-2 font-semibold text-amber mb-1">
             <AlertCircle className="w-4 h-4 shrink-0" />
             <span>Voice Input Unavailable</span>
           </div>
           <p
             data-testid="voice-unsupported-message"
-            className="text-[11px] text-gray-300 leading-normal"
+            className="text-[11px] text-muted leading-normal"
           >
             Web Speech API is not supported in this browser (e.g. Firefox). Please use
             a Chromium-based browser (Chrome, Edge) or Safari for live voice transcription.
@@ -122,22 +122,22 @@ export const VoiceInputButton: React.FC<VoiceInputButtonProps> = ({
       {showHints && isSupported && !isListening && (
         <div
           data-testid="voice-command-hints"
-          className="absolute bottom-14 right-0 w-72 p-3 rounded-2xl bg-[#0F172A] border border-white/10 shadow-2xl z-50 text-xs text-gray-200"
+          className="absolute bottom-14 right-0 w-72 p-3 rounded-2xl bg-surface border border-line shadow-xl z-50 text-xs text-text"
         >
-          <div className="flex items-center justify-between pb-2 mb-2 border-b border-white/10 text-xs font-semibold text-white">
+          <div className="flex items-center justify-between pb-2 mb-2 border-b border-line text-xs font-semibold text-ink">
             <span className="flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+              <Sparkles className="w-3.5 h-3.5 text-accent" />
               Example Voice Commands
             </span>
             <button
               type="button"
               onClick={() => setShowHints(false)}
-              className="text-gray-400 hover:text-white"
+              className="text-muted hover:text-ink"
             >
               ×
             </button>
           </div>
-          <p className="text-[11px] text-gray-400 mb-2">
+          <p className="text-[11px] text-muted mb-2">
             Mapped directly to existing NLU engineering intents:
           </p>
           <div className="space-y-1">
@@ -150,7 +150,7 @@ export const VoiceInputButton: React.FC<VoiceInputButtonProps> = ({
                   onTranscript(cmd);
                   setShowHints(false);
                 }}
-                className="w-full text-left text-xs px-2 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-cyan-300 font-mono transition-colors block"
+                className="w-full text-left text-xs px-2 py-1.5 rounded-lg bg-cream/60 hover:bg-cream text-pine-deep font-mono transition-colors block"
               >
                 &ldquo;{cmd}&rdquo;
               </button>
@@ -175,10 +175,10 @@ export const VoiceInputButton: React.FC<VoiceInputButtonProps> = ({
           }
           className={`h-11 w-11 rounded-xl flex items-center justify-center transition-all cursor-pointer font-semibold shadow-md ${
             isListening
-              ? "bg-rose-500 text-white ring-4 ring-rose-500/30 animate-pulse"
+              ? "bg-danger text-white ring-4 ring-danger/30 animate-pulse"
               : isSupported
-              ? "bg-white/5 hover:bg-white/10 text-cyan-400 border border-white/10 hover:border-cyan-500/50"
-              : "bg-white/5 text-gray-500 border border-white/5 cursor-not-allowed opacity-50"
+              ? "bg-pine-tint hover:bg-pine-tint text-pine-deep border border-pine/25 hover:border-pine/40"
+              : "bg-ink/5 text-faint border border-line cursor-not-allowed opacity-50"
           }`}
         >
           {isListening ? (
@@ -195,7 +195,7 @@ export const VoiceInputButton: React.FC<VoiceInputButtonProps> = ({
             data-testid="voice-hints-toggle"
             onClick={() => setShowHints((prev) => !prev)}
             aria-label="Show voice command examples"
-            className="absolute -top-2 -right-2 w-4 h-4 rounded-full bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500/40 text-[9px] flex items-center justify-center font-bold"
+            className="absolute -top-2 -right-2 w-4 h-4 rounded-full bg-accent/20 text-accent hover:bg-accent/40 text-[9px] flex items-center justify-center font-bold"
           >
             ?
           </button>

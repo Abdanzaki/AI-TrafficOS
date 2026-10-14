@@ -135,17 +135,17 @@ function getDecisionTypeBadge(type: string): {
     case "ACTIVATE_GREEN_CORRIDOR":
       return { variant: "amber", label: "Green Corridor" };
     case "EXTEND_GREEN":
-      return { variant: "teal", label: "Extend Green" };
+      return { variant: "signal", label: "Extend Green" };
     case "REDUCE_GREEN":
-      return { variant: "teal", label: "Reduce Green" };
+      return { variant: "signal", label: "Reduce Green" };
     case "CHANGE_PHASE":
-      return { variant: "teal", label: "Change Phase" };
+      return { variant: "signal", label: "Change Phase" };
     case "REROUTE_TRAFFIC":
       return { variant: "amber", label: "Reroute Traffic" };
     case "NO_ACTION":
       return { variant: "muted", label: "Hold / No Action" };
     case "SIGNAL_TIMING":
-      return { variant: "teal", label: "Signal Timing" };
+      return { variant: "signal", label: "Signal Timing" };
     case "ROUTE_ADVISORY":
       return { variant: "amber", label: "Route Advisory" };
     case "ALERT":
@@ -303,7 +303,7 @@ export default function DecisionsPage() {
             <h1 className="text-2xl sm:text-3xl font-display font-bold text-text tracking-tight">
               AI Decision Audit History
             </h1>
-            <Badge variant="teal" dot>
+            <Badge variant="signal" dot>
               Autonomous Policy Log
             </Badge>
             <Badge variant="muted" className="font-mono text-xs">
@@ -343,9 +343,9 @@ export default function DecisionsPage() {
       </div>
 
       {/* Audit Banner Note */}
-      <Card className="p-4 sm:p-5 border-white/10 bg-surface/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+      <Card className="p-4 sm:p-5 border-line bg-surface/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-surface/80 border border-white/10 flex items-center justify-center text-accent flex-shrink-0">
+          <div className="w-8 h-8 rounded-lg bg-surface/80 border border-line flex items-center justify-center text-accent flex-shrink-0">
             <ShieldCheck className="w-4 h-4" />
           </div>
           <div>
@@ -368,7 +368,7 @@ export default function DecisionsPage() {
       </Card>
 
       {/* FILTER CONTROLS BAR */}
-      <div className="bg-surface/60 p-4 rounded-2xl border border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-3 flex-wrap">
+      <div className="bg-surface/60 p-4 rounded-2xl border border-line flex flex-col md:flex-row md:items-center justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-2 text-xs font-medium text-muted uppercase tracking-wider">
           <Filter className="w-3.5 h-3.5 text-accent" />
           <span>Filters:</span>
@@ -379,7 +379,7 @@ export default function DecisionsPage() {
           <select
             value={selectedJunctionId}
             onChange={(e) => handleFilterChange(setSelectedJunctionId, e.target.value)}
-            className="bg-ink/80 border border-white/15 rounded-xl px-3 py-1.5 text-xs font-medium text-text focus:outline-none focus:border-accent"
+            className="bg-ink/80 border border-line rounded-xl px-3 py-1.5 text-xs font-medium text-text focus:outline-none focus:border-accent"
           >
             <option value="all">All Junctions</option>
             {junctionsData?.items?.map((j) => (
@@ -393,7 +393,7 @@ export default function DecisionsPage() {
           <select
             value={selectedType}
             onChange={(e) => handleFilterChange(setSelectedType, e.target.value)}
-            className="bg-ink/80 border border-white/15 rounded-xl px-3 py-1.5 text-xs font-medium text-text focus:outline-none focus:border-accent"
+            className="bg-ink/80 border border-line rounded-xl px-3 py-1.5 text-xs font-medium text-text focus:outline-none focus:border-accent"
           >
             <option value="all">All Decision Types</option>
             <option value="PRIORITIZE_EMERGENCY">Emergency Preemption</option>
@@ -411,7 +411,7 @@ export default function DecisionsPage() {
           <select
             value={selectedStatus}
             onChange={(e) => handleFilterChange(setSelectedStatus, e.target.value)}
-            className="bg-ink/80 border border-white/15 rounded-xl px-3 py-1.5 text-xs font-medium text-text focus:outline-none focus:border-accent"
+            className="bg-ink/80 border border-line rounded-xl px-3 py-1.5 text-xs font-medium text-text focus:outline-none focus:border-accent"
           >
             <option value="all">All Statuses</option>
             <option value="proposed">Proposed (Pending Review)</option>
@@ -422,7 +422,7 @@ export default function DecisionsPage() {
           {hasActiveFilters && (
             <button
               onClick={handleResetFilters}
-              className="text-xs text-muted hover:text-text flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-white/10 hover:bg-white/5 transition-colors cursor-pointer"
+              className="text-xs text-muted hover:text-text flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-line hover:bg-ink/5 transition-colors cursor-pointer"
             >
               <RotateCcw className="w-3 h-3" />
               <span>Reset</span>
@@ -461,11 +461,11 @@ export default function DecisionsPage() {
           }
         />
       ) : (
-        <Card className="border-white/10 bg-surface/70 overflow-hidden">
+        <Card className="border-line bg-surface/70 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full min-w-[800px] text-left text-xs">
               <thead>
-                <tr className="border-b border-white/10 bg-ink/40 text-muted uppercase tracking-wider text-[11px]">
+                <tr className="border-b border-line bg-cream/70 text-muted uppercase tracking-wider text-[11px]">
                   <th className="py-3 px-3.5">ID / Timestamp</th>
                   <th className="py-3 px-3.5">Target Junction</th>
                   <th className="py-3 px-3.5">Action Directive</th>
@@ -476,7 +476,7 @@ export default function DecisionsPage() {
                   <th className="py-3 px-3.5 text-right">Details</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/5">
+              <tbody className="divide-y divide-line">
                 {items.map((decision) => {
                   const typeBadge = getDecisionTypeBadge(decision.decision_type);
                   const statusBadge = getStatusBadge(decision.status);
@@ -498,7 +498,7 @@ export default function DecisionsPage() {
                     <tr
                       key={decision.id}
                       onClick={() => setSelectedDecision(decision)}
-                      className="hover:bg-white/5 transition-colors cursor-pointer group"
+                      className="hover:bg-ink/5 transition-colors cursor-pointer group"
                     >
                       {/* ID / Timestamp */}
                       <td className="py-3 px-3.5 align-top">
@@ -563,15 +563,15 @@ export default function DecisionsPage() {
                       <td className="py-3 px-3.5 align-top">
                         {currentSnap ? (
                           <div className="flex flex-wrap gap-1 font-mono text-[10px]">
-                            <span className="bg-ink/60 border border-white/5 px-1.5 py-0.5 rounded text-accent">
+                            <span className="bg-paper border border-line px-1.5 py-0.5 rounded text-accent">
                               {currentSnap.vehicle_count} veh
                             </span>
-                            <span className="bg-ink/60 border border-white/5 px-1.5 py-0.5 rounded text-amber">
+                            <span className="bg-paper border border-line px-1.5 py-0.5 rounded text-amber">
                               {formatNumber(currentSnap.queue_length, 1)} q
                             </span>
                             {currentSnap.avg_speed_kmh !== null &&
                               currentSnap.avg_speed_kmh !== undefined && (
-                                <span className="bg-ink/60 border border-white/5 px-1.5 py-0.5 rounded text-text">
+                                <span className="bg-paper border border-line px-1.5 py-0.5 rounded text-text">
                                   {Math.round(currentSnap.avg_speed_kmh)} km/h
                                 </span>
                               )}
@@ -644,9 +644,9 @@ export default function DecisionsPage() {
           />
 
           {/* Drawer Body */}
-          <div className="relative w-full max-w-2xl bg-ink border-l border-white/10 shadow-2xl z-10 overflow-y-auto flex flex-col h-full animate-in slide-in-from-right duration-200">
+          <div className="relative w-full max-w-2xl bg-surface border-l border-line shadow-2xl z-10 overflow-y-auto flex flex-col h-full animate-in slide-in-from-right duration-200">
             {/* Drawer Header */}
-            <div className="p-5 border-b border-white/10 flex items-center justify-between bg-surface/80 sticky top-0 z-20 backdrop-blur-md">
+            <div className="p-5 border-b border-line flex items-center justify-between bg-surface/80 sticky top-0 z-20 backdrop-blur-md">
               <div className="flex items-center gap-2.5 flex-wrap">
                 <span className="font-mono font-bold text-text text-lg">
                   Decision #{selectedDecision.id}
@@ -669,7 +669,7 @@ export default function DecisionsPage() {
               <button
                 type="button"
                 onClick={() => setSelectedDecision(null)}
-                className="w-8 h-8 rounded-lg bg-surface hover:bg-white/10 border border-white/10 flex items-center justify-center text-muted hover:text-text transition-colors cursor-pointer"
+                className="w-8 h-8 rounded-lg bg-surface hover:bg-ink/5 border border-line flex items-center justify-center text-muted hover:text-text transition-colors cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -682,7 +682,7 @@ export default function DecisionsPage() {
                 <h3 className="font-display font-semibold text-text text-sm uppercase tracking-wider text-muted">
                   Operational Justification
                 </h3>
-                <Card className="p-4 border-white/10 bg-surface/60 space-y-3">
+                <Card className="p-4 border-line bg-surface/60 space-y-3">
                   <div>
                     <div className="text-xs text-muted mb-1 font-medium">
                       Algorithmic Explanation:
@@ -695,7 +695,7 @@ export default function DecisionsPage() {
                   </div>
 
                   {selectedDecision.payload?.expected_impact && (
-                    <div className="border-t border-white/5 pt-2.5">
+                    <div className="border-t border-line pt-2.5">
                       <div className="text-xs text-accent font-medium mb-1">
                         Expected Traffic Impact:
                       </div>
@@ -707,7 +707,7 @@ export default function DecisionsPage() {
 
                   {selectedDecision.payload?.confidence !== undefined &&
                     selectedDecision.payload?.confidence !== null && (
-                      <div className="border-t border-white/5 pt-2.5 flex items-center justify-between text-xs">
+                      <div className="border-t border-line pt-2.5 flex items-center justify-between text-xs">
                         <span className="text-muted">Policy Engine Confidence:</span>
                         <span className="font-mono text-accent font-bold">
                           {formatPercent(selectedDecision.payload.confidence * 100, 1)}
@@ -729,9 +729,9 @@ export default function DecisionsPage() {
                     </Badge>
                   </div>
 
-                  <Card className="p-4 border-white/10 bg-surface/60">
+                  <Card className="p-4 border-line bg-surface/60">
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 font-mono text-xs">
-                      <div className="p-2.5 rounded-lg bg-ink/50 border border-white/5">
+                      <div className="p-2.5 rounded-lg bg-cream border border-line">
                         <div className="text-[10px] text-muted uppercase font-sans mb-0.5">
                           Vehicular Count
                         </div>
@@ -740,7 +740,7 @@ export default function DecisionsPage() {
                         </div>
                       </div>
 
-                      <div className="p-2.5 rounded-lg bg-ink/50 border border-white/5">
+                      <div className="p-2.5 rounded-lg bg-cream border border-line">
                         <div className="text-[10px] text-muted uppercase font-sans mb-0.5">
                           Stop-Bar Queue
                         </div>
@@ -749,7 +749,7 @@ export default function DecisionsPage() {
                         </div>
                       </div>
 
-                      <div className="p-2.5 rounded-lg bg-ink/50 border border-white/5">
+                      <div className="p-2.5 rounded-lg bg-cream border border-line">
                         <div className="text-[10px] text-muted uppercase font-sans mb-0.5">
                           Traffic Density
                         </div>
@@ -758,7 +758,7 @@ export default function DecisionsPage() {
                         </div>
                       </div>
 
-                      <div className="p-2.5 rounded-lg bg-ink/50 border border-white/5">
+                      <div className="p-2.5 rounded-lg bg-cream border border-line">
                         <div className="text-[10px] text-muted uppercase font-sans mb-0.5">
                           Mean Velocity
                         </div>
@@ -767,7 +767,7 @@ export default function DecisionsPage() {
                         </div>
                       </div>
 
-                      <div className="p-2.5 rounded-lg bg-ink/50 border border-white/5">
+                      <div className="p-2.5 rounded-lg bg-cream border border-line">
                         <div className="text-[10px] text-muted uppercase font-sans mb-0.5">
                           Approach Occupancy
                         </div>
@@ -776,7 +776,7 @@ export default function DecisionsPage() {
                         </div>
                       </div>
 
-                      <div className="p-2.5 rounded-lg bg-ink/50 border border-white/5">
+                      <div className="p-2.5 rounded-lg bg-cream border border-line">
                         <div className="text-[10px] text-muted uppercase font-sans mb-0.5">
                           Signal State
                         </div>
@@ -802,9 +802,9 @@ export default function DecisionsPage() {
                   <h3 className="font-display font-semibold text-text text-sm uppercase tracking-wider text-muted">
                     Predictive Model Context
                   </h3>
-                  <Card className="p-4 border-white/10 bg-surface/60">
+                  <Card className="p-4 border-line bg-surface/60">
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 font-mono text-xs">
-                      <div className="p-2.5 rounded-lg bg-ink/50 border border-white/5">
+                      <div className="p-2.5 rounded-lg bg-cream border border-line">
                         <div className="text-[10px] text-muted uppercase font-sans mb-0.5">
                           Forecast Congestion
                         </div>
@@ -813,7 +813,7 @@ export default function DecisionsPage() {
                         </div>
                       </div>
 
-                      <div className="p-2.5 rounded-lg bg-ink/50 border border-white/5">
+                      <div className="p-2.5 rounded-lg bg-cream border border-line">
                         <div className="text-[10px] text-muted uppercase font-sans mb-0.5">
                           Forecast Volume
                         </div>
@@ -822,7 +822,7 @@ export default function DecisionsPage() {
                         </div>
                       </div>
 
-                      <div className="p-2.5 rounded-lg bg-ink/50 border border-white/5">
+                      <div className="p-2.5 rounded-lg bg-cream border border-line">
                         <div className="text-[10px] text-muted uppercase font-sans mb-0.5">
                           Queue Growth
                         </div>
@@ -831,7 +831,7 @@ export default function DecisionsPage() {
                         </div>
                       </div>
 
-                      <div className="p-2.5 rounded-lg bg-ink/50 border border-white/5">
+                      <div className="p-2.5 rounded-lg bg-cream border border-line">
                         <div className="text-[10px] text-muted uppercase font-sans mb-0.5">
                           Lookahead Horizon
                         </div>
@@ -853,7 +853,7 @@ export default function DecisionsPage() {
                     </h3>
                     <div className="flex flex-wrap gap-2">
                       {selectedDecision.payload.affected_signal_ids.map((id) => (
-                        <Badge key={id} variant="teal" className="font-mono text-xs">
+                        <Badge key={id} variant="signal" className="font-mono text-xs">
                           Signal Controller #{id}
                         </Badge>
                       ))}
@@ -866,13 +866,13 @@ export default function DecisionsPage() {
                 <h3 className="font-display font-semibold text-text text-sm uppercase tracking-wider text-muted">
                   Lifecycle State Audit
                 </h3>
-                <Card className="p-4 border-white/10 bg-surface/60 space-y-2 text-xs font-mono">
-                  <div className="flex items-center justify-between py-1 border-b border-white/5">
+                <Card className="p-4 border-line bg-surface/60 space-y-2 text-xs font-mono">
+                  <div className="flex items-center justify-between py-1 border-b border-line">
                     <span className="text-muted font-sans">Created / Proposed:</span>
                     <span className="text-text">{formatDateTime(selectedDecision.created_at)}</span>
                   </div>
 
-                  <div className="flex items-center justify-between py-1 border-b border-white/5">
+                  <div className="flex items-center justify-between py-1 border-b border-line">
                     <span className="text-muted font-sans">Current Status:</span>
                     <Badge variant={getStatusBadge(selectedDecision.status).variant} className="text-[10px]">
                       {selectedDecision.status.toUpperCase()}
@@ -880,14 +880,14 @@ export default function DecisionsPage() {
                   </div>
 
                   {selectedDecision.applied_at && (
-                    <div className="flex items-center justify-between py-1 border-b border-white/5">
+                    <div className="flex items-center justify-between py-1 border-b border-line">
                       <span className="text-muted font-sans">Applied At:</span>
                       <span className="text-success">{formatDateTime(selectedDecision.applied_at)}</span>
                     </div>
                   )}
 
                   {selectedDecision.applied_by && (
-                    <div className="flex items-center justify-between py-1 border-b border-white/5">
+                    <div className="flex items-center justify-between py-1 border-b border-line">
                       <span className="text-muted font-sans">Approved / Applied By:</span>
                       <span className="text-text font-semibold">Operator User #{selectedDecision.applied_by}</span>
                     </div>
@@ -902,7 +902,7 @@ export default function DecisionsPage() {
 
               {/* Section 6: Raw JSON Inspection */}
               <div className="space-y-2">
-                <details className="group border border-white/10 rounded-xl bg-ink/40 p-3">
+                <details className="group border border-line rounded-xl bg-cream/70 p-3">
                   <summary className="flex items-center justify-between text-xs font-mono text-muted cursor-pointer hover:text-text select-none">
                     <span className="flex items-center gap-1.5">
                       <FileCode className="w-3.5 h-3.5" />
@@ -910,7 +910,7 @@ export default function DecisionsPage() {
                     </span>
                     <span className="text-[10px] group-open:rotate-90 transition-transform">▶</span>
                   </summary>
-                  <pre className="mt-3 p-3 rounded-lg bg-ink/90 border border-white/5 text-[11px] font-mono text-muted overflow-x-auto leading-relaxed">
+                  <pre className="mt-3 p-3 rounded-lg bg-ink/90 border border-line text-[11px] font-mono text-muted overflow-x-auto leading-relaxed">
                     {JSON.stringify(
                       {
                         id: selectedDecision.id,
@@ -930,7 +930,7 @@ export default function DecisionsPage() {
             </div>
 
             {/* Drawer Footer */}
-            <div className="p-4 border-t border-white/10 bg-surface/80 sticky bottom-0 flex items-center justify-between gap-3 backdrop-blur-md">
+            <div className="p-4 border-t border-line bg-surface/80 sticky bottom-0 flex items-center justify-between gap-3 backdrop-blur-md">
               <Button
                 variant="ghost"
                 size="sm"
