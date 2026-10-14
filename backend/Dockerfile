@@ -38,5 +38,6 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
     CMD curl -f http://localhost:8000/health || exit 1
 
-# Launch uvicorn server with 2 production worker processes
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "2"]
+# Launch uvicorn server (shell form so Docker expands $PORT itself; Render injects it).
+# Single worker to fit the 512MB free-tier container; defaults to 8000 locally.
+CMD sh -c "cd /app/backend && exec uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000} --workers 1"
