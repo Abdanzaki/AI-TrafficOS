@@ -52,6 +52,19 @@ jobs:
         working-directory: mobile
         run: flutter analyze
 
+      # The app's release build falls back to the debug keystore when no
+      # release signing is configured; generate it so Gradle validation passes.
+      - name: Generate debug keystore
+        run: |
+          mkdir -p ~/.config/.android
+          if [ ! -f ~/.config/.android/debug.keystore ]; then
+            keytool -genkeypair -v \
+              -keystore ~/.config/.android/debug.keystore \
+              -alias androiddebugkey -storepass android -keypass android \
+              -keyalg RSA -keysize 2048 -validity 10000 \
+              -dname "CN=Android Debug,O=Android,C=US"
+          fi
+
       # Signing Note:
       # The resulting APK is built using Flutter's default release configuration.
       # This is suitable for direct Android sideloading, emulator testing, and QA.
