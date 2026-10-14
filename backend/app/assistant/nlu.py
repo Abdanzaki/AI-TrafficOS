@@ -43,6 +43,7 @@ from app.assistant.tools import (
     simulate_signal_timing,
 )
 from app.models.intersection import Intersection
+from app.models.signal import Signal
 
 logger = logging.getLogger(__name__)
 
@@ -124,7 +125,15 @@ INTENT_PATTERNS = [
             re.IGNORECASE,
         ),
     ),
-    # 9. Active incidents / hazards
+    # 9. Active emergency vehicles / dispatch events
+    (
+        "active_emergency",
+        re.compile(
+            r"\b(?:active\s+emergenc(?:y|ies)|emergenc(?:y|ies)\s+(?:vehicles?\s+)?(?:dispatched|active|right\s+now)|emergency\s+vehicles?(?:\s+dispatched)?|emergency\s+(?:response|dispatch|events?))\b",
+            re.IGNORECASE,
+        ),
+    ),
+    # 10. Active incidents / hazards
     (
         "active_incidents",
         re.compile(
@@ -132,11 +141,11 @@ INTENT_PATTERNS = [
             re.IGNORECASE,
         ),
     ),
-    # 10. Current traffic situation
+    # 11. Current traffic situation
     (
         "current_traffic_situation",
         re.compile(
-            r"\b(?:traffic\s+situation|current\s+traffic|traffic\s+right\s+now|traffic\s+at\s+junction|how\s+is\s+traffic|traffic\s+conditions?|status\s+of\s+junction|traffic\s+level)",
+            r"\b(?:traffic\s+situation|current\s+traffic|traffic\s+right\s+now|traffic\s+at\s+junction|how\s+is\s+traffic|traffic\s+conditions?|status\s+of\s+junction|traffic\s+level|congestion\s+status|congestion\s+level|how\s+congested\s+is|congestion\s+at\b)",
             re.IGNORECASE,
         ),
     ),
@@ -231,6 +240,57 @@ def extract_numeric_junction_id(text: str) -> Optional[int]:
     return None
 
 
+def extract_signal_code(text: str) -> Optional[str]:
+    """Extract a signal hardware code from 'Signal S-101' style phrasing.
+
+    Returns the uppercased code (e.g. 'S-101') or None when no signal-code
+    reference is present. Requires the word 'signal' directly before the
+    code so phrases like 'signal recommendation' never match.
+    """
+    m = re.search(r"\bsignal\s+(?:code\s+)?([A-Za-z]{1,4}-?\d{1,6})\b", text, re.IGNORECASE)
+    if m:
+        return m.group(1).upper()
+    return None
+
+
+async def resolve_signal_to_junction(db: AsyncSession, signal_code: str) -> Optional[int]:
+    """Resolve a signal controller code (e.g. 'S-101') to its intersection ID.
+
+    Case-insensitive lookup against the signals table. Returns None when the
+    code is not registered.
+    """
+    stmt = select(Signal.intersection_id).where(func.lower(Signal.code) == signal_code.lower())
+    res = await db.execute(stmt)
+    row = res.first()
+    return row[0] if row else None
+
+
+async def list_signal_codes(db: AsyncSession, limit: int = 10) -> list[str]:
+    """List registered signal controller codes for clarification responses."""
+    res = await db.execute(select(Signal.code).order_by(Signal.id.asc()).limit(limit))
+    return [r[0] for r in res.all()]
+
+
+async def extract_named_junction_id(db: AsyncSession, text: str) -> Optional[int]:
+    """Resolve a junction by its name or code mentioned in free text.
+
+    Matches whole-word occurrences of intersection names/codes (e.g. 'Miyapur',
+    'HYD-MIYAPUR') against the live intersections table. Returns the
+    intersection ID only when exactly one distinct intersection matches;
+    returns None when zero or several match (ambiguous).
+    """
+    res = await db.execute(select(Intersection.id, Intersection.name, Intersection.code))
+    matches: set[int] = set()
+    for jid, name, code in res.all():
+        for token in (name, code):
+            if token and re.search(rf"\b{re.escape(token)}\b", text, re.IGNORECASE):
+                matches.add(jid)
+                break
+    if len(matches) == 1:
+        return next(iter(matches))
+    return None
+
+
 def extract_route_endpoints(text: str) -> tuple[Optional[int], Optional[int]]:
     """Extract origin and destination junction IDs from routing queries."""
     patterns = [
@@ -320,7 +380,8 @@ class DeterministicNLUEngine:
                 "2. What is the current traffic situation at junction 2?\n"
                 "3. What will traffic be like in 30 minutes at junction 2?\n"
                 "4. Are there any active incidents right now?\n"
-                "5. Why was green extended at junction 2?"
+                "5. Why was green extended at junction 2?\n"
+                "6. Are there any active emergency vehicles dispatched?"
             )
             return NLUResult(
                 intent="unknown",
@@ -330,13 +391,38 @@ class DeterministicNLUEngine:
                 confidence="high",
             )
 
-        # 2. Extract junction entity (with explicit parameter, text regex, or history carryover)
-        extracted_jid = extract_numeric_junction_id(message)
-        effective_jid = (
-            explicit_junction_id
-            if explicit_junction_id is not None
-            else (extracted_jid if extracted_jid is not None else resolve_junction_carryover(conversation_history))
-        )
+        # 2. Extract junction entity (explicit parameter, numeric text, signal
+        #    code, named reference, or conversation carryover — first hit wins)
+        effective_jid: Optional[int] = explicit_junction_id
+        if effective_jid is None:
+            effective_jid = extract_numeric_junction_id(message)
+        if effective_jid is None:
+            sig_code = extract_signal_code(message)
+            if sig_code is not None:
+                signal_jid = await resolve_signal_to_junction(db, sig_code)
+                if signal_jid is None:
+                    known_codes = await list_signal_codes(db)
+                    known_txt = (
+                        "\n".join(f"- {c}" for c in known_codes)
+                        if known_codes
+                        else "No signal controllers are registered in the system."
+                    )
+                    return NLUResult(
+                        intent=intent,
+                        answer=(
+                            f"Signal {sig_code} does not exist in the system.\n\n"
+                            f"Registered signal controllers include:\n{known_txt}\n\n"
+                            "Please specify a valid signal code or junction ID."
+                        ),
+                        tool_calls=[],
+                        provenance_summary=provenance_counts,
+                        confidence="high",
+                    )
+                effective_jid = signal_jid
+        if effective_jid is None:
+            effective_jid = await extract_named_junction_id(db, message)
+        if effective_jid is None:
+            effective_jid = resolve_junction_carryover(conversation_history)
 
         # Verify junction existence if an ID was specified
         verified_junction: Optional[Intersection] = None
@@ -396,6 +482,17 @@ class DeterministicNLUEngine:
                 provenance_counts["observed"] += len(cong_res.get("data", [])) + len(inc_res.get("data", []))
                 answer = self._format_worst_traffic(cong_res, inc_res)
                 return NLUResult(intent, answer, tool_calls, provenance_counts, "high")
+
+            elif intent == "active_emergency":
+                tool_calls.append({
+                    "tool": "get_emergency_events",
+                    "args": {"active_only": True},
+                    "provenance": "observed",
+                })
+                res = await get_emergency_events(db, caller_role=caller_role, active_only=True)
+                provenance_counts["observed"] += len(res.get("data", []))
+                answer = self._format_emergency_events(res)
+                return NLUResult(intent, answer, tool_calls, provenance_counts, res.get("confidence", "high"))
 
             elif intent == "active_incidents":
                 tool_calls.append({
@@ -608,6 +705,34 @@ class DeterministicNLUEngine:
             "### System Recommendations\n"
             "- Monitor dynamic routing around these bottlenecks and dispatch safety personnel to active incident zones.\n\n"
             "---\n**Confidence**: High (Multi-domain telemetry cross-check)"
+        )
+
+    def _format_emergency_events(self, res: dict[str, Any]) -> str:
+        data = res.get("data", [])
+        if not data:
+            return (
+                "### Observed Traffic Telemetry\n"
+                "No active emergency vehicle dispatch events are recorded in the system.\n\n"
+                "### Predicted Forecast\n"
+                "- No emergency transit preemption demand is forecast at this time.\n\n"
+                "### System Recommendations\n"
+                "- Maintain normal signal operations; no priority corridors required.\n\n"
+                "---\n**Confidence**: High (Verified emergency event records)"
+            )
+
+        items_str = "\n".join(
+            f"- **Event #{row['event_id']}**: {row['vehicle_type']} "
+            f"(Priority: {row['priority']}, Status: {row['status']}, Detected: {row['detected_at']})"
+            for row in data
+        )
+        return (
+            "### Observed Traffic Telemetry\n"
+            f"**Active Emergency Dispatch Events:**\n{items_str}\n\n"
+            "### Predicted Forecast\n"
+            "- Anticipate green-wave preemption demand along emergency transit corridors.\n\n"
+            "### System Recommendations\n"
+            "- Hold conflicting phases and clear priority corridors for dispatched units.\n\n"
+            "---\n**Confidence**: High (Verified emergency event records)"
         )
 
     def _format_incidents(self, res: dict[str, Any], target_jid: Optional[int]) -> str:

@@ -17,8 +17,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.assistant.errors import JunctionNotFoundError, PermissionDeniedError
 from app.assistant.nlu import (
     DeterministicNLUEngine,
+    extract_named_junction_id,
     extract_numeric_junction_id,
     extract_route_endpoints,
+    extract_signal_code,
     extract_whatif_parameters,
     resolve_junction_carryover,
 )
@@ -42,7 +44,10 @@ from app.assistant.tools import (
 )
 from app.core.database import AsyncSessionLocal, engine
 from app.models.audit import AuditLog
+from app.models.ai import AIDecision
+from app.models.emergency import EmergencyEvent
 from app.models.intersection import Intersection
+from app.models.signal import Signal
 
 
 @pytest.fixture(autouse=True)
@@ -170,6 +175,13 @@ async def test_nlu_intent_classification():
     assert engine.classify_intent("Why was this signal recommendation proposed?") == "why_signal_recommendation"
     assert engine.classify_intent("What if green were 45 seconds at junction 6?") == "whatif_signal_timing"
     assert engine.classify_intent("What is the traffic situation at junction 2?") == "current_traffic_situation"
+    # Congestion-status natural phrasings (must not refuse when data exists)
+    assert engine.classify_intent("What is the congestion status at Junction 1?") == "current_traffic_situation"
+    assert engine.classify_intent("congestion status of junction 2") == "current_traffic_situation"
+    assert engine.classify_intent("congestion level at junction 3") == "current_traffic_situation"
+    assert engine.classify_intent("How congested is junction 4?") == "current_traffic_situation"
+    assert engine.classify_intent("congestion at junction 5") == "current_traffic_situation"
+    assert extract_numeric_junction_id("What is the congestion status at Junction 1?") == 1
     # Task C natural phrasings
     assert engine.classify_intent("Which junctions are congested?") == "congested_junctions"
     assert engine.classify_intent("What route should traffic take?") == "route_advice"
@@ -399,3 +411,178 @@ async def test_ten_required_questions_nlu_coverage(
         assert "I can't answer that from system data" not in data["answer"], (
             f"Question '{question}' fell through to unknown fallback: {data['answer']}"
         )
+
+
+# ==============================================================================
+# 6. NEW QUESTION COVERAGE — emergency intent, signal-code + named junction entities
+# ==============================================================================
+
+
+@pytest.mark.anyio
+async def test_nlu_new_intent_classification():
+    """New example-question phrasings classify to the right intents (never unknown)."""
+    engine = DeterministicNLUEngine()
+    assert engine.classify_intent("Are there any active emergency vehicles dispatched?") == "active_emergency"
+    assert engine.classify_intent("any emergencies right now?") == "active_emergency"
+    assert engine.classify_intent("congestion at Miyapur?") == "current_traffic_situation"
+    assert engine.classify_intent("Show recent incident stalls reported today") == "active_incidents"
+    assert engine.classify_intent("incidents today") == "active_incidents"
+    assert engine.classify_intent("why did green get extended at junction 2?") == "why_green_extended"
+    assert engine.classify_intent("Why was the green phase extended at Signal S-101?") == "why_green_extended"
+
+
+@pytest.mark.anyio
+async def test_nlu_signal_code_extraction():
+    """extract_signal_code fires only on 'Signal <CODE>' phrasing."""
+    assert extract_signal_code("Why was the green phase extended at Signal S-101?") == "S-101"
+    assert extract_signal_code("signal s-42 status") == "S-42"
+    assert extract_signal_code("Why was this signal recommendation proposed?") is None
+    assert extract_signal_code("What is the traffic situation at junction 2?") is None
+
+
+@pytest.mark.anyio
+async def test_nlu_active_emergency_analyst_visible():
+    """Analyst (read-only) can query active emergency dispatches with observed provenance."""
+    from datetime import datetime, timezone
+
+    async with AsyncSessionLocal() as session:
+        engine = DeterministicNLUEngine()
+        event = EmergencyEvent(
+            vehicle_type="ambulance",
+            priority=1,
+            status="dispatched",
+            detected_at=datetime.now(timezone.utc),
+        )
+        session.add(event)
+        await session.commit()
+
+        result = await engine.execute(
+            db=session,
+            message="Are there any active emergency vehicles dispatched?",
+            caller_role="analyst",
+        )
+        assert result.intent == "active_emergency"
+        assert "I can't answer that from system data" not in result.answer
+        assert "### Observed Traffic Telemetry" in result.answer
+        assert "ambulance" in result.answer
+        assert result.provenance_summary["observed"] >= 1
+        assert any(c["tool"] == "get_emergency_events" for c in result.tool_calls)
+
+        await session.delete(event)
+        await session.commit()
+
+
+@pytest.mark.anyio
+async def test_nlu_active_emergency_empty_answers_honestly():
+    """No active emergencies -> honest 'none recorded', not a refusal."""
+    async with AsyncSessionLocal() as session:
+        engine = DeterministicNLUEngine()
+        result = await engine.execute(
+            db=session,
+            message="any emergencies right now?",
+            caller_role="analyst",
+        )
+        assert result.intent == "active_emergency"
+        assert "I can't answer that from system data" not in result.answer
+        assert "No active emergency vehicle dispatch events are recorded" in result.answer
+
+
+@pytest.mark.anyio
+async def test_nlu_signal_code_resolves_to_junction():
+    """'Signal S-101' resolves through the signals table to its intersection."""
+    from datetime import datetime, timezone
+
+    async with AsyncSessionLocal() as session:
+        engine = DeterministicNLUEngine()
+        sig = Signal(intersection_id=1, code="S-101", status="active")
+        session.add(sig)
+        await session.flush()
+        decision = AIDecision(
+            intersection_id=1,
+            decision_type="EXTEND_GREEN",
+            payload={"action": "EXTEND_GREEN", "extend_green_seconds": 20},
+            status="applied",
+            rationale="Queue backlog on the north approach.",
+        )
+        session.add(decision)
+        await session.commit()
+
+        result = await engine.execute(
+            db=session,
+            message="Why was the green phase extended at Signal S-101?",
+            caller_role="analyst",
+        )
+        assert result.intent == "why_green_extended"
+        assert "I can't answer that from system data" not in result.answer
+        assert "Junction 1" in result.answer
+        assert "EXTEND_GREEN" in result.answer
+        assert "Queue backlog on the north approach." in result.answer
+
+        await session.delete(decision)
+        await session.delete(sig)
+        await session.commit()
+
+
+@pytest.mark.anyio
+async def test_nlu_unknown_signal_code_clarifies():
+    """Nonexistent signal code -> graceful clarification, never fabricated data."""
+    async with AsyncSessionLocal() as session:
+        engine = DeterministicNLUEngine()
+        result = await engine.execute(
+            db=session,
+            message="Why was the green phase extended at Signal S-999?",
+            caller_role="analyst",
+        )
+        assert result.intent == "why_green_extended"
+        assert "Signal S-999 does not exist in the system" in result.answer
+        assert result.tool_calls == []
+
+
+@pytest.mark.anyio
+async def test_nlu_named_junction_resolution():
+    """Junction names in free text resolve against the intersections table."""
+    async with AsyncSessionLocal() as session:
+        engine = DeterministicNLUEngine()
+        miyapur = Intersection(
+            name="Miyapur",
+            code="HYD-MIYAPUR",
+            status="active",
+            city="Hyderabad",
+            zone="West",
+            lat=17.4967,
+            lon=78.3619,
+        )
+        session.add(miyapur)
+        await session.commit()
+
+        named_id = await extract_named_junction_id(session, "congestion at Miyapur?")
+        assert named_id == miyapur.id
+
+        result = await engine.execute(
+            db=session,
+            message="congestion at Miyapur?",
+            caller_role="analyst",
+        )
+        assert result.intent == "current_traffic_situation"
+        assert "I can't answer that from system data" not in result.answer
+        assert "Miyapur" in result.answer
+
+        await session.delete(miyapur)
+        await session.commit()
+
+
+@pytest.mark.anyio
+async def test_nlu_question_variants_answer_from_data():
+    """Remaining variants classify correctly and never hit the unknown fallback."""
+    async with AsyncSessionLocal() as session:
+        engine = DeterministicNLUEngine()
+        cases = [
+            ("Show recent incident stalls reported today", "active_incidents"),
+            ("incidents today", "active_incidents"),
+            ("why did green get extended at junction 2?", "why_green_extended"),
+        ]
+        for question, expected_intent in cases:
+            result = await engine.execute(db=session, message=question, caller_role="analyst")
+            assert result.intent == expected_intent, f"'{question}' -> {result.intent}"
+            assert "I can't answer that from system data" not in result.answer, question
+        await session.rollback()
