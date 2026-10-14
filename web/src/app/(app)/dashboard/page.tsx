@@ -188,17 +188,29 @@ export default function DashboardPage() {
             </span>
           </div>
 
-          <h1 className="text-2xl sm:text-3xl font-display font-semibold text-paper tracking-tight">
-            Welcome back, {user?.full_name || user?.email}
-          </h1>
+          <div className="flex items-center gap-4">
+            <img
+              src="/telangana-police.png"
+              alt="Telangana State Police"
+              width={44}
+              height={44}
+              className="h-11 w-11 object-contain shrink-0"
+            />
+            <div className="h-10 w-px bg-paper/25 shrink-0" aria-hidden="true" />
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-display font-semibold text-paper tracking-tight">
+                Welcome back, {user?.full_name || user?.email}
+              </h1>
 
-          <p className="mt-2 text-xs sm:text-sm text-paper/70 max-w-2xl leading-relaxed">
-            Traffic operations command interface initialized. Active clearance level:{" "}
-            <span className="text-paper font-semibold uppercase font-mono">
-              {user?.role}
-            </span>
-            . All actions are logged to the immutable audit ledger.
-          </p>
+              <p className="mt-2 text-xs sm:text-sm text-paper/70 max-w-2xl leading-relaxed">
+                Traffic operations command interface initialized. Active clearance level:{" "}
+                <span className="text-paper font-semibold uppercase font-mono">
+                  {user?.role}
+                </span>
+                . All actions are logged to the immutable audit ledger.
+              </p>
+            </div>
+          </div>
         </div>
 
         <div className="relative flex items-center gap-3 shrink-0">
