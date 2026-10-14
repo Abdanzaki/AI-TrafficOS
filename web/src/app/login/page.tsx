@@ -59,8 +59,18 @@ function LoginForm() {
     <div className="w-full max-w-md p-6 sm:p-8 rounded-[10px] bg-surface border border-line shadow-[0_4px_16px_rgba(28,25,23,0.08)]">
       {/* Brand & Title */}
       <div className="text-center mb-8">
-        <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-accent/15 border border-accent/40 text-accent mb-4 shadow-sm">
-          <Cpu className="w-6 h-6" />
+        <div className="flex items-center justify-center gap-4 mb-4">
+          <img
+            src="/telangana-police.png"
+            alt="Telangana State Police"
+            width={60}
+            height={60}
+            className="h-[60px] w-[60px] object-contain"
+          />
+          <div className="h-12 w-px bg-line" aria-hidden="true" />
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-accent/15 border border-accent/40 text-accent shadow-sm">
+            <Cpu className="w-6 h-6" />
+          </div>
         </div>
         <h1 className="text-2xl sm:text-3xl font-display font-bold text-text tracking-tight">
           Sign In to TrafficOS
