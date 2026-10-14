@@ -104,7 +104,7 @@ describe("TrafficMap Component", () => {
       // Only base CARTO tile layer should be rendered
       expect(mockTileLayer).toHaveBeenCalledTimes(1);
       const calledUrl = mockTileLayer.mock.calls[0][0].url;
-      expect(calledUrl).toContain("cartocdn.com");
+      expect(calledUrl).toContain("arcgisonline.com");
       expect(calledUrl).not.toContain("tomtom.com");
     });
 
