@@ -1,0 +1,76 @@
+name: Build Android APK
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'mobile/**'
+      - '.github/workflows/build-apk.yml'
+  workflow_dispatch:
+    inputs:
+      api_url:
+        description: 'Backend REST API base URL baked into the APK'
+        required: false
+        default: 'https://ai-trafficos-api.onrender.com/api/v1'
+        type: string
+      ws_url:
+        description: 'Backend WebSocket URL baked into the APK'
+        required: false
+        default: 'wss://ai-trafficos-api.onrender.com/ws/telemetry'
+        type: string
+
+jobs:
+  build-apk:
+    name: Build & Package Android APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'gradle'
+
+      # Latest stable: the app requires Dart ^3.13.5, so no old pinned
+      # Flutter version is used here.
+      - name: Set up Flutter SDK
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Install dependencies
+        working-directory: mobile
+        run: flutter pub get
+
+      - name: Analyze code
+        working-directory: mobile
+        run: flutter analyze
+
+      # Signing Note:
+      # The resulting APK is built using Flutter's default release configuration.
+      # This is suitable for direct Android sideloading, emulator testing, and QA.
+      # For official Google Play Store distribution, configure upload keystore (.jks)
+      # and android/key.properties.
+      - name: Build Android Release APK
+        working-directory: mobile
+        run: |
+          API_URL="${{ inputs.api_url || 'https://ai-trafficos-api.onrender.com/api/v1' }}"
+          WS_URL="${{ inputs.ws_url || 'wss://ai-trafficos-api.onrender.com/ws/telemetry' }}"
+          echo "Building APK with API_URL=$API_URL"
+          flutter build apk --release \
+            --dart-define=API_URL="$API_URL" \
+            --dart-define=WS_URL="$WS_URL"
+
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ai-trafficos-apk
+          path: mobile/build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 30
+          if-no-files-found: error
