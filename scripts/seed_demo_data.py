@@ -6,18 +6,30 @@ renders empty. This script inserts a realistic 24-hour sample dataset for
 Hyderabad intersections so dashboards, maps, predictions, and incident pages
 come alive for demo / portfolio purposes.
 
+Part 1 (already run in production): 10 intersections, 2,880 traffic records,
+12 violations, 3 crash incidents.
+Part 2 (this extension): signals + phases, AI predictions (LSTM-style),
+AI decisions (control + advisories), notifications, emergency events,
+roads/corridors, audit log entries.
+
 HONESTY CONTRACT: every generated row is explicitly labeled as demo/sample:
   - TrafficRecord.source = "demo"
   - Violation.details contains {"demo": True, ...} with a [DEMO] note
   - Incident.description is prefixed with "[DEMO]"
+  - Signal.code uses the "DEMO-" prefix; SignalPhase.name is [DEMO]-prefixed
+  - AIPrediction.payload contains {"demo": True}; model_version="demo-lstm-v1"
+  - AIDecision.rationale is prefixed with "[DEMO]"; payload has demo=True
+  - Notification.title/message are prefixed with "[DEMO]"
+  - EmergencyEvent rows link only to [DEMO] incidents (no free-text field)
+  - Road.name is prefixed with "[DEMO]"
+  - AuditLog.details contains {"demo": True}
 No generated row is ever presented as a real sensor reading or detection.
 
 Usage:
     DATABASE_URL="postgresql://..." python scripts/seed_demo_data.py
 
 Run from the repository root. Requires DATABASE_URL in the environment.
-Idempotent: intersections are matched by name; demo traffic records,
-violations, and incidents are skipped if demo data already exists.
+Idempotent per section: each section is skipped if its demo rows already exist.
 """
 
 import math
@@ -49,8 +61,14 @@ if not DATABASE_URL:
 from sqlalchemy import func, select  # noqa: E402
 
 from app.core.database import AsyncSessionLocal, engine  # noqa: E402
+from app.models.ai import AIDecision, AIPrediction  # noqa: E402
+from app.models.audit import AuditLog  # noqa: E402
+from app.models.emergency import EmergencyEvent  # noqa: E402
 from app.models.event import Incident  # noqa: E402
 from app.models.intersection import Intersection  # noqa: E402
+from app.models.notification import Notification  # noqa: E402
+from app.models.road import Road  # noqa: E402
+from app.models.signal import Signal, SignalPhase  # noqa: E402
 from app.models.traffic import TrafficRecord  # noqa: E402
 from app.models.violation import Violation  # noqa: E402
 
@@ -233,10 +251,383 @@ async def seed_crash_incidents(session, intersections, start: datetime) -> int:
     return len(rows)
 
 
+async def seed_signals(session, intersections) -> tuple[int, int]:
+    """Create one demo Signal (+ 4 phases) per intersection.
+
+    Statuses are varied (8 active, 1 maintenance, 1 fault) so the heuristic
+    signal-health page shows a realistic spread. Codes are DEMO-prefixed.
+    """
+    statuses = ["active"] * 8 + ["maintenance", "fault"]
+    rng.shuffle(statuses)
+    observed = ["green", "yellow", "red", "green"]
+    signals: list[Signal] = []
+    phases: list[SignalPhase] = []
+    for ix, status in zip(intersections, statuses):
+        sig = Signal(
+            intersection_id=ix.id,
+            code=f"DEMO-{ix.code}",
+            status=status,
+            observed_state=rng.choice(observed) if status == "active" else "unknown",
+            observed_confidence=round(rng.uniform(0.80, 0.99), 2)
+            if status == "active"
+            else None,
+            observed_at=datetime.now(timezone.utc)
+            if status == "active"
+            else None,
+        )
+        signals.append(sig)
+    session.add_all(signals)
+    await session.flush()
+
+    phase_defs = [
+        ("North-South Green", 1, 45, "green"),
+        ("North-South Yellow", 2, 5, "yellow"),
+        ("East-West Green", 3, 40, "green"),
+        ("East-West Yellow", 4, 5, "yellow"),
+    ]
+    for sig in signals:
+        for i, (pname, order, duration, state) in enumerate(phase_defs):
+            phases.append(
+                SignalPhase(
+                    signal_id=sig.id,
+                    intersection_id=sig.intersection_id,
+                    name=f"{DEMO_TAG} {pname}",
+                    phase_order=order,
+                    duration_seconds=duration + rng.randint(-5, 10),
+                    state=state,
+                    is_active=(i == 0),
+                )
+            )
+    session.add_all(phases)
+    await session.flush()
+    return len(signals), len(phases)
+
+
+async def seed_predictions(session, intersections, now: datetime) -> int:
+    """Insert 24h of hourly LSTM-style flow forecasts per intersection.
+
+    Payload carries uncertainty bands; model_version is demo-marked.
+    """
+    rows: list[AIPrediction] = []
+    for ix in intersections:
+        for h in range(24):
+            ts = now + timedelta(hours=h + 1)
+            hour = ts.hour + ts.minute / 60.0
+            load = time_multiplier(hour) * rng.uniform(0.85, 1.15)
+            base = 60
+            predicted = max(0, int(base * load))
+            half_band = max(3, int(predicted * rng.uniform(0.08, 0.18)))
+            rows.append(
+                AIPrediction(
+                    intersection_id=ix.id,
+                    prediction_type="flow",
+                    predicted_for=ts,
+                    payload={
+                        "demo": True,
+                        "note": (
+                            f"{DEMO_TAG} Sample LSTM-style forecast for "
+                            "dashboard demonstration. Not a real model output."
+                        ),
+                        "predicted_vehicle_count": predicted,
+                        "lower_bound": max(0, predicted - half_band),
+                        "upper_bound": predicted + half_band,
+                        "predicted_congestion": int(min(100, max(2, load * 92))),
+                        "horizon_hours": h + 1,
+                    },
+                    confidence=round(rng.uniform(0.70, 0.92), 2),
+                    model_version="demo-lstm-v1",
+                )
+            )
+    session.add_all(rows)
+    await session.flush()
+    return len(rows)
+
+
+async def seed_decisions(
+    session, intersections, predictions: list[AIPrediction]
+) -> int:
+    """Insert ~10 demo AI decisions: 5 signal_timing (Control page),
+    3 route_advisory, 2 alert (Decisions page). All advisory/proposed."""
+    now = datetime.now(timezone.utc)
+    by_ix: dict[int, list[AIPrediction]] = {}
+    for p in predictions:
+        by_ix.setdefault(p.intersection_id, []).append(p)
+
+    rows: list[AIDecision] = []
+
+    # 5 signal-timing advisories (Control page)
+    for ix in intersections[:5]:
+        pred = (by_ix.get(ix.id) or [None])[0]
+        rows.append(
+            AIDecision(
+                prediction_id=pred.id if pred else None,
+                intersection_id=ix.id,
+                decision_type="signal_timing",
+                payload={
+                    "demo": True,
+                    "advisory": True,
+                    "recommended_green_ns": rng.choice([40, 45, 50]),
+                    "recommended_green_ew": rng.choice([30, 35, 40]),
+                    "cycle_seconds": 120,
+                    "note": "Webster-inspired queue-proportional recommendation.",
+                },
+                status="proposed",
+                rationale=(
+                    f"{DEMO_TAG} Advisory timing adjustment for {ix.name} based "
+                    "on demo telemetry. Recommendations only — no hardware "
+                    "control. Generated for dashboard demonstration."
+                ),
+                created_at=now - timedelta(hours=rng.randint(1, 20)),
+            )
+        )
+
+    # 3 route advisories
+    for ix in intersections[5:8]:
+        rows.append(
+            AIDecision(
+                intersection_id=ix.id,
+                decision_type="route_advisory",
+                payload={
+                    "demo": True,
+                    "advisory": True,
+                    "suggested_alternate": f"Via {rng.choice(intersections).name}",
+                    "expected_delay_saving_min": rng.randint(3, 12),
+                },
+                status="proposed",
+                rationale=(
+                    f"{DEMO_TAG} Congestion-aware alternate route suggestion "
+                    f"near {ix.name}. Generated for dashboard demonstration."
+                ),
+                created_at=now - timedelta(hours=rng.randint(1, 20)),
+            )
+        )
+
+    # 2 alerts
+    for ix in intersections[8:10]:
+        rows.append(
+            AIDecision(
+                intersection_id=ix.id,
+                decision_type="alert",
+                payload={
+                    "demo": True,
+                    "alert": "congestion_buildup",
+                    "severity": "warning",
+                },
+                status="proposed",
+                rationale=(
+                    f"{DEMO_TAG} Automated congestion-buildup alert for "
+                    f"{ix.name}. Generated for dashboard demonstration."
+                ),
+                created_at=now - timedelta(hours=rng.randint(1, 20)),
+            )
+        )
+
+    session.add_all(rows)
+    await session.flush()
+    return len(rows)
+
+
+async def seed_notifications(
+    session, intersections, incidents: list[Incident]
+) -> int:
+    """Insert ~10 demo broadcast notifications (all [DEMO] prefixed)."""
+    now = datetime.now(timezone.utc)
+    specs = [
+        ("warning", "intersection",
+         f"{DEMO_TAG} Congestion building at {intersections[1].name}",
+         f"{DEMO_TAG} Demo telemetry shows congestion rising above 80% at "
+         f"{intersections[1].name} during the evening peak window. Sample alert."),
+        ("warning", "intersection",
+         f"{DEMO_TAG} Congestion building at {intersections[5].name}",
+         f"{DEMO_TAG} Demo telemetry shows congestion rising above 85% at "
+         f"{intersections[5].name}. Sample alert."),
+        ("critical", "incident",
+         f"{DEMO_TAG} Crash reported near {intersections[0].name}",
+         f"{DEMO_TAG} Sample crash incident generated for demonstration. "
+         "Not a real incident."),
+        ("error", "incident",
+         f"{DEMO_TAG} Violation spike detected",
+         f"{DEMO_TAG} Sample red-light violation cluster generated for "
+         "demonstration. Not real detections."),
+        ("warning", "signal",
+         f"{DEMO_TAG} Signal controller in maintenance",
+         f"{DEMO_TAG} One demo signal controller is flagged for maintenance; "
+         "health score reflects this. Sample notice."),
+        ("info", "system",
+         f"{DEMO_TAG} Demo dataset loaded",
+         f"{DEMO_TAG} Sample Hyderabad telemetry dataset was loaded for "
+         "dashboard demonstration. All figures are synthetic."),
+        ("info", "system",
+         f"{DEMO_TAG} TomTom live traffic layer enabled",
+         f"{DEMO_TAG} Sample notice: the map's live traffic overlay is "
+         "configured. Demonstration notice."),
+        ("warning", "intersection",
+         f"{DEMO_TAG} Event demand uplift forecast ready",
+         f"{DEMO_TAG} Sample notice: a demo event-demand forecast was "
+         "generated for the stadium event scenario."),
+        ("info", "assistant",
+         f"{DEMO_TAG} AI assistant online",
+         f"{DEMO_TAG} Sample notice: the Gemini-powered traffic assistant "
+         "is available. Demonstration notice."),
+        ("info", "emergency",
+         f"{DEMO_TAG} Emergency drill completed",
+         f"{DEMO_TAG} Sample emergency-response drill record. Not a real "
+         "emergency."),
+    ]
+    rows: list[Notification] = []
+    for i, (severity, entity_type, title, message) in enumerate(specs):
+        entity_id = None
+        if entity_type == "intersection":
+            entity_id = rng.choice(intersections).id
+        elif entity_type == "incident" and incidents:
+            entity_id = rng.choice(incidents).id
+        rows.append(
+            Notification(
+                user_id=None,  # broadcast
+                title=title,
+                message=message,
+                severity=severity,
+                is_read=(i % 3 == 0),
+                entity_type=entity_type,
+                entity_id=entity_id,
+                created_at=now - timedelta(hours=rng.randint(0, 20)),
+            )
+        )
+    session.add_all(rows)
+    await session.flush()
+    return len(rows)
+
+
+async def seed_emergency_events(
+    session, incidents: list[Incident]
+) -> int:
+    """Insert demo emergency events linked to the [DEMO] crash incidents.
+
+    EmergencyEvent has no free-text field, so demo labeling is carried by the
+    linked [DEMO] incidents.
+    """
+    now = datetime.now(timezone.utc)
+    vehicle_types = ["ambulance", "fire", "police", "ambulance"]
+    statuses = ["resolved", "dispatched", "active", "on_scene"]
+    rows: list[EmergencyEvent] = []
+    for incident, vtype, status in zip(incidents, vehicle_types, statuses):
+        detected = now - timedelta(hours=rng.randint(1, 18))
+        rows.append(
+            EmergencyEvent(
+                incident_id=incident.id,
+                vehicle_type=vtype,
+                priority=rng.randint(1, 2),
+                status=status,
+                detected_at=detected,
+                cleared_at=detected + timedelta(minutes=rng.randint(20, 60))
+                if status == "resolved"
+                else None,
+            )
+        )
+    session.add_all(rows)
+    await session.flush()
+    return len(rows)
+
+
+def _haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+    r = 6371.0
+    p1, p2 = math.radians(lat1), math.radians(lat2)
+    dphi = math.radians(lat2 - lat1)
+    dlmb = math.radians(lon2 - lon1)
+    a = math.sin(dphi / 2) ** 2 + math.cos(p1) * math.cos(p2) * math.sin(dlmb / 2) ** 2
+    return 2 * r * math.asin(math.sqrt(a))
+
+
+async def seed_roads(session, by_name: dict[str, Intersection]) -> int:
+    """Insert 4 demo corridors between Hyderabad intersections.
+
+    The Routing page builds its graph from the roads table.
+    """
+    pairs = [
+        ("Miyapur", "Kukatpally", "arterial", 60),
+        ("HITEC City", "Gachibowli", "arterial", 60),
+        ("Ameerpet", "Begumpet", "collector", 50),
+        ("Dilsukhnagar", "LB Nagar", "arterial", 60),
+    ]
+    rows: list[Road] = []
+    for a_name, b_name, road_type, speed in pairs:
+        a, b = by_name[a_name], by_name[b_name]
+        length = round(_haversine_km(a.lat, a.lon, b.lat, b.lon), 2)
+        geometry = (
+            '{"type":"LineString","coordinates":[[%s,%s],[%s,%s]]}'
+            % (a.lon, a.lat, b.lon, b.lat)
+        )
+        rows.append(
+            Road(
+                name=f"{DEMO_TAG} {a_name} – {b_name} Corridor",
+                road_type=road_type,
+                speed_limit_kmh=speed,
+                geometry=geometry,
+                from_intersection_id=a.id,
+                to_intersection_id=b.id,
+                length_km=length,
+                capacity_veh_per_hr=rng.choice([1800, 2400, 3200]),
+                is_bidirectional=True,
+            )
+        )
+    session.add_all(rows)
+    await session.flush()
+    return len(rows)
+
+
+async def seed_audit_logs(
+    session,
+    intersections: list[Intersection],
+    incidents: list[Incident],
+    decisions: list[AIDecision],
+) -> int:
+    """Insert demo audit trail entries (details carry demo=True)."""
+    now = datetime.now(timezone.utc)
+    specs = [
+        ("demo.dataset.loaded", "system", None,
+         {"demo": True, "note": f"{DEMO_TAG} Demo dataset load recorded."}),
+        ("auth.login", "user", None,
+         {"demo": True, "note": f"{DEMO_TAG} Sample operator sign-in."}),
+        ("signal.updated", "signal", None,
+         {"demo": True, "note": f"{DEMO_TAG} Sample signal timing review."}),
+        ("incident.acknowledged", "incident",
+         incidents[0].id if incidents else None,
+         {"demo": True, "note": f"{DEMO_TAG} Sample incident acknowledgement."}),
+        ("assistant.query", "assistant", None,
+         {"demo": True,
+          "note": f"{DEMO_TAG} Sample AI assistant query about congestion."}),
+        ("decision.proposed", "ai_decision",
+         decisions[0].id if decisions else None,
+         {"demo": True, "note": f"{DEMO_TAG} Sample advisory decision logged."}),
+        ("violation.recorded", "violation", None,
+         {"demo": True, "note": f"{DEMO_TAG} Sample violation ingest."}),
+        ("event_demand.forecast_generated", "event_demand", None,
+         {"demo": True,
+          "note": f"{DEMO_TAG} Sample stadium event forecast run."}),
+    ]
+    rows: list[AuditLog] = []
+    for action, entity_type, entity_id, details in specs:
+        rows.append(
+            AuditLog(
+                actor_user_id=None,
+                action=action,
+                entity_type=entity_type,
+                entity_id=entity_id,
+                details=details,
+                ip_address="127.0.0.1",
+                created_at=now - timedelta(hours=rng.randint(0, 20)),
+            )
+        )
+    session.add_all(rows)
+    await session.flush()
+    return len(rows)
+
+
 async def main() -> None:
     async with AsyncSessionLocal() as session:
         # --- Intersections (idempotent by name) ---------------------------
         intersections, created_n, skipped_n = await ensure_intersections(session)
+        by_name = {ix.name: ix for ix in intersections}
 
         # --- Demo telemetry (skip if already seeded) -----------------------
         demo_records = (
@@ -268,11 +659,182 @@ async def main() -> None:
             )
             await session.commit()  # persist any new intersections
 
+        # Demo incidents (for notifications / emergency linkage)
+        demo_incidents = (
+            await session.execute(
+                select(Incident).where(Incident.description.like(f"{DEMO_TAG}%"))
+            )
+        ).scalars().all()
+
+        # --- Signals + phases (idempotent on DEMO- code prefix) -----------
+        demo_signals = (
+            await session.execute(
+                select(func.count())
+                .select_from(Signal)
+                .where(Signal.code.like("DEMO-%"))
+            )
+        ).scalar_one()
+        signals_n = phases_n = 0
+        if demo_signals == 0:
+            signals_n, phases_n = await seed_signals(session, intersections)
+            await session.commit()
+        else:
+            print(
+                f"Demo signals already present ({demo_signals}); skipping "
+                "signal/phase generation."
+            )
+
+        # --- Predictions (idempotent on demo model version) ---------------
+        demo_predictions = (
+            await session.execute(
+                select(func.count())
+                .select_from(AIPrediction)
+                .where(AIPrediction.model_version == "demo-lstm-v1")
+            )
+        ).scalar_one()
+        predictions_n = 0
+        predictions: list[AIPrediction] = []
+        if demo_predictions == 0:
+            predictions_n = await seed_predictions(
+                session, intersections, datetime.now(timezone.utc)
+            )
+            await session.commit()
+            predictions = (
+                await session.execute(
+                    select(AIPrediction).where(
+                        AIPrediction.model_version == "demo-lstm-v1"
+                    )
+                )
+            ).scalars().all()
+        else:
+            print(
+                f"Demo predictions already present ({demo_predictions}); "
+                "skipping forecast generation."
+            )
+            predictions = (
+                await session.execute(
+                    select(AIPrediction).where(
+                        AIPrediction.model_version == "demo-lstm-v1"
+                    )
+                )
+            ).scalars().all()
+
+        # --- Decisions (idempotent on [DEMO] rationale) --------------------
+        demo_decisions = (
+            await session.execute(
+                select(func.count())
+                .select_from(AIDecision)
+                .where(AIDecision.rationale.like(f"{DEMO_TAG}%"))
+            )
+        ).scalar_one()
+        decisions_n = 0
+        decisions: list[AIDecision] = []
+        if demo_decisions == 0:
+            decisions_n = await seed_decisions(session, intersections, predictions)
+            await session.commit()
+            decisions = (
+                await session.execute(
+                    select(AIDecision).where(
+                        AIDecision.rationale.like(f"{DEMO_TAG}%")
+                    )
+                )
+            ).scalars().all()
+        else:
+            print(
+                f"Demo decisions already present ({demo_decisions}); skipping "
+                "decision generation."
+            )
+            decisions = (
+                await session.execute(
+                    select(AIDecision).where(
+                        AIDecision.rationale.like(f"{DEMO_TAG}%")
+                    )
+                )
+            ).scalars().all()
+
+        # --- Notifications (idempotent on [DEMO] title) --------------------
+        demo_notifications = (
+            await session.execute(
+                select(func.count())
+                .select_from(Notification)
+                .where(Notification.title.like(f"{DEMO_TAG}%"))
+            )
+        ).scalar_one()
+        notifications_n = 0
+        if demo_notifications == 0:
+            notifications_n = await seed_notifications(
+                session, intersections, list(demo_incidents)
+            )
+            await session.commit()
+        else:
+            print(
+                f"Demo notifications already present ({demo_notifications}); "
+                "skipping notification generation."
+            )
+
+        # --- Emergency events (linked to [DEMO] incidents) -----------------
+        demo_emergencies = (
+            await session.execute(select(func.count()).select_from(EmergencyEvent))
+        ).scalar_one()
+        emergencies_n = 0
+        if demo_emergencies == 0 and demo_incidents:
+            emergencies_n = await seed_emergency_events(
+                session, list(demo_incidents)
+            )
+            await session.commit()
+        else:
+            print(
+                "Emergency events already present "
+                f"({demo_emergencies}) or no demo incidents; skipping."
+            )
+
+        # --- Roads / corridors (idempotent on [DEMO] name) -----------------
+        demo_roads = (
+            await session.execute(
+                select(func.count())
+                .select_from(Road)
+                .where(Road.name.like(f"{DEMO_TAG}%"))
+            )
+        ).scalar_one()
+        roads_n = 0
+        if demo_roads == 0:
+            roads_n = await seed_roads(session, by_name)
+            await session.commit()
+        else:
+            print(
+                f"Demo roads already present ({demo_roads}); skipping "
+                "corridor generation."
+            )
+
+        # --- Audit logs (idempotent on demo.seed action) -------------------
+        demo_audits = (
+            await session.execute(
+                select(func.count())
+                .select_from(AuditLog)
+                .where(AuditLog.action == "demo.dataset.loaded")
+            )
+        ).scalar_one()
+        audits_n = 0
+        if demo_audits == 0:
+            audits_n = await seed_audit_logs(
+                session, intersections, list(demo_incidents), decisions
+            )
+            await session.commit()
+        else:
+            print("Demo audit entries already present; skipping audit seeding.")
+
         print("---- Seed summary ----")
         print(f"Intersections: {created_n} created, {skipped_n} already existed")
         print(f"Traffic records (source='demo'): {records_n} inserted")
         print(f"Violations (demo-labeled): {violations_n} inserted")
         print(f"Crash incidents ([DEMO] labeled): {incidents_n} inserted")
+        print(f"Signals: {signals_n} inserted, signal phases: {phases_n} inserted")
+        print(f"AI predictions (demo-lstm-v1): {predictions_n} inserted")
+        print(f"AI decisions ([DEMO] rationale): {decisions_n} inserted")
+        print(f"Notifications ([DEMO] broadcast): {notifications_n} inserted")
+        print(f"Emergency events (linked to [DEMO] incidents): {emergencies_n} inserted")
+        print(f"Roads/corridors ([DEMO]): {roads_n} inserted")
+        print(f"Audit log entries (demo): {audits_n} inserted")
         print("All generated rows are explicitly marked as demo/sample data.")
 
     await engine.dispose()
