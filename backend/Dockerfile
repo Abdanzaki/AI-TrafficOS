@@ -22,6 +22,7 @@ RUN pip install --no-cache-dir -r /app/backend/requirements.txt
 # Copy backend application source and database migration directory
 COPY backend/ /app/backend/
 COPY database/ /app/database/
+COPY ai/ /app/ai/
 
 # Create and switch to non-root user for security
 RUN useradd -m -u 1000 -s /bin/bash appuser && \
