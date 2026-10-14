@@ -27,6 +27,14 @@ export const Navbar: React.FC = () => {
             href="/"
             className="flex items-center gap-2.5 text-text hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-paper rounded-lg"
           >
+            <img
+              src="/telangana-police.png"
+              alt="Telangana State Police"
+              width={36}
+              height={36}
+              className="h-9 w-9 object-contain"
+            />
+            <div className="h-8 w-px bg-line" aria-hidden="true" />
             <div className="w-8 h-8 rounded-lg bg-pine border border-pine-deep/50 flex items-center justify-center text-paper">
               <svg
                 className="w-4 h-4 fill-current"
