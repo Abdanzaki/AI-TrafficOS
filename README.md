@@ -1,10 +1,38 @@
 # AI TrafficOS
 
-> Phase 1: foundation only — API skeleton, health checks, DB schema stubs; no detection/prediction features yet.
+AI-powered intelligent traffic management platform — **live in production**.
 
-AI TrafficOS is an intelligent operating platform for urban intersection management, traffic flow optimization, and perception telemetry.
+- **Live demo:** https://ai-traffic-os-indol.vercel.app
+- **API:** https://ai-trafficos-api.onrender.com
+- **Android app:** APK in [GitHub release v1.0.0](https://github.com/Abdanzaki/AI-TrafficOS/releases)
 
-This repository currently hosts the Phase 1 architectural foundation: Python 3.12 FastAPI backend skeleton, SQLAlchemy 2.0 asynchronous database configuration, Alembic migration tooling, containerized PostgreSQL and Redis local environments, and abstract contracts for computer vision and predictive engines.
+## What this is
+
+A complete, production-deployed traffic management system built in 11 phases:
+Next.js web app (Vercel), Flutter Android app, FastAPI + PostgreSQL 18 backend
+(Render + Neon), with role-based JWT auth (admin / traffic officer / analyst / citizen)
+and 8 applied database migrations.
+
+## Highlights
+
+- Dijkstra + A* routing with traffic-aware costs; heap-based emergency dispatch with
+  green-corridor orchestration
+- CV-based violation detection (red-light / wrong-way / no-helmet) and crash
+  auto-detection with control-room alerts
+- LSTM traffic-flow forecasting with uncertainty bands, signal health scoring,
+  daily traffic briefs, event demand forecasting
+- Grounded Gemini-powered traffic assistant, citizen chatbot (allowlisted tools,
+  graceful refusal), and voice interface
+- Live TomTom traffic-flow tiles on the Hyderabad map
+
+## Honest notes
+
+- The map runs on a clearly labeled demo dataset (10 Hyderabad intersections) unless
+  the TomTom live feed is enabled — built for demos, not real enforcement data.
+- The civic theme (including the Telangana Police–style shield) is a design choice,
+  not an official partnership.
+
+**Tests:** 387 backend · 138/138 web (Vitest) · 143/143 Flutter — all green.
 
 ## Documentation Links
 
